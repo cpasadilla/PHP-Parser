@@ -396,8 +396,73 @@ class MasterListController extends Controller
         $ship = Ship::findOrFail($id);
         $previousStatus = $ship->status;
 
-        if ($data == 'NEW VOYAGE' || $previousStatus == 'DRY DOCKED') {
-            // For ships I and II
+        // Handle NEW DOCK status - triggers the dock period separation
+        if ($data == 'NEW DOCK') {
+            // When setting to NEW DOCK, mark all existing voyages as pre-dock
+            // and create new voyages starting from 1
+            $currentTimestamp = now();
+            
+            // Find the next dock number for this ship
+            $maxDockNumber = voyage::where('ship', $ship->ship_number)
+                ->max('dock_number') ?? -1;
+            $newDockNumber = $maxDockNumber + 1;
+            
+            // Mark all existing voyages as belonging to their current dock number (if not already set)
+            voyage::where('ship', $ship->ship_number)
+                ->whereNull('dock_period')
+                ->update([
+                    'dock_period' => 'dock_' . $maxDockNumber . '_' . $currentTimestamp->timestamp,
+                    'dock_number' => $maxDockNumber >= 0 ? $maxDockNumber : 0
+                ]);
+            
+            // Mark all existing orders for this ship as belonging to the previous dock
+            Order::where('shipNum', $ship->ship_number)
+                ->whereNull('dock_period')
+                ->update([
+                    'dock_period' => 'dock_' . ($maxDockNumber >= 0 ? $maxDockNumber : 0) . '_' . $currentTimestamp->timestamp,
+                    'dock_number' => $maxDockNumber >= 0 ? $maxDockNumber : 0
+                ]);
+            
+            // Create new voyages starting from 1 for the new dock
+            if ($id == '1' || $id == '2') {
+                // For ships I and II - create both IN and OUT voyages starting from 1
+                voyage::create([
+                    'ship' => $ship->ship_number,
+                    'v_num' => '1',
+                    'lastStatus' => 'READY',
+                    'lastUpdated' => $currentTimestamp,
+                    'inOut' => 'IN',
+                    'dock_period' => 'dock_' . $newDockNumber . '_' . $currentTimestamp->timestamp,
+                    'dock_number' => $newDockNumber
+                ]);
+
+                voyage::create([
+                    'ship' => $ship->ship_number,
+                    'v_num' => '1',
+                    'lastStatus' => 'READY',
+                    'lastUpdated' => $currentTimestamp,
+                    'inOut' => 'OUT',
+                    'dock_period' => 'dock_' . $newDockNumber . '_' . $currentTimestamp->timestamp,
+                    'dock_number' => $newDockNumber
+                ]);
+            } else {
+                // For other ships - create single voyage starting from 1
+                voyage::create([
+                    'ship' => $ship->ship_number,
+                    'v_num' => '1',
+                    'lastStatus' => 'READY',
+                    'lastUpdated' => $currentTimestamp,
+                    'inOut' => '',
+                    'dock_period' => 'dock_' . $newDockNumber . '_' . $currentTimestamp->timestamp,
+                    'dock_number' => $newDockNumber
+                ]);
+            }
+            
+            // Automatically change status to CREATE BL after creating new voyages
+            $data = 'CREATE BL';
+        }
+        else if ($data == 'NEW VOYAGE') {
+            // Handle regular NEW VOYAGE status
             if ($id == '1' || $id == '2') {
                 // Get latest voyage by v_num instead of updated_at
                 $latestVoyageIn = voyage::where('ship', $ship->ship_number)
@@ -857,6 +922,32 @@ class MasterListController extends Controller
             ->get();
 
         return view('masterlist.list', compact('orders', 'shipNum', 'voyageNum'));
+    }
+
+    public function voyageOrdersById(Request $request, $voyageId) {
+        // Get the specific voyage by ID
+        $voyage = voyage::findOrFail($voyageId);
+        
+        // Determine the voyage key for orders lookup
+        $ship = Ship::where('ship_number', $voyage->ship)->first();
+        if ($ship && ($ship->ship_number == 'I' || $ship->ship_number == 'II')) {
+            $voyageKey = $voyage->v_num . '-' . $voyage->inOut;
+        } else {
+            $voyageKey = $voyage->v_num;
+        }
+        
+        // Get orders for this specific voyage and dock number
+        $orders = Order::where('shipNum', $voyage->ship)
+            ->where('voyageNum', $voyageKey)
+            ->where('dock_number', $voyage->dock_number ?? 0)
+            ->with('parcels')
+            ->orderBy('orderId', 'asc')
+            ->get();
+
+        return view('masterlist.list', compact('orders'), [
+            'shipNum' => $voyage->ship,
+            'voyageNum' => $voyageKey
+        ]);
     }
 
     public function updateOrderField(Request $request, $orderId) {
