@@ -547,7 +547,7 @@
                         <td id="totalBir" class="font-bold text-right">0.00</td>
                         <td id="totalOthers" class="font-bold text-right">0.00</td>
                         <td id="totalAmount" class="font-bold text-right">0.00</td>
-                        <td colspan="{{ 7 + ((Auth::user()->hasSubpagePermission('masterlist', 'edit-bl', 'edit') || Auth::user()->hasSubpagePermission('masterlist', 'list', 'edit')) ? 1 : 0) + (Auth::user()->hasSubpagePermission('masterlist', 'list', 'delete') ? 1 : 0) }}"></td>
+                        <td colspan="{{ 11 + ((Auth::user()->hasSubpagePermission('masterlist', 'edit-bl', 'edit') || Auth::user()->hasSubpagePermission('masterlist', 'list', 'edit')) ? 1 : 0) + (Auth::user()->hasSubpagePermission('masterlist', 'list', 'delete') ? 1 : 0) }}"></td>
                     </tr>
                 </tfoot>
                 <!-- Modal for Image Preview -->
@@ -1419,14 +1419,41 @@
             // Iterate through visible rows and calculate totals
             document.querySelectorAll('#ordersTable tbody tr').forEach(row => {
                 if (row.style.display !== 'none') { // Only include visible rows
-                    totalFreight += parseFloat(row.querySelector('.freight-input')?.value.replace(/,/g, '') || 0);
+                    // Handle freight (can be input or span)
+                    const freightInput = row.querySelector('.freight-input');
+                    const freightValue = freightInput ? freightInput.value : row.querySelector('[data-column="freight"]')?.textContent || '0';
+                    totalFreight += parseFloat(freightValue.replace(/,/g, '') || 0);
+                    
                     totalOriginalFreight += parseFloat(row.querySelector('.original-freight-input')?.value.replace(/,/g, '') || 0); // Calculate total ORIGINAL FREIGHT
-                    totalValuation += parseFloat(row.querySelector('.valuation-input')?.value.replace(/,/g, '') || 0);
-                    totalValue += parseFloat(row.querySelector('.value-input')?.value.replace(/,/g, '') || 0);
-                    totalWharfage += parseFloat(row.querySelector('.wharfage-input')?.value.replace(/,/g, '') || 0); // Calculate total Wharfage
-                    totalDiscount += parseFloat(row.querySelector('.discount-input')?.value.replace(/,/g, '') || 0);
-                    totalBir += parseFloat(row.querySelector('.bir-input')?.value.replace(/,/g, '') || 0); // Calculate total BIR
-                    totalOthers += parseFloat(row.querySelector('.other-input')?.value.replace(/,/g, '') || 0); // Calculate total OTHERS
+                    
+                    // Valuation is always displayed as text, not input - get from data-column="valuation"
+                    totalValuation += parseFloat(row.querySelector('[data-column="valuation"]')?.textContent.replace(/,/g, '') || 0);
+                    
+                    // Handle value (can be input or span)
+                    const valueInput = row.querySelector('.value-input');
+                    const valueValue = valueInput ? valueInput.value : row.querySelector('[data-column="value"]')?.textContent || '0';
+                    totalValue += parseFloat(valueValue.replace(/,/g, '') || 0);
+                    
+                    // Handle wharfage (can be input or span)
+                    const wharfageInput = row.querySelector('.wharfage-input');
+                    const wharfageValue = wharfageInput ? wharfageInput.value : row.querySelector('[data-column="wharfage"]')?.textContent || '0';
+                    totalWharfage += parseFloat(wharfageValue.replace(/,/g, '') || 0);
+                    
+                    // Handle discount (can be input or span)
+                    const discountInput = row.querySelector('.discount-input');
+                    const discountValue = discountInput ? discountInput.value : row.querySelector('[data-column="discount"]')?.textContent || '0';
+                    totalDiscount += parseFloat(discountValue.replace(/,/g, '') || 0);
+                    
+                    // Handle BIR (can be input or span)
+                    const birInput = row.querySelector('.bir-input');
+                    const birValue = birInput ? birInput.value : row.querySelector('[data-column="bir"]')?.textContent || '0';
+                    totalBir += parseFloat(birValue.replace(/,/g, '') || 0);
+                    
+                    // Handle others (can be input or span)
+                    const otherInput = row.querySelector('.other-input');
+                    const otherValue = otherInput ? otherInput.value : row.querySelector('[data-column="other"]')?.textContent || '0';
+                    totalOthers += parseFloat(otherValue.replace(/,/g, '') || 0);
+                    
                     totalAmount += parseFloat(row.querySelector('.total')?.textContent.replace(/,/g, '') || 0);
                 }
             });
@@ -1522,19 +1549,6 @@
         // Initial calculation
         calculateTotals();
     });
-
-    document.querySelectorAll('.filter-input, .filter-dropdown').forEach(input => {
-    input.addEventListener('input', calculateTotals);
-    input.addEventListener('change', calculateTotals);
-
-    console.log('Total Freight:', totalFreight);
-    console.log('Total Valuation:', totalValuation);
-    console.log('Total Value:', totalValue);
-    console.log('Total Discount:', totalDiscount);
-    console.log('Total Amount:', totalAmount);
-    console.log('Filtering column:', column, 'with value:', value);
-    console.log('Cell value:', cellValue);
-});
 </script>
 <script>
     // For handling image uploads and changes
@@ -2549,13 +2563,40 @@
             let totalFreight = 0, totalOriginalFreight = 0, totalValuation = 0, totalValue = 0, totalWharfage = 0, totalDiscount = 0, totalBir = 0, totalOthers = 0, totalAmount = 0;
             document.querySelectorAll('#ordersTable tbody tr').forEach(function(row) {
                 if (row.style.display === 'none') return;
-                totalFreight += parseFloat((row.querySelector('.freight-input')||{}).value?.replace(/,/g,'')||0);
-                totalValuation += parseFloat((row.querySelector('.valuation-input')||{}).value?.replace(/,/g,'')||0);
-                totalValue += parseFloat((row.querySelector('.value-input')||{}).value?.replace(/,/g,'')||0);
-                totalWharfage += parseFloat((row.querySelector('.wharfage-input')||{}).value?.replace(/,/g,'')||0);
-                totalDiscount += parseFloat((row.querySelector('.discount-input')||{}).value?.replace(/,/g,'')||0);
-                totalBir += parseFloat((row.querySelector('.bir-input')||{}).value?.replace(/,/g,'')||0);
-                totalOthers += parseFloat((row.querySelector('.other-input')||{}).value?.replace(/,/g,'')||0);
+                
+                // Handle freight (can be input or span)
+                const freightInput = row.querySelector('.freight-input');
+                const freightValue = freightInput ? freightInput.value : (row.querySelector('[data-column="freight"]')||{}).textContent || '0';
+                totalFreight += parseFloat(freightValue.replace(/,/g, '') || 0);
+                
+                // Valuation is always displayed as text, not input - get from data-column="valuation"
+                totalValuation += parseFloat((row.querySelector('[data-column="valuation"]')||{}).textContent?.replace(/,/g,'')||0);
+                
+                // Handle value (can be input or span)
+                const valueInput = row.querySelector('.value-input');
+                const valueValue = valueInput ? valueInput.value : (row.querySelector('[data-column="value"]')||{}).textContent || '0';
+                totalValue += parseFloat(valueValue.replace(/,/g, '') || 0);
+                
+                // Handle wharfage (can be input or span)
+                const wharfageInput = row.querySelector('.wharfage-input');
+                const wharfageValue = wharfageInput ? wharfageInput.value : (row.querySelector('[data-column="wharfage"]')||{}).textContent || '0';
+                totalWharfage += parseFloat(wharfageValue.replace(/,/g, '') || 0);
+                
+                // Handle discount (can be input or span)
+                const discountInput = row.querySelector('.discount-input');
+                const discountValue = discountInput ? discountInput.value : (row.querySelector('[data-column="discount"]')||{}).textContent || '0';
+                totalDiscount += parseFloat(discountValue.replace(/,/g, '') || 0);
+                
+                // Handle BIR (can be input or span)
+                const birInput = row.querySelector('.bir-input');
+                const birValue = birInput ? birInput.value : (row.querySelector('[data-column="bir"]')||{}).textContent || '0';
+                totalBir += parseFloat(birValue.replace(/,/g, '') || 0);
+                
+                // Handle others (can be input or span)
+                const otherInput = row.querySelector('.other-input');
+                const otherValue = otherInput ? otherInput.value : (row.querySelector('[data-column="other"]')||{}).textContent || '0';
+                totalOthers += parseFloat(otherValue.replace(/,/g, '') || 0);
+                
                 totalAmount += parseFloat((row.querySelector('.total')||{}).textContent?.replace(/,/g,'')||0);
             });
             document.getElementById('totalFreight').textContent = totalFreight.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
