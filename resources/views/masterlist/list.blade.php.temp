@@ -1,0 +1,44 @@
+<script>
+    // For updating REMARK field
+    document.addEventListener('DOMContentLoaded', function () {
+        const remarkInputs = document.querySelectorAll('.remark-input');
+
+        // Debounce function to limit the frequency of requests
+        function debounce(func, delay) {
+            let timeout;
+            return function (...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), delay);
+            };
+        }
+
+        // Function to update the remark field
+        function updateRemarkField(orderId, remark) {
+            fetch(`/update-order-field/${orderId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({ field: 'remark', value: remark })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Remark updated:', data);
+                // You can add UI feedback here if needed
+            })
+            .catch(error => {
+                console.error('Error updating remark:', error);
+            });
+        }
+
+        // Add event listeners to remark inputs with debounce
+        remarkInputs.forEach(input => {
+            input.addEventListener('change', debounce(function() {
+                const orderId = this.getAttribute('data-order-id');
+                const remark = this.value;
+                updateRemarkField(orderId, remark);
+            }, 500)); // 500ms debounce
+        });
+    });
+</script>
