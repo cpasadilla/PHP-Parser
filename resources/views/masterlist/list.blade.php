@@ -60,7 +60,8 @@
                         <th class="p-2">REMARK</th>
                         <th class="p-2">NOTE</th>
                         <th class="p-2" style="text-align: center;">IMAGE</th>
-                        <th class="p-2">VIEW BL</th>
+                        <th class="p-2" style="width: 80px; text-align: center;">VIEW BL</th>
+                        <th class="p-2" style="width: 100px; text-align: center;">NO-PRICE BL</th>
                         @if(Auth::user()->hasSubpagePermission('masterlist', 'edit-bl', 'edit') || Auth::user()->hasSubpagePermission('masterlist', 'list', 'edit'))
                         <th class="p-2 update-bl-column">UPDATE BL</th>
                         @endif
@@ -211,6 +212,9 @@
                         </th>
                         <th></th> <!-- IMAGE excluded -->
                         <th></th> <!-- VIEW BL excluded -->
+                        <th></th> <!-- VIEW NO-PRICE BL -->
+                        <th></th> <!-- UPDATE BL -->
+                        <th></th> <!-- DELETE BL -->
                         <th></th> <!-- ORIGINAL FREIGHT excluded -->
                     </tr>
                 </thead>
@@ -492,9 +496,16 @@
                                 @endif
                             </td>
                             <td class="p-2 text-center">
-                                <a href="{{ route('masterlist.view-bl', ['id' => $order->id]) }}" class="text-blue-500 text-center">
+                                <a href="{{ route('masterlist.view-bl', ['shipNum' => $order->shipNum, 'voyageNum' => $order->voyageNum, 'orderId' => $order->id]) }}" class="text-blue-500 text-center">
                                     <x-button variant="primary" class="items-center max-w-xs gap-2">
                                         <x-heroicon-o-document class="w-6 h-6" aria-hidden="true" />
+                                    </x-button>
+                                </a>
+                            </td>
+                            <td class="p-2 text-center">
+                                <a href="{{ route('masterlist.view-no-price-bl', ['shipNum' => $order->shipNum, 'voyageNum' => $order->voyageNum, 'orderId' => $order->id]) }}" class="text-green-500 text-center">
+                                    <x-button variant="success" class="items-center max-w-xs gap-2">
+                                        <x-heroicon-o-document-text class="w-6 h-6" aria-hidden="true" />
                                     </x-button>
                                 </a>
                             </td>

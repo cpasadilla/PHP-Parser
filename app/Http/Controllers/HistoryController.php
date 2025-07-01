@@ -54,6 +54,9 @@ class HistoryController extends Controller
 
         // Fetch order delete logs with pagination and filtering
         $orderDeleteLogs = OrderDeleteLog::query()
+            ->with(['restoredOrder' => function($query) {
+                $query->select('id', 'shipNum', 'voyageNum');
+            }])
             ->when($deletedByFilter, function ($query, $deletedByFilter) {
                 return $query->where('deleted_by', 'like', "%$deletedByFilter%");
             })

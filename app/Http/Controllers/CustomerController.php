@@ -834,9 +834,13 @@ class CustomerController extends Controller {
             return $voyageNum;
         }
 
-        // If no READY voyages, check for a matching voyage in the opposite direction
+        // If no post-dock READY voyages, check for a matching voyage in the opposite direction (also post-dock)
         $oppositeVoyage = voyage::where('ship', $ship)
                               ->where('inOut', $oppositeSuffix)
+                              ->where(function($query) {
+                                $query->whereNull('dock_period')
+                                ->orWhere('dock_period', 'like', 'post_dock_%');
+                                })
                               ->latest('updated_at')
                               ->first();
 
@@ -848,6 +852,10 @@ class CustomerController extends Controller {
             $existingVoyage = voyage::where('ship', $ship)
                                   ->where('inOut', $suffix)
                                   ->where('v_num', $numericPart)
+                                  ->where(function($query) {
+                                    $query->whereNull('dock_period')
+                                    ->orWhere('dock_period', 'like', 'post_dock_%');
+                                  })
                                   ->first();
             
             if (!$existingVoyage) {
@@ -859,6 +867,7 @@ class CustomerController extends Controller {
                     'lastStatus' => 'READY', // Always set to READY for new voyages
                     'lastUpdated' => now(),
                     'inOut' => $suffix,
+                    'dock_period' => $oppositeVoyage->dock_period, // Use same dock period as opposite voyage
                 ]);
             } else {
                 // Use the existing matching voyage and set to READY
@@ -871,14 +880,18 @@ class CustomerController extends Controller {
                 ]);
             }
         } else {
-            // No opposite voyage exists, look for the latest voyage in the current direction
+            // No opposite voyage exists, look for the latest voyage in the current direction (post-dock first)
             $latestVoyage = voyage::where('ship', $ship)
                                ->where('inOut', $suffix)
+                               ->where(function($query) {
+                                    $query->whereNull('dock_period')
+                                    ->orWhere('dock_period', 'like', 'post_dock_%');
+                               })
                                ->orderBy('v_num', 'desc') // Order by voyage number, not timestamp
                                ->first();
 
             if (!$latestVoyage) {
-                // No voyage in this direction exists yet, create the first one
+                // No post-dock voyage in this direction exists yet, create the first one
                 $voyageNum = '1';
                 $voyage = voyage::create([
                     'ship' => $ship,
@@ -888,7 +901,7 @@ class CustomerController extends Controller {
                     'inOut' => $suffix,
                 ]);
             } else {
-                // Use the latest voyage in this direction
+                // Use the latest post-dock voyage in this direction
                 $voyage = $latestVoyage;
                 $voyageNum = $latestVoyage->v_num;
                 
@@ -906,9 +919,13 @@ class CustomerController extends Controller {
     }
 
     public function shipThree($shipStatus,$ship) {
-        // First check for voyages with READY status
+        // First check for post-dock voyages with READY status
         $readyVoyage = voyage::where('ship', $ship)
                            ->where('lastStatus', 'READY')
+                           ->where(function($query) {
+                               $query->whereNull('dock_period')
+                               ->orWhere('dock_period', 'like', 'post_dock_%');
+                           })
                            ->orderBy('v_num', 'desc') // Use highest voyage number that's READY
                            ->first();
 
@@ -925,13 +942,17 @@ class CustomerController extends Controller {
             return $voyageNum;
         }
 
-        // If no READY voyages, look for the latest voyage
+        // If no post-dock READY voyages, look for the latest post-dock voyage
         $latestVoyage = voyage::where('ship', $ship)
+                            ->where(function($query) {
+                                $query->whereNull('dock_period')
+                                      ->orWhere('dock_period', 'like', 'post_dock_%');
+                            })
                             ->orderBy('v_num', 'desc') // Order by voyage number, not timestamp
                             ->first();
 
         if (!$latestVoyage) {
-            // No voyages exist yet, create the first one
+            // No post-dock voyages exist yet, create the first one
             $voyageNum = '1';
             $voyage = voyage::create([
                 'ship' => $ship,
@@ -941,7 +962,7 @@ class CustomerController extends Controller {
                 'inOut' => '',
             ]);
         } else {
-            // Use the latest voyage and set it to READY
+            // Use the latest post-dock voyage and set it to READY
             $voyage = $latestVoyage;
             $voyageNum = intval($latestVoyage->v_num);
             
@@ -1065,5 +1086,22 @@ class CustomerController extends Controller {
             }
         }
         return false;
+    }
+    /**Add commentMore actions
+     * Check if a ship is available for creating new orders
+     * Ships in DRY DOCK status are not available for new orders
+     * 
+     * @param string $shipNumber
+     * @return bool
+     */
+    private function isShipAvailableForOrders($shipNumber) {
+        $ship = Ship::where('ship_number', $shipNumber)->first();
+        
+        if (!$ship) {
+            return false;
+        }
+        
+        // Ship is not available if it's in DRY DOCK status
+        return $ship->status !== 'DRY DOCK';
     }
 }

@@ -41,7 +41,7 @@
                         <form method="POST" action="{{ route('masterlist.store') }}">
                             @csrf
                             <label class="text-gray-700 dark:text-gray-300">Ship Number</label>
-                            <input type="text" name="ship_number" class="w-full p-2 border rounded-md text-gray-800 dark:text-white bg-gray-100 dark:bg-gray-700 focus:ring focus:ring-indigo-300">
+                            <input type="text" name="ship_number" class="w-full p-2 border rounded-md text-gray-800 dark:text-white bg-gray-100 dark:bg-gray-700 focus:ring focus:ring-indigo-300" required>
 
                             <!-- Submit & Close Buttons -->
                             <div class="flex justify-end mt-4">
@@ -89,12 +89,13 @@
                             <form action="{{ route('masterlist.update', $ship->id) }}" method="POST">
                                 @csrf
                                 @method('PUT')
-                                <select id= 'status' name="status" class="border border-gray-300 dark:border-gray-600 px-3 py-2 rounded-md focus:ring focus:ring-indigo-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100" onchange="this.form.submit()">
+                                <select id="status" name="status" class="border border-gray-300 dark:border-gray-600 px-3 py-2 rounded-md focus:ring focus:ring-indigo-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100" onchange="this.form.submit()">
                                     <option value="READY" {{ $ship->status == 'READY' ? 'selected' : '' }}>READY</option>
                                     <option value="CREATE BL" {{ $ship->status == 'CREATE BL' ? 'selected' : '' }}>CREATE BL</option>
                                     <option value="STOP BL" {{ $ship->status == 'STOP BL' ? 'selected' : '' }}>STOP BL</option>
                                     <option value="NEW VOYAGE" {{ $ship->status == 'NEW VOYAGE' ? 'selected' : '' }}>NEW VOYAGE</option>
-                                    <option value="DRY DOCKED" {{ $ship->status == 'DRY DOCKED' ? 'selected' : '' }}>DRY DOCKED</option>
+                                    <option value="DRY DOCK" {{ $ship->status == 'DRY DOCK' ? 'selected' : '' }}>DRY DOCK</option>
+                                    <option value="NEW DOCK" {{ $ship->status == 'NEW DOCK' ? 'selected' : '' }}>NEW DOCK</option>
                                 </select>
                             </form>
                             @else
@@ -103,7 +104,8 @@
                                 @elseif($ship->status == 'CREATE BL') text-blue-600
                                 @elseif($ship->status == 'STOP BL') text-red-600
                                 @elseif($ship->status == 'NEW VOYAGE') text-green-600
-                                @elseif($ship->status == 'DRY DOCKED') text-yellow-500
+                                @elseif($ship->status == 'DRY DOCK') text-yellow-500
+                                @elseif($ship->status == 'NEW DOCK') text-purple-600
                                 @endif">
                                 {{ $ship->status }}
                             </span>
@@ -127,13 +129,15 @@
     </div>
     <br>
 
-    <div class="p-6 overflow-hidden bg-white rounded-md shadow-md dark:bg-dark-eval-1">
+    <!-- Status Notes Section -->
+    <div class="mt-4 p-4 bg-blue-50 dark:bg-blue-900 rounded-lg">
         <h5 class="font-bold text-gray-700 dark:text-gray-200">Note:</h5>
         <ul class="list-disc pl-6 text-gray-600 dark:text-gray-300">
             <li><span class="font-bold text-blue-600">CREATE BL:</span> You can create a BL.</li>
             <li><span class="font-bold text-red-600">STOP BL:</span> You cannot create a BL.</li>
-            <li><span class="font-bold text-green-600">NEW VOYAGE:</span> A new voyage number will be generated. </li>
-            <li><span class="font-bold" style="color: #facc15;">DRY DOCKED:</span> No BL creation.</li>
+            <li><span class="font-bold text-green-600">NEW VOYAGE:</span> A new voyage number will be generated.</li>
+            <li><span class="font-bold" style="color: #facc15;">DRY DOCK:</span> Ship is unavailable for new orders but can edit existing ones.</li>
+            <li><span class="font-bold text-purple-600">NEW DOCK:</span> Creates new voyage starting from 1 and separates from old dock.</li>
         </ul>
     </div>
     <br>

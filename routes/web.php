@@ -59,10 +59,6 @@ Route::middleware('auth')->group(function () {
     
     // Interest reset page
     Route::get('/masterlist/reset-interest', [MasterListController::class, 'resetInterest'])->name('masterlist.reset_interest');
-
-    // User permissions routes - admin only (handled in controller)
-    Route::post('/user-permissions', [UserPermissionController::class, 'update'])->name('user-permissions.update');
-    Route::delete('/user-permissions', [UserPermissionController::class, 'delete'])->name('user-permissions.delete');
     
     // Route for voyage status diagnosis and fix
     Route::get('/fix-voyage', [App\Http\Controllers\FixVoyageController::class, 'checkVoyageStatus'])->name('fix-voyage');
@@ -184,11 +180,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/masterlist/edit-bl/{orderId}', [MasterListController::class, 'editBL'])->name('masterlist.edit-bl');
             Route::post('/masterlist/update-bl/{orderId}', [MasterListController::class, 'updateBL'])->name('masterlist.update-bl');
         });
-        
-        Route::middleware('subpage.permission:masterlist,view-bl')->group(function () {
-            Route::get('/masterlist/view-bl/{orderId}', [MasterListController::class, 'viewBL'])->name('masterlist.view-bl');
-        });
-        
+               
         // Order list
         Route::middleware('subpage.permission:masterlist,list')->group(function () {
             Route::delete('/masterlist/{order_id}', [MasterListController::class, 'destroy'])->name('order.destroy');
@@ -238,8 +230,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/masterlist/search-customer-details', [MasterListController::class, 'searchCustomerDetails'])->name('masterlist.search-customer-details');
         
         // Master List for voyage
-        Route::get('/masterlist/bl/{id}', [MasterListController::class, 'viewbl'])->name('masterlist.view-bl');
+        Route::get('/masterlist/bl/{shipNum}/{voyageNum}/{orderId}', [MasterListController::class, 'viewbl'])->name('masterlist.view-bl');
+        Route::get('/masterlist/no-price-bl/{shipNum}/{voyageNum}/{orderId}', [MasterListController::class, 'viewNoPriceBl'])->name('masterlist.view-no-price-bl');
         Route::get('/masterlist/voyage/orders/{shipNum}/{voyageNum}', [MasterListController::class, 'voyageOrders'])->name('masterlist.voyage-orders');
+        Route::get('/masterlist/voyage/orders-by-id/{voyageId}', [MasterListController::class, 'voyageOrdersById'])->name('masterlist.voyage-orders-by-id');
         Route::post('/update-bl-status/{orderId}', [MasterListController::class, 'updateBlStatus']);
         Route::post('/update-order-field/{orderId}', [MasterListController::class, 'updateOrderField']);
         Route::post('/masterlist/update-order-field/{orderId}', [MasterListController::class, 'updateOrderField'])->name('masterlist.update-order-field');
@@ -281,6 +275,57 @@ Route::middleware(['auth', 'page.permission:dashboard'])->group(function() {
     Route::get('/buttons/text-icon', function () {
         return view('buttons-showcase.text-icon');
     })->name('buttons.text-icon');
+});
+
+// Test route for dock system - can be removed after testingAdd commentMore actions
+Route::get('/test-dock', function () {
+    $voyagesByDock = App\Models\voyage::selectRaw('dock_number, COUNT(*) as voyage_count, GROUP_CONCAT(DISTINCT v_num ORDER BY v_num) as voyages')
+        ->groupBy('dock_number')
+        ->orderBy('dock_number')
+        ->get();
+    
+    $ordersByDock = App\Models\order::selectRaw('dock_number, COUNT(*) as order_count')
+        ->groupBy('dock_number')
+        ->orderBy('dock_number')
+        ->get();
+    
+    return view('test-dock', compact('voyagesByDock', 'ordersByDock'));
+});
+
+// Test route for voyage page without auth - can be removed after testing
+Route::get('/test-voyage/{id}', function ($id) {
+    $controller = new App\Http\Controllers\MasterListController();
+    return $controller->voyage($id);
+});
+
+// Test route for creating new dock - can be removed after testing
+Route::get('/test-new-dock', function () {
+    // Get the current max dock number
+    $maxDockNumber = App\Models\voyage::max('dock_number') ?? 0;
+    $newDockNumber = $maxDockNumber + 1;
+    $currentDateTime = now()->format('Y-m-d H:i:s');
+    
+    // Update all existing voyages and orders that don't have dock_period set
+    App\Models\voyage::whereNull('dock_period')->update([
+        'dock_period' => $currentDateTime
+    ]);
+    
+    App\Models\order::whereNull('dock_period')->update([
+        'dock_period' => $currentDateTime
+    ]);
+    
+    // Create a new voyage for the new dock with voyage number 1
+    $newVoyage = App\Models\voyage::create([
+        'v_num' => 1,
+        'ship' => 'TEST SHIP',
+        'lastStatus' => 'NEW',
+        'lastUpdated' => $currentDateTime,
+        'inOut' => 'IN',
+        'dock_number' => $newDockNumber,
+        'dock_period' => null, // New dock starts with null period
+    ]);
+    
+    return redirect('/test-dock')->with('success', "New dock {$newDockNumber} created with voyage 1!");
 });
 
 require __DIR__ . '/auth.php';

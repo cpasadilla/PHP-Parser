@@ -45,6 +45,8 @@ class order extends Model
         'image',
         'note',
         'updated_by', // Add this field
+        'dock_period', // Add dock_period field to track which dock period this order belongs to
+        'dock_number', // Add dock_number field to track which dock cycle this order belongs to
     ];
 
     protected $casts = [

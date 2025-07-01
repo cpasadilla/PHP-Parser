@@ -13,5 +13,7 @@ class voyage extends Model
         'lastStatus',
         'lastUpdated',
         'inOut',
+        'dock_period',
+        'dock_number',
     ];
 }

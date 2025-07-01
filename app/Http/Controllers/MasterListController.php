@@ -44,13 +44,37 @@ class MasterListController extends Controller
 
     public function voyage($id) {
         $ship = Ship::findOrFail($id);
-        $voyages = voyage::where('ship', $ship->ship_number)->get();
+        $voyages = voyage::where('ship', $ship->ship_number)->orderBy('dock_number', 'desc')->orderBy('created_at', 'desc')->get();
+
+        // Group voyages by dock number
+        $voyagesByDock = [];
+        
+        foreach ($voyages as $voyage) {
+            $dockNumber = $voyage->dock_number ?? 0; // Default to dock 0 for older records
+            if (!isset($voyagesByDock[$dockNumber])) {
+                $voyagesByDock[$dockNumber] = [];
+            }
+            $voyagesByDock[$dockNumber][] = $voyage;
+        }
+        
+        // Sort dock numbers in descending order (newest dock first)
+        krsort($voyagesByDock);
+        
+        // Get order counts for all voyages
+        $allVoyageNumbers = $voyages->map(function($voyage) use ($ship) {
+            if ($ship->ship_number == 'I' || $ship->ship_number == 'II') {
+                return $voyage->v_num . '-' . $voyage->inOut;
+            } else {
+                return $voyage->v_num;
+            }
+        })->unique();
+        
         $orderCounts = Order::where('shipNum', $ship->ship_number)
-        ->selectRaw('shipNum, voyageNum, COUNT(*) as total_orders')
-        ->groupBy('shipNum', 'voyageNum')
+        ->selectRaw('shipNum, voyageNum, dock_number, COUNT(*) as total_orders')
+        ->groupBy('shipNum', 'voyageNum', 'dock_number')
         ->get()
         ->mapWithKeys(function ($item) {
-            return [ $item->voyageNum => $item->total_orders ];
+            return [ $item->voyageNum . '_dock_' . $item->dock_number => $item->total_orders ];
         });
         
         // Get origin and destination for each voyage
@@ -61,19 +85,20 @@ class MasterListController extends Controller
             } else {
                 $key = $voyage->v_num;
             }
-            
-            // Get the first order for this voyage to extract origin and destination
+
+            // Get the first order for this voyage and dock to extract origin and destination
             $firstOrder = Order::where('shipNum', $ship->ship_number)
                 ->where('voyageNum', $key)
+                ->where('dock_number', $voyage->dock_number ?? 0)
                 ->first();
                 
-            $voyageRoutes[$key] = [
+            $voyageRoutes[$key . '_dock_' . ($voyage->dock_number ?? 0)] = [
                 'origin' => $firstOrder ? $firstOrder->origin : 'N/A',
                 'destination' => $firstOrder ? $firstOrder->destination : 'N/A'
             ];
         }
         
-        return view('masterlist.voyage', compact('ship', 'voyages', 'orderCounts', 'voyageRoutes'));
+        return view('masterlist.voyage_new', compact('ship', 'voyagesByDock', 'orderCounts', 'voyageRoutes'));
     }
 
     public function list(Request $request) {
@@ -211,14 +236,24 @@ class MasterListController extends Controller
         return view('masterlist.bl_list', compact('mainAccount', 'subAccounts', 'orders'));
     }
 
-    public function viewBl($order_id) {
+    public function viewBl($shipNum, $voyageNum, $orderId) {
         // Fetch the order by ID
-        $order = Order::findOrFail($order_id);
+        $order = Order::findOrFail($orderId);
 
         // Fetch related parcels using the orderId
         $parcels = Parcel::where('orderId', $order->id)->get();
         // Pass the order and parcels to the view
         return view('masterlist.view-bl', compact('order', 'parcels'));
+    }
+
+    public function viewNoPriceBl($shipNum, $voyageNum, $orderId) {
+        // Fetch the order by ID
+        $order = Order::findOrFail($orderId);
+
+        // Fetch related parcels using the orderId
+        $parcels = Parcel::where('orderId', $order->id)->get();
+        // Pass the order and parcels to the view
+        return view('masterlist.view-no-price-bl', compact('order', 'parcels'));
     }
 
     public function container(Request $request) {
@@ -777,7 +812,7 @@ class MasterListController extends Controller
         }
 
         // Redirect back with a success message
-        return redirect()->route('masterlist.view-bl', $order->id)->with('success', 'BL updated successfully!');
+        return redirect()->route('masterlist.view-bl', ['shipNum' => $ship, 'voyageNum' => $voyageNum, 'orderId' => $order->id])->with('success', 'BL updated successfully!');
     }
 
     public function searchCustomerDetails(Request $request) {
@@ -1146,8 +1181,8 @@ class MasterListController extends Controller
             $freight = $order->freight ?? 0;
             $value = $order->value ?? 0;
             $other = $order->other ?? 0;
-            $valuation = ($freight + $value) * 0.0075;
             $padlock_fee = $order->padlock_fee ?? 0;
+            $valuation = ($freight + $value) * 0.0075;
             $total = $freight + $valuation + $other + $order->wharfage + $padlock_fee;
             $order->valuation = $valuation;
             $order->totalAmount = $total;
@@ -1724,7 +1759,7 @@ class MasterListController extends Controller
                         $ship->save();
                     }
                 } else {
-                    // For other ships without directional voyages
+                    // For other ships
                     $newerReadyVoyages = voyage::where('ship', $voyage->ship)
                         ->where('v_num', '>', $voyage->v_num)
                         ->where('lastStatus', 'READY')

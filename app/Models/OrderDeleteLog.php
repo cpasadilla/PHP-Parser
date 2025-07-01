@@ -30,4 +30,9 @@ class OrderDeleteLog extends Model
         'parcels_data' => 'array',
         'restored_at' => 'datetime',
     ];
+
+    public function restoredOrder()
+    {
+        return $this->belongsTo(Order::class, 'restored_order_id');
+    }
 }
