@@ -569,7 +569,7 @@ class MasterListController extends Controller
 
         // Validate cartTotal and value explicitly
         $request->validate([
-            'cartTotal' => 'required|numeric',
+            'cartTotal' => 'nullable|numeric',
             'value' => 'nullable|numeric',
         ]);
 
@@ -649,7 +649,7 @@ class MasterListController extends Controller
                 $checks = true;
             } else {
                 // No other order with this container, apply normal freight
-                $freight = $this->formatNumber($data['cartTotal']);
+                $freight = $this->formatNumber($data['cartTotal'] ?? 0);
             }
             
             Log::info('Container reservation check on BL update:', [
@@ -660,7 +660,7 @@ class MasterListController extends Controller
             ]);
         } else {
             // Container not in reservation list, apply normal freight
-            $freight = $this->formatNumber($data['cartTotal']);
+            $freight = $this->formatNumber($data['cartTotal'] ?? 0);
             
             Log::info('Container reservation check on BL update:', [
                 'container' => $container, 
@@ -815,7 +815,7 @@ class MasterListController extends Controller
             'remark' => [$oldValues['remark'], $data['remark'] ?? ''],
             'value' => [$oldValues['value'], $value],
             'other' => [$oldValues['other'], $other],
-            'freight' => [$oldValues['freight'], $cartTotal],
+            'freight' => [$oldValues['freight'], $freight],
             'valuation' => [$oldValues['valuation'], $valuation],
             'discount' => [$oldValues['discount'], $discount],
             'totalAmount' => [$oldValues['totalAmount'], $totalAmount],

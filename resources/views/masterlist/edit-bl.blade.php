@@ -609,6 +609,16 @@
         
         checkCart();
         updateMainTable();
+        
+        // Recalculate total from cart items and initialize cartTotal hidden input
+        recalculateTotalPrice();
+        document.getElementById('cartTotal').value = totalPrice.toFixed(2);
+        
+        // Debug: Check if hidden inputs are properly set
+        console.log("Initial cart data:", document.getElementById('cartData').value);
+        console.log("Initial cart total:", document.getElementById('cartTotal').value);
+        console.log("Initial total price variable:", totalPrice);
+        
         // Function to format the date
         function formatDate(date) {
             const options = { year: 'numeric', month: 'long', day: 'numeric' };
@@ -800,7 +810,16 @@
         }
     });
     
-    let totalPrice = @json($total);
+    let totalPrice = @json($total) || 0;
+    
+    // Function to recalculate total price from cart items
+    function recalculateTotalPrice() {
+        totalPrice = 0;
+        cart.forEach(item => {
+            totalPrice += parseFloat(item.total) || 0;
+        });
+        return totalPrice;
+    }
     function openModal() {
         document.getElementById('addToCartModal').classList.remove('hidden');
     }
@@ -896,10 +915,13 @@
         console.log('Adding item to cart:', item);
 
         cart.push(item);
-        totalPrice += parseFloat(item.total); // Update total price
-
+        
         // Update the hidden input field with the cart data
         document.getElementById('cartData').value = JSON.stringify(cart);
+        
+        // Recalculate total from cart items
+        recalculateTotalPrice();
+        document.getElementById('cartTotal').value = totalPrice.toFixed(2);
 
         updateMainTable();
         updateTotalPrice(); // Update the displayed total price
@@ -940,7 +962,10 @@
         const cartDataInput = document.getElementById('cartData');
         cartDataInput.value = JSON.stringify(cart);
 
-        document.getElementById('cartTotal').value = formatPrice(totalPrice);
+        // Recalculate total price from cart items to ensure accuracy
+        recalculateTotalPrice();
+        const cartTotalInput = document.getElementById('cartTotal');
+        cartTotalInput.value = totalPrice.toFixed(2);
 
         cart.forEach((item, index) => {
             const row = document.createElement('tr');
@@ -1011,10 +1036,13 @@
     }
 
         function deleteItem(index) {
-            totalPrice -= parseFloat(cart[index].total); // Deduct the item's total from total price
             cart.splice(index, 1);
             updateMainTable();
             updateTotalPrice(); // Update the displayed total price
+            
+            // Recalculate and update cartTotal hidden input
+            recalculateTotalPrice();
+            document.getElementById('cartTotal').value = totalPrice.toFixed(2);
         }
 
         function toggleButtonsVisibility() {
@@ -1093,10 +1121,7 @@
                 }
                 else {
                 }
-                totalPrice -= edit;
-                totalPrice += total;
-
-
+                
                 cart[currentEditIndex] = {
                     itemCode: document.getElementById('itemCode').value,
                     itemName: document.getElementById('itemName').value,
@@ -1118,6 +1143,11 @@
                 // Update the displayed table with new data
                 updateMainTable();
                 updateTotalPrice(); // Update the displayed total price
+                
+                // Recalculate and update cartTotal hidden input
+                recalculateTotalPrice();
+                document.getElementById('cartTotal').value = totalPrice.toFixed(2);
+                
                 closeModal();
             }
         }
@@ -1268,11 +1298,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Ensure cart data and total price are updated
         cartDataInput.value = JSON.stringify(cart);
-        cartTotalInput.value = totalPrice.toFixed(2);
+        
+        // Ensure cartTotal is never empty or NaN
+        const finalTotal = isNaN(totalPrice) ? 0 : parseFloat(totalPrice);
+        cartTotalInput.value = finalTotal.toFixed(2); // Ensure it's a clean numeric value
 
         // Log the updated values for debugging
         console.log("Updated Cart Data:", cartDataInput.value);
         console.log("Updated Cart Total:", cartTotalInput.value);
+        console.log("Total Price Variable:", totalPrice);
+        
+        // Debug: Log all form data that will be submitted
+        const formData = new FormData(document.getElementById('myForm'));
+        console.log("All form data being submitted:");
+        for (let [key, value] of formData.entries()) {
+            console.log(key + ': ' + value);
+        }
     });
 });
 </script>
