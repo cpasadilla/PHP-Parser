@@ -125,9 +125,6 @@ Route::middleware('auth')->group(function () {
         });
     });
 
-    // Routes for location management
-    Route::post('/locations', [App\Http\Controllers\LocationController::class, 'store'])->name('locations.store');
-
     // Users management routes
     Route::middleware('page.permission:users')->group(function () {
         Route::get('/users', [UsersController::class, 'index'])->name('users');
