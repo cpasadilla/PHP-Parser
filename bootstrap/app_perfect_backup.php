@@ -42,7 +42,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
         //
     })->create();
 
-// Register all essential services
+// Register only essential services - lightweight approach
 $app->singleton('files', function ($app) {
     return new Illuminate\Filesystem\Filesystem;
 });
@@ -83,46 +83,5 @@ $app->singleton('filesystem', function ($app) {
 $app->singleton('cache', function ($app) {
     return new Illuminate\Cache\CacheManager($app);
 });
-
-// Register database services properly
-$app->singleton('db.factory', function ($app) {
-    return new Illuminate\Database\Connectors\ConnectionFactory($app);
-});
-
-$app->singleton('db', function ($app) {
-    $factory = $app->make('db.factory');
-    $manager = new Illuminate\Database\DatabaseManager($app, $factory);
-    return $manager;
-});
-
-// Register events service for database
-$app->singleton('events', function ($app) {
-    return new Illuminate\Events\Dispatcher($app);
-});
-
-// Register view services
-$app->singleton('view.engine.resolver', function ($app) {
-    $resolver = new Illuminate\View\Engines\EngineResolver;
-    return $resolver;
-});
-
-$app->singleton('view.finder', function ($app) {
-    return new Illuminate\View\FileViewFinder($app->make('files'), []);
-});
-
-$app->singleton('view', function ($app) {
-    $factory = new Illuminate\View\Factory(
-        $app->make('view.engine.resolver'),
-        $app->make('view.finder'),
-        $app->make('events')
-    );
-    $factory->setContainer($app);
-    return $factory;
-});
-
-// Set up facade application instance
-if (class_exists('Illuminate\Support\Facades\Facade')) {
-    Illuminate\Support\Facades\Facade::setFacadeApplication($app);
-}
 
 return $app;

@@ -81,7 +81,7 @@ class order extends Model
 
     public function parcels()
     {
-        return $this->hasMany(Parcel::class, 'orderId', 'id');
+        return $this->hasMany(parcel::class, 'orderId', 'id');
     }
     
     public function shipper()

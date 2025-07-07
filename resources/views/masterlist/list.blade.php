@@ -25,7 +25,7 @@
         <br>
         <!-- Orders Table -->
         <div class="table-container">
-            <table id="ordersTable" class="table-auto w-full border-collapse border border-gray-300">
+            <table id="ordersTable" class="table-auto border-collapse border border-gray-300">
                 <thead class="bg-gray-200 dark:bg-dark-eval-0">
                     <tr>
                         <th class="p-2 cursor-pointer" id="blHeader" style="position: relative;">
@@ -74,7 +74,7 @@
                         <th>
                             <select class="filter-dropdown" data-column="bl">
                                 <option value="">All</option>
-                                @foreach($orders->pluck('orderId')->unique()->sort()->sort() as $bl)
+                                @foreach(($filterData['uniqueOrderIds'] ?? []) as $bl)
                                     <option value="{{ $bl }}">{{ $bl }}</option>
                                 @endforeach
                             </select>
@@ -83,7 +83,7 @@
                         <th>
                             <select class="filter-dropdown" data-column="container">
                                 <option value="">All</option>
-                                @foreach($orders->pluck('containerNum')->unique()->sort()->sort() as $container)
+                                @foreach(($filterData['uniqueContainers'] ?? []) as $container)
                                     <option value="{{ $container }}">{{ $container }}</option>
                                 @endforeach
                             </select>
@@ -91,7 +91,7 @@
                         <th>
                             <select class="filter-dropdown" data-column="cargo_status">
                                 <option value="">All</option>
-                                @foreach($orders->pluck('cargoType')->unique()->sort()->sort() as $cargoStatus)
+                                @foreach(($filterData['uniqueCargoTypes'] ?? []) as $cargoStatus)
                                     <option value="{{ $cargoStatus }}">{{ $cargoStatus }}</option>
                                 @endforeach
                             </select>
@@ -99,7 +99,7 @@
                         <th>
                             <select class="filter-dropdown" data-column="shipper">
                                 <option value="">All</option>
-                                @foreach($orders->pluck('shipperName')->unique()->sort() as $shipper)
+                                @foreach(($filterData['uniqueShippers'] ?? []) as $shipper)
                                     <option value="{{ $shipper }}">{{ $shipper }}</option>
                                 @endforeach
                             </select>
@@ -107,7 +107,7 @@
                         <th>
                             <select class="filter-dropdown" data-column="consignee">
                                 <option value="">All</option>
-                                @foreach($orders->pluck('recName')->unique()->sort() as $consignee)
+                                @foreach(($filterData['uniqueConsignees'] ?? []) as $consignee)
                                     <option value="{{ $consignee }}">{{ $consignee }}</option>
                                 @endforeach
                             </select>
@@ -115,7 +115,7 @@
                         <th>
                             <select class="filter-dropdown" data-column="checker">
                                 <option value="">All</option>
-                                @foreach($orders->pluck('checkName')->unique()->sort() as $checker)
+                                @foreach(($filterData['uniqueCheckers'] ?? []) as $checker)
                                     <option value="{{ $checker }}">{{ $checker }}</option>
                                 @endforeach
                             </select>
@@ -125,20 +125,7 @@
                                 <input type="text" class="filter-input mb-1" data-column="description" placeholder="Search description...">
                                 <select class="filter-dropdown" data-column="description">
                                     <option value="">All</option>
-                                    @php
-                                        $uniqueItemNames = collect();
-                                        foreach($orders as $order) {
-                                            foreach($order->parcels as $parcel) {
-                                                // Store just the item name without any dash
-                                                $itemName = trim($parcel->itemName);
-                                                if (!$uniqueItemNames->contains($itemName)) {
-                                                    $uniqueItemNames->push($itemName);
-                                                }
-                                            }
-                                        }
-                                        $uniqueItemNames = $uniqueItemNames->sort();
-                                    @endphp
-                                    @foreach($uniqueItemNames as $itemName)
+                                    @foreach(($filterData['uniqueItemNames'] ?? []) as $itemName)
                                         <option value="{{ $itemName }}">{{ $itemName }}</option>
                                     @endforeach
                                 </select>
@@ -156,7 +143,7 @@
                         <th>
                             <select class="filter-dropdown" data-column="or">
                                 <option value="">All</option>
-                                @foreach($orders->pluck('OR')->unique()->sort() as $or)
+                                @foreach(($filterData['uniqueORs'] ?? []) as $or)
                                     <option value="{{ $or }}">{{ $or }}</option>
                                 @endforeach
                             </select>
@@ -164,7 +151,7 @@
                         <th>
                             <select class="filter-dropdown" data-column="ar">
                                 <option value="">All</option>
-                                @foreach($orders->pluck('AR')->unique()->sort() as $ar)
+                                @foreach(($filterData['uniqueARs'] ?? []) as $ar)
                                     <option value="{{ $ar }}">{{ $ar }}</option>
                                 @endforeach
                             </select>
@@ -173,7 +160,7 @@
                         <th>
                             <select class="filter-dropdown" data-column="updated_by">
                                 <option value="">All</option>
-                                @foreach($orders->pluck('updated_by')->unique()->sort() as $updatedBy)
+                                @foreach(($filterData['uniqueUpdatedBy'] ?? []) as $updatedBy)
                                     <option value="{{ $updatedBy }}">{{ $updatedBy }}</option>
                                 @endforeach
                             </select>
@@ -228,7 +215,7 @@
                                 <textarea 
                                     class="container-textarea"
                                     data-order-id="{{ $order->id }}"
-                                    style="border: none; width: 100%; min-height: 40px; display: flex; align-items: center; justify-content: center; text-align: center; background: transparent; word-wrap: break-word; white-space: normal; resize: none; overflow: hidden; padding: 5px;"
+                                    style="border: none; width: 100%; min-height: 40px; text-align: center; background: transparent; word-wrap: break-word; white-space: normal; resize: none; overflow: hidden; padding: 5px; vertical-align: top;"
                                 >{{ $order->containerNum }}</textarea>
                                 @else
                                 <div style="width: 100%; min-height: 40px; display: flex; align-items: center; justify-content: center; text-align: center; word-wrap: break-word; white-space: normal; padding: 5px;">
@@ -236,60 +223,32 @@
                                 </div>
                                 @endif
                             </td>
-                            <td class="p-2" data-column="cargo_status">
+                            <td class="p-2 cargo-status-cell" data-column="cargo_status">
                                 @if(Auth::user()->hasSubpagePermission('masterlist', 'list', 'edit'))
                                 <textarea 
                                     class="cargo-status-textarea"
                                     data-order-id="{{ $order->id }}"
-                                    style="border: none; width: 100%; height: 40px; display: flex; align-items: center; justify-content: center; text-align: center; background: transparent; word-wrap: break-word; white-space: normal; resize: none; overflow: auto; padding: 5px;"
+                                    style="border: none; width: 100%; min-height: 40px; text-align: center; background: transparent; word-wrap: break-word; white-space: normal; resize: none; overflow: hidden; padding: 5px; vertical-align: top;"
                                 >{{ $order->cargoType }}</textarea>
                                 @else
-                                <div style="width: 100%; display: flex; align-items: center; justify-content: center; text-align: center; word-wrap: break-word; white-space: normal; padding: 5px;">
+                                <div style="width: 100%; min-height: 40px; display: flex; align-items: center; justify-content: center; text-align: center; word-wrap: break-word; white-space: normal; padding: 5px;">
                                     {{ $order->cargoType }}
                                 </div>
                                 @endif
                             </td>
                             <td class="p-2" data-column="shipper">{{ $order->shipperName }}</td>
                             <td class="p-2" data-column="consignee">{{ $order->recName }}</td>
-                            <td class="p-2" data-column="checker">
+                            <td class="p-2 checker-cell" data-column="checker">
                                 @if(Auth::user()->hasSubpagePermission('masterlist', 'list', 'edit'))
-                                <select 
-                                    class="checker-select p-2 border rounded bg-white text-black dark:bg-gray-700 dark:text-white"
+                                <textarea 
+                                    class="checker-textarea"
                                     data-order-id="{{ $order->id }}"
-                                    style="width: 100%; text-align: center;"
-                                >
-                                    <option value="">Select Checker</option>
-                                    
-                                    @php
-                                        // Get locations and their checkers
-                                        $locations = DB::table('locations')->orderBy('location')->get();
-                                        $checkersByLocation = [];
-                                        
-                                        foreach ($locations as $location) {
-                                            $checkers = DB::table('checkers')
-                                                ->where('location', $location->location)
-                                                ->orderBy('name')
-                                                ->pluck('name')
-                                                ->toArray();
-                                                
-                                            $checkersByLocation[$location->location] = $checkers;
-                                        }
-                                    @endphp
-                                    
-                                    @foreach($checkersByLocation as $location => $checkers)
-                                        <optgroup label="{{ $location }}">
-                                            @foreach($checkers as $checker)
-                                                <option value="{{ $checker }}" {{ $order->checkName == $checker ? 'selected' : '' }}>
-                                                    {{ $checker }}
-                                                </option>
-                                            @endforeach
-                                        </optgroup>
-                                    @endforeach
-                                </select>
+                                    style="border: none; width: 100%; min-height: 40px; text-align: center; background: transparent; word-wrap: break-word; white-space: normal; resize: none; overflow: hidden; padding: 5px; vertical-align: top;"
+                                >{{ $order->checkName ?? '' }}</textarea>
                                 @else
-                                <span style="width: 100%; text-align: center; display: inline-block;">
+                                <div style="width: 100%; min-height: 40px; display: flex; align-items: center; justify-content: center; text-align: center; word-wrap: break-word; white-space: normal; padding: 5px;">
                                     {{ $order->checkName }}
-                                </span>
+                                </div>
                                 @endif
                             </td>
                             <td class="p-2" data-column="description">
@@ -322,7 +281,7 @@
                                        value="{{ number_format($order->originalFreight, 2) }}"  
                                        placeholder="Enter Original Freight"/>
                             </td-->
-                            <td class="p-2" data-column="valuation">{{ $order->valuation ?? ' ' }}</td>
+                            <td class="p-2" data-column="valuation">{{ $order->valuation ? number_format($order->valuation, 2) : ' ' }}</td>
                             <td class="value text-right" data-column="value">
                                 @if(Auth::user()->hasSubpagePermission('masterlist', 'list', 'edit'))
                                 <input style="width: 100px; border: none; outline: none; text-align:center;" 
@@ -582,10 +541,10 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 <style>
-    /* Ensure the table layout is fixed */
+    /* Ensure the table layout is fixed with proper width */
     #ordersTable {
         table-layout: fixed;
-        width: 100%;
+        width: 4200px; /* Fixed width to accommodate all columns */
         border-collapse: collapse;
     }
 
@@ -794,6 +753,7 @@
     /* Ensure the table header and filter row are sticky */
     .table-container {
         position: relative;
+        overflow-x: auto; /* Enable horizontal scrolling */
         overflow-y: auto; /* Enable vertical scrolling */
         max-height: 80vh; /* Limit the height of the table container */
     }
@@ -817,7 +777,7 @@
     /* Ensure the table layout is fixed */
     #ordersTable {
         table-layout: fixed;
-        width: 100%;
+        width: 4200px; /* Fixed width to accommodate all columns */
     }
     /* Dark mode styles for table headers */
     .dark #ordersTable th {
@@ -876,13 +836,13 @@
     }
 
     /* Input Fields */
-    .bir-input, .or-input, .ar-input, .note-input, .freight-input, .valuation-input, .value-input, .discount-input, .other-input, .original-freight-input, .checker-select {
+    .bir-input, .or-input, .ar-input, .note-input, .freight-input, .valuation-input, .value-input, .discount-input, .other-input, .original-freight-input {
         background-color: #fff; /* Light mode background */
         color: #000; /* Light mode font color */
         border: 1px solid #ddd; /* Light mode border */
     }
 
-    .dark .bir-input, .dark .or-input, .dark .ar-input, .dark .note-input, .dark .freight-input, .dark .valuation-input, .dark .value-input, .dark .discount-input,  .dark .other-input, .dark .original-freight-input, .dark .checker-select {
+    .dark .bir-input, .dark .or-input, .dark .ar-input, .dark .note-input, .dark .freight-input, .dark .valuation-input, .dark .value-input, .dark .discount-input,  .dark .other-input, .dark .original-freight-input {
         background-color: #1a202c; /* Dark mode background */
         color: #fff; /* Dark mode font color */
         border: 1px solid #4a5568; /* Dark mode border */
@@ -930,13 +890,15 @@
     /* Styles for editable textareas */
     .cargo-status-textarea,
     .remark-textarea,
-    .container-textarea {
+    .container-textarea,
+    .checker-textarea {
         transition: background-color 0.3s;
     }
     
-    /* Special handling for remark textarea to auto-resize */
+    /* Special handling for auto-resizing textareas */
     .remark-textarea,
-    .container-textarea {
+    .container-textarea,
+    .checker-textarea {
         min-height: 40px;
         overflow: hidden;
         transition: height 0.2s ease;
@@ -944,25 +906,82 @@
     
     .cargo-status-textarea:focus,
     .remark-textarea:focus,
-    .container-textarea:focus {
+    .container-textarea:focus,
+    .checker-textarea:focus {
         background-color: rgba(200, 200, 200, 0.2) !important;
         outline: 1px solid #4f46e5 !important;
     }
     
     .cargo-status-textarea.saving,
     .remark-textarea.saving,
-    .container-textarea.saving {
+    .container-textarea.saving,
+    .checker-textarea.saving {
         background-color: rgba(79, 70, 229, 0.1) !important;
     }
     
-    /* Custom styling for remark cell */
+    /* Custom styling for auto-resizing cells - maintains fixed column widths */
     .remark-cell,
-    .container-cell {
-        min-width: 200px;
-        width: 250px;
-        max-width: 400px;
-        vertical-align: top;
+    .container-cell,
+    .checker-cell,
+    .cargo-status-cell {
+        vertical-align: top !important;
         transition: all 0.3s ease;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        height: auto !important;
+        padding: 8px !important;
+        /* Width is controlled by nth-child selectors above */
+    }
+    
+    /* Reinforce original column widths for auto-resize columns */
+    #ordersTable th:nth-child(3), #ordersTable td:nth-child(3) { width: 150px !important; }  /* CONTAINER */
+    #ordersTable th:nth-child(4), #ordersTable td:nth-child(4) { width: 150px !important; } /* CARGO STATUS */
+    #ordersTable th:nth-child(7), #ordersTable td:nth-child(7) { width: 140px !important; } /* CHECKER */
+    
+    /* Ensure textareas fit within their fixed column widths */
+    .container-cell .container-textarea,
+    .checker-cell .checker-textarea,
+    .cargo-status-cell .cargo-status-textarea {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* Ensure textareas in auto-resize cells behave properly */
+    .remark-cell textarea,
+    .container-cell textarea,
+    .checker-cell textarea,
+    .cargo-status-cell textarea {
+        display: block !important;
+        vertical-align: top !important;
+        line-height: 1.4 !important;
+        font-size: 14px !important;
+    }
+    
+    /* Ensure table rows can expand to accommodate content */
+    #ordersTable tbody tr {
+        height: auto !important;
+        min-height: 40px;
+    }
+    
+    /* Ensure all table cells can expand vertically while maintaining fixed widths */
+    #ordersTable tbody td {
+        vertical-align: top !important;
+        height: auto !important;
+        min-height: 40px;
+        overflow: visible !important;
+    }
+    
+    /* Specific styling for auto-resizing textareas */
+    .container-textarea,
+    .checker-textarea,
+    .cargo-status-textarea,
+    .remark-textarea {
+        transition: height 0.2s ease, background-color 0.3s;
+        line-height: 1.4 !important;
+        font-family: inherit !important;
+        font-size: 14px !important;
+        box-sizing: border-box !important;
     }
 </style>
 <script>
@@ -1031,7 +1050,7 @@
                                 isVisible = false;
                             }
                         } else {
-                            // Normal handling for other columns
+                            // Normal handling for other columns (including checker)
                             const cellValue = cell.querySelector('input') 
                                 ? cell.querySelector('input').value.trim().toLowerCase() 
                                 : cell.textContent.trim().toLowerCase();
@@ -1048,6 +1067,22 @@
 
             // Recalculate totals after filtering
             calculateTotals();
+            
+            // Re-initialize auto-resize for visible textareas after filtering
+            reinitializeAutoResize();
+        }
+        
+        // Function to reinitialize auto-resize for visible textareas
+        function reinitializeAutoResize() {
+            const visibleTextareas = document.querySelectorAll('.container-textarea:not([style*="display: none"]), .checker-textarea:not([style*="display: none"]), .cargo-status-textarea:not([style*="display: none"]), .remark-textarea:not([style*="display: none"])');
+            visibleTextareas.forEach(textarea => {
+                // Only trigger auto-resize if textarea has content that might need resizing
+                if (textarea.value && textarea.value.length > 0) {
+                    // Trigger auto-resize by dispatching input event
+                    const event = new Event('input', { bubbles: true });
+                    textarea.dispatchEvent(event);
+                }
+            });
         }
 
         // Attach event listeners to filter inputs and dropdowns
@@ -1740,52 +1775,6 @@
             const value = this.value;
             updateOrderField(orderId, 'AR', value);
         }, 300)); // 300ms debounce
-    });
-</script>
-<script>
-    // For handling checker dropdown changes
-    document.addEventListener('DOMContentLoaded', function () {
-        const checkerSelects = document.querySelectorAll('.checker-select');
-        
-        checkerSelects.forEach(select => {
-            select.addEventListener('change', function() {
-                const orderId = this.getAttribute('data-order-id');
-                const checkerName = this.value;
-                
-                // Add saving indicator
-                this.classList.add('saving');
-                
-                // AJAX request to update the checker name
-                fetch('/update-order-field/' + orderId, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    },
-                    body: JSON.stringify({
-                        field: 'checkName',
-                        value: checkerName
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    // Remove saving indicator
-                    this.classList.remove('saving');
-                    
-                    if (data.success) {
-                        console.log('Checker updated successfully');
-                    } else {
-                        console.error('Error updating checker:', data.message);
-                        alert('Error updating checker: ' + data.message);
-                    }
-                })
-                .catch(error => {
-                    this.classList.remove('saving');
-                    console.error('AJAX error:', error);
-                    alert('Error updating checker. Please try again.');
-                });
-            });
-        });
     });
 </script>
 
@@ -2613,47 +2602,73 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <script>
-    // Function to export the entire table to Excel, including hidden rows and dynamically updated data
+    // Function to export only visible (filtered) rows to Excel
     document.getElementById('exportExcel').addEventListener('click', function () {
         // Get the table element
         const table = document.getElementById('ordersTable');
 
-        // Clone the table to include all rows (even hidden ones)
-        const clonedTable = table.cloneNode(true);
+        // Clone the table structure (header only)
+        const clonedTable = table.cloneNode(false);
+        const thead = table.querySelector('thead').cloneNode(true);
+        const tbody = document.createElement('tbody');
 
-        // Remove the second row (filter row) from the cloned table
-        const filterRow = clonedTable.querySelector('thead tr:nth-child(2)');
+        // Remove the second row (filter row) from the cloned table header
+        const filterRow = thead.querySelector('tr:nth-child(2)');
         if (filterRow) {
             filterRow.remove();
         }
 
-        // Make all rows visible in the cloned table
-        const rows = clonedTable.querySelectorAll('tr');
-        rows.forEach(row => {
-            row.style.display = ''; // Ensure all rows are visible
+        // Remove sort indicator spans (dropdown icons) from header
+        const sortIndicators = thead.querySelectorAll('span[id*="SortIndicator"]');
+        console.log(`Excel Export - Found ${sortIndicators.length} sort indicator spans to remove`);
+        sortIndicators.forEach((span, index) => {
+            console.log(`Excel Export - Removing span ${index + 1}: "${span.textContent}" (ID: ${span.id})`);
+            span.remove();
+        });
+        
+        // Additional cleanup: remove any remaining spans with arrow symbols
+        const arrowSpans = thead.querySelectorAll('span');
+        arrowSpans.forEach(span => {
+            if (span.textContent.includes('▲') || span.textContent.includes('▼')) {
+                console.log(`Excel Export - Removing arrow span: "${span.textContent}"`);
+                span.remove();
+            }
         });
 
-        // Update the cloned table with dynamically updated data
+        // Add header to cloned table
+        clonedTable.appendChild(thead);
+        clonedTable.appendChild(tbody);
+
+        // Get only visible rows from the original table
         const originalRows = table.querySelectorAll('tbody tr');
-        const clonedRows = clonedTable.querySelectorAll('tbody tr');
+        const visibleRows = Array.from(originalRows).filter(row => {
+            const style = window.getComputedStyle(row);
+            return style.display !== 'none';
+        });
 
-        originalRows.forEach((originalRow, index) => {
-            const clonedRow = clonedRows[index];
-            if (clonedRow) {
-                const originalCells = originalRow.querySelectorAll('td');
-                const clonedCells = clonedRow.querySelectorAll('td');
+        console.log(`Total rows: ${originalRows.length}, Visible rows: ${visibleRows.length}`);
 
-                originalCells.forEach((originalCell, cellIndex) => {
-                    const input = originalCell.querySelector('input');
-                    if (input) {
-                        clonedCells[cellIndex].textContent = input.value; // Copy input value to cloned cell
-                    }
-                });
-            }
+        // Clone visible rows and update with current data
+        visibleRows.forEach(originalRow => {
+            const clonedRow = originalRow.cloneNode(true);
+            const originalCells = originalRow.querySelectorAll('td');
+            const clonedCells = clonedRow.querySelectorAll('td');
+
+            // Update cloned cells with current input values
+            originalCells.forEach((originalCell, cellIndex) => {
+                const input = originalCell.querySelector('input');
+                if (input) {
+                    clonedCells[cellIndex].textContent = input.value; // Copy input value to cloned cell
+                }
+            });
+
+            tbody.appendChild(clonedRow);
         });
 
         // Create a new workbook
         const workbook = XLSX.utils.book_new();
+
+        console.log(`Excel Export - Final visible rows: ${visibleRows.length}`);
 
         // Convert the cloned table to a worksheet
         const worksheet = XLSX.utils.table_to_sheet(clonedTable, { raw: true });
@@ -2704,61 +2719,94 @@
             // Define the columns to include (0-based index)
             const includedColumns = [0, 2, 3, 4, 5, 6, 7, 22]; // BL, CONTAINER, CARGO STATUS, SHIPPER, CONSIGNEE, CHECKER, DESCRIPTION, REMARK
 
-            // Define the keywords to filter by
-            const keywordsToInclude = [
-                'LPG', 'RICE', 'CEMENT', 'FEED', 'BALIKBAYAN', 
-                'VARIOUS', 'DRUMS', 'FUEL', 'UNLEADED', 'PREMIUM', 'DIESEL'
-            ];
-
-            // Extract table data with filtering
+            // Extract table data from currently visible rows only
             const filteredRows = [];
             const headers = [];
-            const tableRows = table.querySelectorAll('tbody tr');
             const tableHeaders = table.querySelectorAll('thead tr:nth-child(1) th');
 
             // Get headers for included columns
             tableHeaders.forEach((th, index) => {
                 if (includedColumns.includes(index)) {
-                    headers.push(th.textContent.trim());
+                    // Clone the header to avoid modifying the original
+                    const headerClone = th.cloneNode(true);
+                    
+                    // Remove sort indicator spans (dropdown icons)
+                    const sortIndicators = headerClone.querySelectorAll('span[id*="SortIndicator"]');
+                    console.log(`PDF Export - Found ${sortIndicators.length} sort indicators in header ${index}`);
+                    sortIndicators.forEach((span, spanIndex) => {
+                        console.log(`PDF Export - Removing span ${spanIndex + 1}: "${span.textContent}" (ID: ${span.id})`);
+                        span.remove();
+                    });
+                    
+                    // Additional cleanup: remove any remaining spans with arrow symbols
+                    const arrowSpans = headerClone.querySelectorAll('span');
+                    arrowSpans.forEach(span => {
+                        if (span.textContent.includes('▲') || span.textContent.includes('▼')) {
+                            console.log(`PDF Export - Removing arrow span: "${span.textContent}"`);
+                            span.remove();
+                        }
+                    });
+                    
+                    // Get clean header text
+                    const cleanHeader = headerClone.textContent.trim();
+                    console.log(`PDF Export - Header ${index}: "${cleanHeader}"`);
+                    headers.push(cleanHeader);
                 }
             });
 
-            // Process each row
-            tableRows.forEach(row => {
-                const descriptionCell = row.querySelector('td[data-column="description"]');
-                if (!descriptionCell) return;
+            // Get only visible rows from the table
+            const tableRows = table.querySelectorAll('tbody tr');
+            const visibleRows = Array.from(tableRows).filter(row => {
+                const style = window.getComputedStyle(row);
+                return style.display !== 'none';
+            });
 
-                // Get all item descriptions in this order
-                const descriptions = Array.from(descriptionCell.querySelectorAll('span'))
-                    .map(span => span.textContent.trim());
+            console.log(`PDF Export - Total rows: ${tableRows.length}, Visible rows: ${visibleRows.length}`);
+
+            // Process each visible row
+            visibleRows.forEach(row => {
+                const rowData = [];
                 
-                // Check if any of the descriptions contain any of the keywords
-                const matchingItems = descriptions.filter(desc => {
-                    const upperDesc = desc.toUpperCase();
-                    return keywordsToInclude.some(keyword => upperDesc.includes(keyword));
-                });
-
-                // If there are matching items, format a new row with only those items
-                if (matchingItems.length > 0) {
-                    const rowData = [];
-                    
-                    row.querySelectorAll('td').forEach((td, index) => {
-                        if (includedColumns.includes(index)) {
-                            // For the description column, only include the matching items
-                            if (index === 7) { // Description column
-                                rowData.push(matchingItems.join('\n'));
+                row.querySelectorAll('td').forEach((td, index) => {
+                    if (includedColumns.includes(index)) {
+                        // Special handling for DESCRIPTION column (index 7)
+                        if (index === 7) {
+                            // Get all item descriptions and format as comma-separated
+                            const spans = td.querySelectorAll('span');
+                            const items = [];
+                            
+                            spans.forEach(span => {
+                                const itemText = span.textContent.trim();
+                                if (itemText) {
+                                    items.push(itemText);
+                                }
+                            });
+                            
+                            // Join items with commas and spaces
+                            const formattedItems = items.join(', ');
+                            console.log(`PDF Export - Description items: ${formattedItems}`);
+                            rowData.push(formattedItems);
+                        } else {
+                            // For other columns, get input value or text content
+                            const input = td.querySelector('input');
+                            if (input) {
+                                rowData.push(input.value.trim());
                             } else {
                                 rowData.push(td.textContent.trim());
                             }
                         }
-                    });
-                    
+                    }
+                });
+                
+                if (rowData.length > 0) {
                     filteredRows.push(rowData);
                 }
             });
 
             // Sort rows by CONSIGNEE column (index 4 in our filtered data)
             filteredRows.sort((a, b) => a[4].localeCompare(b[4]));
+
+            console.log(`PDF Export - Final filtered rows: ${filteredRows.length}`);
 
             // Add table to PDF with column width adjustments
             doc.autoTable({

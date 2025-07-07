@@ -28,7 +28,7 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
-    ->middleware(['auth', 'verified'])
+    ->middleware(['auth'])
     ->name('dashboard');
 
 Route::middleware('auth')->group(function () {
@@ -165,7 +165,7 @@ Route::middleware('auth')->group(function () {
 
         // BL List and Edit/View BL subpages
         Route::middleware('subpage.permission:masterlist,bl-list')->group(function () {
-            Route::get('/masterlist/bl-list', [MasterListController::class, 'blList'])->name('masterlist.bl-list');
+            Route::get('/masterlist/bl-list', [MasterListController::class, 'blListAll'])->name('masterlist.bl-list');
             // Delete operations require delete permission
             Route::middleware('subpage.permission:masterlist,bl-list,delete')->group(function () {
                 Route::delete('/masterlist/delete-order/{orderId}', [MasterListController::class, 'destroyOrder'])->name('masterlist.delete-order');

@@ -11,10 +11,10 @@ use Illuminate\Pagination\LengthAwarePaginator; // Add this for custom paginatio
 use App\Models\Ship;
 use App\Models\Customer; // Import the Customer model
 use App\Models\SubAccount; // Import the SubAccount model
-use App\Models\order; // Import the order model (lowercase)
+use App\Models\order as Order; // Import the order model (lowercase) with alias
 use App\Models\PriceList;
 use App\Models\voyage;
-use App\Models\parcel; // Import the parcel model
+use App\Models\parcel as Parcel; // Import the parcel model with alias
 use App\Models\OrderUpdateLog; // Add this at the top
 use App\Models\OrderDeleteLog; // Add this for delete logging
 use App\Models\ContainerReservation; // Import the ContainerReservation model
@@ -102,8 +102,34 @@ class MasterListController extends Controller
     }
 
     public function list(Request $request) {
-        $orders = Order::all(); // Retrieve all orders, including the 'other' field
-        return view('masterlist.list', compact('orders'));
+        // Get all orders with parcels relationship and all necessary fields
+        $orders = Order::with(['parcels' => function($query) {
+            $query->select('id', 'orderId', 'itemName', 'quantity', 'unit');
+        }])
+        ->select([
+            'id', 'orderId', 'shipNum', 'voyageNum', 'containerNum', 'cargoType',
+            'shipperName', 'recName', 'checkName', 'remark', 'note', 'origin', 'destination',
+            'blStatus', 'totalAmount', 'freight', 'valuation', 'wharfage', 'value', 'other',
+            'bir', 'discount', 'originalFreight', 'padlock_fee', 'or_ar_date',
+            'OR', 'AR', 'updated_by', 'updated_location', 'image', 'created_at'
+        ])
+        ->orderBy('orderId', 'asc')
+        ->get();
+        
+        // Create filter data
+        $filterData = [
+            'uniqueOrderIds' => $orders->pluck('orderId')->unique()->sort()->values(),
+            'uniqueContainers' => $orders->pluck('containerNum')->filter()->unique()->sort()->values(),
+            'uniqueCargoTypes' => $orders->pluck('cargoType')->filter()->unique()->sort()->values(),
+            'uniqueShippers' => $orders->pluck('shipperName')->filter()->unique()->sort()->values(),
+            'uniqueConsignees' => $orders->pluck('recName')->filter()->unique()->sort()->values(),
+            'uniqueCheckers' => $orders->pluck('checkName')->filter()->unique()->sort()->values(),
+            'uniqueORs' => $orders->pluck('OR')->filter()->unique()->sort()->values(),
+            'uniqueARs' => $orders->pluck('AR')->filter()->unique()->sort()->values(),
+            'uniqueUpdatedBy' => $orders->pluck('updated_by')->filter()->unique()->sort()->values(),
+        ];
+        
+        return view('masterlist.list', compact('orders', 'filterData'));
     }
 
     public function customer(Request $request) {
@@ -915,13 +941,45 @@ class MasterListController extends Controller
     }
 
     public function voyageOrders(Request $request, $shipNum, $voyageNum) {
+        // Get orders for pagination (limited to 100 per page)
         $orders = Order::where('shipNum', $shipNum)
             ->where('voyageNum', $voyageNum)
-            ->with('parcels') // Eager load parcels
-            ->orderBy('orderId', 'asc') // Sort by orderId in ascending order
+            ->with(['parcels' => function($query) {
+                $query->select('id', 'orderId', 'itemName', 'quantity', 'unit');
+            }])
+            ->select([
+                'id', 'orderId', 'shipNum', 'voyageNum', 'containerNum', 'cargoType',
+                'shipperName', 'recName', 'checkName', 'remark', 'note', 'origin', 'destination',
+                'blStatus', 'totalAmount', 'freight', 'valuation', 'wharfage', 'value', 'other',
+                'bir', 'discount', 'originalFreight', 'padlock_fee', 'or_ar_date',
+                'OR', 'AR', 'updated_by', 'updated_location', 'image', 'created_at'
+            ])
+            ->orderBy('orderId', 'asc')
+            ->paginate(100); // Load 100 orders per page
+
+        // Get ALL orders for filter data (not paginated) - only minimal fields needed
+        $allOrdersForFilters = Order::where('shipNum', $shipNum)
+            ->where('voyageNum', $voyageNum)
+            ->select(['orderId', 'containerNum', 'cargoType', 'shipperName', 'recName', 'checkName', 'remark', 'OR', 'AR', 'updated_by'])
             ->get();
 
-        return view('masterlist.list', compact('orders', 'shipNum', 'voyageNum'));
+        $filterData = [
+            'uniqueOrderIds' => $allOrdersForFilters->pluck('orderId')->unique()->sort()->values(),
+            'uniqueContainers' => $allOrdersForFilters->pluck('containerNum')->filter()->unique()->sort()->values(),
+            'uniqueCargoTypes' => $allOrdersForFilters->pluck('cargoType')->filter()->unique()->sort()->values(),
+            'uniqueShippers' => $allOrdersForFilters->pluck('shipperName')->filter()->unique()->sort()->values(),
+            'uniqueConsignees' => $allOrdersForFilters->pluck('recName')->filter()->unique()->sort()->values(),
+            'uniqueCheckers' => $allOrdersForFilters->pluck('checkName')->filter()->unique()->sort()->values(),
+            'uniqueORs' => $allOrdersForFilters->pluck('OR')->filter()->unique()->sort()->values(),
+            'uniqueARs' => $allOrdersForFilters->pluck('AR')->filter()->unique()->sort()->values(),
+            'uniqueUpdatedBy' => $allOrdersForFilters->pluck('updated_by')->filter()->unique()->sort()->values(),
+        ];
+
+        // Get unique item names from parcels - use paginated orders for parcels to avoid loading too much data
+        $allParcels = $orders->getCollection()->flatMap->parcels;
+        $filterData['uniqueItemNames'] = $allParcels->pluck('itemName')->filter()->unique()->sort()->values();
+
+        return view('masterlist.list', compact('orders', 'shipNum', 'voyageNum', 'filterData'));
     }
 
     public function voyageOrdersById(Request $request, $voyageId) {
@@ -936,17 +994,51 @@ class MasterListController extends Controller
             $voyageKey = $voyage->v_num;
         }
         
-        // Get orders for this specific voyage and dock number
+        // Get orders for pagination (limited to 100 per page)
         $orders = Order::where('shipNum', $voyage->ship)
             ->where('voyageNum', $voyageKey)
             ->where('dock_number', $voyage->dock_number ?? 0)
-            ->with('parcels')
+            ->with(['parcels' => function($query) {
+                $query->select('id', 'orderId', 'itemName', 'quantity', 'unit');
+            }])
+            ->select([
+                'id', 'orderId', 'shipNum', 'voyageNum', 'containerNum', 'cargoType',
+                'shipperName', 'recName', 'checkName', 'remark', 'note', 'origin', 'destination',
+                'blStatus', 'totalAmount', 'freight', 'valuation', 'wharfage', 'value', 'other',
+                'bir', 'discount', 'originalFreight', 'padlock_fee', 'or_ar_date',
+                'OR', 'AR', 'updated_by', 'updated_location', 'image', 'created_at', 'dock_number'
+            ])
             ->orderBy('orderId', 'asc')
+            ->paginate(100); // Load 100 orders per page instead of all 548
+
+        // Get ALL orders for filter data (not paginated) - only minimal fields needed
+        $allOrdersForFilters = Order::where('shipNum', $voyage->ship)
+            ->where('voyageNum', $voyageKey)
+            ->where('dock_number', $voyage->dock_number ?? 0)
+            ->select(['orderId', 'containerNum', 'cargoType', 'shipperName', 'recName', 'checkName', 'remark', 'OR', 'AR', 'updated_by'])
             ->get();
 
-        return view('masterlist.list', compact('orders'), [
+        $filterData = [
+            'uniqueOrderIds' => $allOrdersForFilters->pluck('orderId')->unique()->sort()->values(),
+            'uniqueContainers' => $allOrdersForFilters->pluck('containerNum')->filter()->unique()->sort()->values(),
+            'uniqueCargoTypes' => $allOrdersForFilters->pluck('cargoType')->filter()->unique()->sort()->values(),
+            'uniqueShippers' => $allOrdersForFilters->pluck('shipperName')->filter()->unique()->sort()->values(),
+            'uniqueConsignees' => $allOrdersForFilters->pluck('recName')->filter()->unique()->sort()->values(),
+            'uniqueCheckers' => $allOrdersForFilters->pluck('checkName')->filter()->unique()->sort()->values(),
+            'uniqueORs' => $allOrdersForFilters->pluck('OR')->filter()->unique()->sort()->values(),
+            'uniqueARs' => $allOrdersForFilters->pluck('AR')->filter()->unique()->sort()->values(),
+            'uniqueUpdatedBy' => $allOrdersForFilters->pluck('updated_by')->filter()->unique()->sort()->values(),
+        ];
+
+        // Get unique item names from parcels - use paginated orders for parcels to avoid loading too much data
+        $allParcels = $orders->getCollection()->flatMap->parcels;
+        $filterData['uniqueItemNames'] = $allParcels->pluck('itemName')->filter()->unique()->sort()->values();
+
+        return view('masterlist.list', [
+            'orders' => $orders,
             'shipNum' => $voyage->ship,
-            'voyageNum' => $voyageKey
+            'voyageNum' => $voyageKey,
+            'filterData' => $filterData
         ]);
     }
 
@@ -1417,22 +1509,34 @@ class MasterListController extends Controller
         } elseif ($field === 'remark') {
             // Handle remark field update
             $oldRemark = $order->remark;
-            $order->remark = $request->value;
+            $newRemark = $request->value;
+            
+            Log::info('Remark Update Request:', [
+                'orderId' => $orderId,
+                'oldRemark' => $oldRemark,
+                'newRemark' => $newRemark,
+                'orderBeforeUpdate' => $order->toArray()
+            ]);
+            
+            $order->remark = $newRemark;
             
             // Log the remark change
             $logFieldUpdate('remark', $oldRemark, $order->remark);
             
-            $order->save();
+            $saveResult = $order->save();
             
-            Log::info('Remark Updated:', [
+            Log::info('Remark Update Result:', [
                 'orderId' => $orderId,
-                'newRemark' => $request->value,
+                'saveResult' => $saveResult,
+                'newRemark' => $newRemark,
                 'orderAfterSave' => $order->fresh()->toArray()
             ]);
             
             return response()->json([
                 'success' => true,
-                'message' => 'Remark updated successfully!'
+                'message' => 'Remark updated successfully!',
+                'newValue' => $order->remark,
+                'orderId' => $orderId
             ]);
         } elseif ($field === 'checkName') {
             // Handle checker name update
@@ -2031,8 +2135,16 @@ class MasterListController extends Controller
     {
         $customer_id = $request->query('customer_id');
         
+        if (!$customer_id) {
+            return redirect()->route('masterlist.soa')->with('error', 'Customer ID is required.');
+        }
+        
         // Get the main customer
-        $customer = Customer::with('subAccounts')->findOrFail($customer_id);
+        $customer = Customer::with('subAccounts')->find($customer_id);
+        
+        if (!$customer) {
+            return redirect()->route('masterlist.soa')->with('error', 'Customer not found.');
+        }
         
         // Get sub-account IDs
         $subAccountIds = $customer->subAccounts->pluck('sub_account_number')->toArray();
@@ -2084,8 +2196,9 @@ class MasterListController extends Controller
                 'customer' => $customerId
             ]);
             
-            // Skip schema modification - rely on model properties instead
-            // If the field doesn't exist in the database, we'll store it temporarily
+            // Get the customer and sub-account IDs
+            $customer = Customer::with('subAccounts')->findOrFail($customerId);
+            $subAccountIds = $customer->subAccounts->pluck('sub_account_number')->toArray();
             
             // Decode the voyage number
             $decodedVoyageNum = urldecode($voyageNum);
@@ -2093,9 +2206,15 @@ class MasterListController extends Controller
             // Get all orders for this ship/voyage and customer
             $orders = \App\Models\order::where('shipNum', $shipNum)
                 ->whereRaw('voyageNum = ?', [$decodedVoyageNum])
-                ->where(function($query) use ($customerId) {
+                ->where(function($query) use ($customerId, $subAccountIds) {
                     $query->where('recId', $customerId)
                           ->orWhere('shipperId', $customerId);
+                    
+                    // Also check sub-accounts
+                    if (!empty($subAccountIds)) {
+                        $query->orWhereIn('recId', $subAccountIds)
+                              ->orWhereIn('shipperId', $subAccountIds);
+                    }
                 })
                 ->get();
             
@@ -2219,7 +2338,11 @@ class MasterListController extends Controller
     public function soa_temp(Request $request, $ship, $voyage, $customerId)
     {
         // Get the customer
-        $customer = Customer::with('subAccounts')->findOrFail($customerId);
+        $customer = Customer::with('subAccounts')->find($customerId);
+        
+        if (!$customer) {
+            return redirect()->route('masterlist.soa')->with('error', 'Customer not found.');
+        }
         
         // Get sub-account IDs
         $subAccountIds = $customer->subAccounts->pluck('sub_account_number')->toArray();
@@ -2662,5 +2785,22 @@ class MasterListController extends Controller
             
             return redirect()->back()->with('error', 'Error restoring order: ' . $e->getMessage());
         }
+    }
+
+    public function blListAll(Request $request) {
+        // Get all orders with pagination
+        $orders = Order::orderBy('created_at', 'desc')
+            ->paginate(20);
+
+        // Get all customers for filtering
+        $customers = Customer::select('id', 'first_name', 'last_name', 'company_name')
+            ->orderBy('first_name')
+            ->get();
+
+        // Get all ships for filtering
+        $ships = Ship::orderBy('ship_number')->get();
+
+        // Pass data to the view
+        return view('masterlist.bl_list_all', compact('orders', 'customers', 'ships'));
     }
 }

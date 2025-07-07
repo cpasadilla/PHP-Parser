@@ -75,7 +75,17 @@
         const debouncedUpdate = debounce(updateCargoStatus, 500);
         
         cargoStatusTextareas.forEach(textarea => {
+            // Initial resize based on content
+            autoResize(textarea);
+            
+            // Add input event listener for real-time auto-resize
+            textarea.addEventListener('input', function() {
+                autoResize(this);
+                debouncedUpdate(this);
+            });
+            
             textarea.addEventListener('change', function() {
+                autoResize(this);
                 updateCargoStatus(this);
             });
             
@@ -83,15 +93,24 @@
                 updateCargoStatus(this);
             });
             
-            textarea.addEventListener('input', function() {
-                debouncedUpdate(this);
-            });
-            
             textarea.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') {
+                if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
                     updateCargoStatus(this);
                 }
+            });
+            
+            // Handle paste events to auto-resize
+            textarea.addEventListener('paste', function() {
+                // Use setTimeout to wait for paste content to be processed
+                setTimeout(() => {
+                    autoResize(this);
+                }, 10);
+            });
+            
+            // Handle window resize to maintain proper sizing
+            window.addEventListener('resize', function() {
+                autoResize(textarea);
             });
         });
         
@@ -100,9 +119,31 @@
         console.log('Found remark textareas:', remarkTextareas.length);
         
         function autoResize(textarea) {
+            // Reset height to auto to get natural content height
             textarea.style.height = 'auto';
+            
+            // Calculate new height based on content (minimum 40px, with padding)
             const newHeight = Math.max(40, textarea.scrollHeight + 4);
             textarea.style.height = newHeight + 'px';
+            
+            // Ensure the parent table row can accommodate the new height
+            const parentRow = textarea.closest('tr');
+            if (parentRow) {
+                parentRow.style.height = 'auto';
+            }
+            
+            // Ensure the parent cell can accommodate the new height
+            const parentCell = textarea.closest('td');
+            if (parentCell) {
+                parentCell.style.height = 'auto';
+                parentCell.style.verticalAlign = 'top';
+            }
+            
+            // Force table layout recalculation for better rendering
+            const table = textarea.closest('table');
+            if (table) {
+                table.style.tableLayout = 'auto';
+            }
         }
         
         function updateRemark(textarea) {
@@ -262,17 +303,19 @@
             // Initial resize based on content
             autoResize(textarea);
             
+            // Add input event listener for real-time auto-resize
+            textarea.addEventListener('input', function() {
+                autoResize(this);
+                debouncedContainerUpdate(this);
+            });
+            
             textarea.addEventListener('change', function() {
+                autoResize(this);
                 updateContainer(this);
             });
             
             textarea.addEventListener('blur', function() {
                 updateContainer(this);
-            });
-            
-            textarea.addEventListener('input', function() {
-                autoResize(this);
-                debouncedContainerUpdate(this);
             });
             
             textarea.addEventListener('keydown', function(e) {
@@ -282,6 +325,120 @@
                 }
             });
             
+            // Handle paste events to auto-resize
+            textarea.addEventListener('paste', function() {
+                // Use setTimeout to wait for paste content to be processed
+                setTimeout(() => {
+                    autoResize(this);
+                }, 10);
+            });
+            
+            // Handle window resize to maintain proper sizing
+            window.addEventListener('resize', function() {
+                autoResize(textarea);
+            });
+        });
+        
+        // Checker Textarea Handling
+        const checkerTextareas = document.querySelectorAll('.checker-textarea');
+        console.log('Found checker textareas:', checkerTextareas.length);
+        
+        function updateChecker(textarea) {
+            const orderId = textarea.getAttribute('data-order-id');
+            const newValue = textarea.value;
+            
+            console.log('Updating checker:', { orderId, newValue });
+            textarea.classList.add('saving');
+            
+            // Get CSRF token
+            const token = document.querySelector('meta[name="csrf-token"]');
+            if (!token) {
+                console.error('CSRF token not found');
+                alert('CSRF token not found. Cannot save changes.');
+                textarea.classList.remove('saving');
+                return;
+            }
+            
+            fetch(`/update-order-field/${orderId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': token.getAttribute('content'),
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    field: 'checkName',
+                    value: newValue
+                })
+            })
+            .then(response => {
+                console.log('Checker response status:', response.status);
+                return response.text().then(text => {
+                    try {
+                        return text ? JSON.parse(text) : {};
+                    } catch (e) {
+                        console.error('Error parsing JSON:', e, text);
+                        throw new Error('Invalid JSON response');
+                    }
+                });
+            })
+            .then(data => {
+                console.log('Checker response data:', data);
+                if (data.success) {
+                    console.log('Checker updated successfully');
+                    setTimeout(() => {
+                        textarea.classList.remove('saving');
+                    }, 500);
+                } else {
+                    console.error('Failed to update checker:', data.message);
+                    textarea.classList.remove('saving');
+                    alert('Failed to save checker: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('AJAX error:', error);
+                textarea.classList.remove('saving');
+                alert('Error saving checker. Please check the console for details.');
+            });
+        }
+        
+        const debouncedCheckerUpdate = debounce(updateChecker, 500);
+        
+        checkerTextareas.forEach(textarea => {
+            // Initial resize based on content
+            autoResize(textarea);
+            
+            // Add input event listener for real-time auto-resize
+            textarea.addEventListener('input', function() {
+                autoResize(this);
+                debouncedCheckerUpdate(this);
+            });
+            
+            textarea.addEventListener('change', function() {
+                autoResize(this);
+                updateChecker(this);
+            });
+            
+            textarea.addEventListener('blur', function() {
+                updateChecker(this);
+            });
+            
+            textarea.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    updateChecker(this);
+                }
+            });
+            
+            // Handle paste events to auto-resize
+            textarea.addEventListener('paste', function() {
+                // Use setTimeout to wait for paste content to be processed
+                setTimeout(() => {
+                    autoResize(this);
+                }, 10);
+            });
+            
+            // Handle window resize to maintain proper sizing
             window.addEventListener('resize', function() {
                 autoResize(textarea);
             });
