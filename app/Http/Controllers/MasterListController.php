@@ -104,7 +104,7 @@ class MasterListController extends Controller
     public function list(Request $request) {
         // Get all orders with parcels relationship and all necessary fields
         $orders = Order::with(['parcels' => function($query) {
-            $query->select('id', 'orderId', 'itemName', 'quantity', 'unit');
+            $query->select('id', 'orderId', 'itemName', 'quantity', 'unit', 'desc');
         }])
         ->select([
             'id', 'orderId', 'shipNum', 'voyageNum', 'containerNum', 'cargoType',
@@ -945,7 +945,7 @@ class MasterListController extends Controller
         $orders = Order::where('shipNum', $shipNum)
             ->where('voyageNum', $voyageNum)
             ->with(['parcels' => function($query) {
-                $query->select('id', 'orderId', 'itemName', 'quantity', 'unit');
+                $query->select('id', 'orderId', 'itemName', 'quantity', 'unit', 'desc');
             }])
             ->select([
                 'id', 'orderId', 'shipNum', 'voyageNum', 'containerNum', 'cargoType',
@@ -996,7 +996,7 @@ class MasterListController extends Controller
             ->where('voyageNum', $voyageKey)
             ->where('dock_number', $voyage->dock_number ?? 0)
             ->with(['parcels' => function($query) {
-                $query->select('id', 'orderId', 'itemName', 'quantity', 'unit');
+                $query->select('id', 'orderId', 'itemName', 'quantity', 'unit', 'desc');
             }])
             ->select([
                 'id', 'orderId', 'shipNum', 'voyageNum', 'containerNum', 'cargoType',
