@@ -34,10 +34,13 @@
         <div id="dock-{{ $dockNumber }}-content" class="dock-content {{ $loop->first ? '' : 'hidden' }}">
             <h6 class="font-medium mb-4 text-gray-700 dark:text-gray-300">DOCK {{ $dockNumber }} Voyages</h6>
             <div class="overflow-x-auto">
-                <table class="w-full border-collapse">
+                <table class="w-full border-collapse" id="dock-{{ $dockNumber }}-table">
                     <thead class="bg-gray-200 dark:bg-dark-eval-0">
                         <tr>
-                            <th class="p-2 text-gray-700 dark:text-white">Voyage Number</th>
+                            <th class="p-2 text-gray-700 dark:text-white cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-600" onclick="sortTable({{ $dockNumber }}, 0)" style="position: relative;">
+                                Voyage Number 
+                                <span id="dock-{{ $dockNumber }}-sort-indicator" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%);">▲</span>
+                            </th>
                             <th class="p-2 text-gray-700 dark:text-white" hidden>Ship</th>
                             <th class="p-2 text-gray-700 dark:text-white">Origin</th>
                             <th class="p-2 text-gray-700 dark:text-white">Destination</th>
@@ -107,6 +110,9 @@
     </div>
 
     <script>
+        // Track sort directions for each dock
+        let dockSortDirections = {};
+
         function showDockTab(dockNumber) {
             // Hide all dock content
             document.querySelectorAll('.dock-content').forEach(content => {
@@ -127,5 +133,85 @@
             activeTab.classList.remove('border-transparent', 'text-gray-500');
             activeTab.classList.add('border-blue-500', 'text-blue-600');
         }
+
+        function sortTable(dockNumber, columnIndex) {
+            const tableId = 'dock-' + dockNumber + '-table';
+            const table = document.getElementById(tableId);
+            const tbody = table.querySelector('tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            
+            // Initialize sort direction for this dock if not exists
+            if (!dockSortDirections[dockNumber]) {
+                dockSortDirections[dockNumber] = 'asc';
+            }
+            
+            // Toggle sort direction
+            dockSortDirections[dockNumber] = dockSortDirections[dockNumber] === 'asc' ? 'desc' : 'asc';
+            const sortDirection = dockSortDirections[dockNumber];
+            
+            // Update sort indicator
+            const indicator = document.getElementById('dock-' + dockNumber + '-sort-indicator');
+            indicator.textContent = sortDirection === 'asc' ? '▲' : '▼';
+            
+            // Filter out empty rows (like "No voyages found" message)
+            const dataRows = rows.filter(row => {
+                const firstCell = row.cells[0];
+                return firstCell && !firstCell.textContent.includes('No voyages found');
+            });
+            
+            // Sort data rows based on voyage number
+            dataRows.sort((a, b) => {
+                const aValue = a.cells[columnIndex].textContent.trim();
+                const bValue = b.cells[columnIndex].textContent.trim();
+                
+                // Handle numeric sorting for voyage numbers like "43", "7-IN", "8-OUT", etc.
+                const aNum = extractVoyageNumber(aValue);
+                const bNum = extractVoyageNumber(bValue);
+                
+                if (sortDirection === 'asc') {
+                    return aNum - bNum || aValue.localeCompare(bValue);
+                } else {
+                    return bNum - aNum || bValue.localeCompare(aValue);
+                }
+            });
+            
+            // Clear and re-append sorted rows
+            tbody.innerHTML = '';
+            dataRows.forEach(row => {
+                tbody.appendChild(row);
+            });
+            
+            // Re-append any non-data rows (like empty state messages)
+            const nonDataRows = rows.filter(row => {
+                const firstCell = row.cells[0];
+                return firstCell && firstCell.textContent.includes('No voyages found');
+            });
+            nonDataRows.forEach(row => {
+                tbody.appendChild(row);
+            });
+        }
+
+        function extractVoyageNumber(voyageText) {
+            // Extract the numeric part from voyage numbers like "43", "7-IN", "8-OUT"
+            const match = voyageText.match(/(\d+)/);
+            return match ? parseInt(match[1]) : 0;
+        }
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize sort directions for all docks to ascending
+            @foreach($voyagesByDock as $dockNumber => $dockVoyages)
+            dockSortDirections[{{ $dockNumber }}] = 'asc';
+            @endforeach
+            
+            // Set initial sort indicators to ascending
+            setTimeout(() => {
+                @foreach($voyagesByDock as $dockNumber => $dockVoyages)
+                if (document.getElementById('dock-{{ $dockNumber }}-table')) {
+                    sortTable({{ $dockNumber }}, 0);
+                }
+                @endforeach
+            }, 100);
+        });
     </script>
 </x-app-layout>
