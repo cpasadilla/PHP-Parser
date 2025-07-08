@@ -941,7 +941,7 @@ class MasterListController extends Controller
     }
 
     public function voyageOrders(Request $request, $shipNum, $voyageNum) {
-        // Get orders for pagination (limited to 100 per page)
+        // Get ALL orders for the specific ship and voyage (removed pagination)
         $orders = Order::where('shipNum', $shipNum)
             ->where('voyageNum', $voyageNum)
             ->with(['parcels' => function($query) {
@@ -955,13 +955,10 @@ class MasterListController extends Controller
                 'OR', 'AR', 'updated_by', 'updated_location', 'image', 'created_at'
             ])
             ->orderBy('orderId', 'asc')
-            ->paginate(100); // Load 100 orders per page
+            ->get(); // Load ALL orders (removed pagination limit)
 
-        // Get ALL orders for filter data (not paginated) - only minimal fields needed
-        $allOrdersForFilters = Order::where('shipNum', $shipNum)
-            ->where('voyageNum', $voyageNum)
-            ->select(['orderId', 'containerNum', 'cargoType', 'shipperName', 'recName', 'checkName', 'remark', 'OR', 'AR', 'updated_by'])
-            ->get();
+        // Use the same orders for filter data (no need for separate query)
+        $allOrdersForFilters = $orders;
 
         $filterData = [
             'uniqueOrderIds' => $allOrdersForFilters->pluck('orderId')->unique()->sort()->values(),
@@ -975,8 +972,8 @@ class MasterListController extends Controller
             'uniqueUpdatedBy' => $allOrdersForFilters->pluck('updated_by')->filter()->unique()->sort()->values(),
         ];
 
-        // Get unique item names from parcels - use paginated orders for parcels to avoid loading too much data
-        $allParcels = $orders->getCollection()->flatMap->parcels;
+        // Get unique item names from parcels - use all orders for parcels
+        $allParcels = $orders->flatMap->parcels;
         $filterData['uniqueItemNames'] = $allParcels->pluck('itemName')->filter()->unique()->sort()->values();
 
         return view('masterlist.list', compact('orders', 'shipNum', 'voyageNum', 'filterData'));
@@ -994,7 +991,7 @@ class MasterListController extends Controller
             $voyageKey = $voyage->v_num;
         }
         
-        // Get orders for pagination (limited to 100 per page)
+        // Get ALL orders for the specific voyage (removed pagination)
         $orders = Order::where('shipNum', $voyage->ship)
             ->where('voyageNum', $voyageKey)
             ->where('dock_number', $voyage->dock_number ?? 0)
@@ -1009,14 +1006,10 @@ class MasterListController extends Controller
                 'OR', 'AR', 'updated_by', 'updated_location', 'image', 'created_at', 'dock_number'
             ])
             ->orderBy('orderId', 'asc')
-            ->paginate(100); // Load 100 orders per page instead of all 548
+            ->get(); // Load ALL orders (removed pagination limit)
 
-        // Get ALL orders for filter data (not paginated) - only minimal fields needed
-        $allOrdersForFilters = Order::where('shipNum', $voyage->ship)
-            ->where('voyageNum', $voyageKey)
-            ->where('dock_number', $voyage->dock_number ?? 0)
-            ->select(['orderId', 'containerNum', 'cargoType', 'shipperName', 'recName', 'checkName', 'remark', 'OR', 'AR', 'updated_by'])
-            ->get();
+        // Use the same orders for filter data (no need for separate query)
+        $allOrdersForFilters = $orders;
 
         $filterData = [
             'uniqueOrderIds' => $allOrdersForFilters->pluck('orderId')->unique()->sort()->values(),
@@ -1030,8 +1023,8 @@ class MasterListController extends Controller
             'uniqueUpdatedBy' => $allOrdersForFilters->pluck('updated_by')->filter()->unique()->sort()->values(),
         ];
 
-        // Get unique item names from parcels - use paginated orders for parcels to avoid loading too much data
-        $allParcels = $orders->getCollection()->flatMap->parcels;
+        // Get unique item names from parcels - use all orders for parcels
+        $allParcels = $orders->flatMap->parcels;
         $filterData['uniqueItemNames'] = $allParcels->pluck('itemName')->filter()->unique()->sort()->values();
 
         return view('masterlist.list', [
