@@ -111,7 +111,7 @@ class MasterListController extends Controller
             'shipperName', 'recName', 'checkName', 'remark', 'note', 'origin', 'destination',
             'blStatus', 'totalAmount', 'freight', 'valuation', 'wharfage', 'value', 'other',
             'bir', 'discount', 'originalFreight', 'padlock_fee', 'or_ar_date',
-            'OR', 'AR', 'updated_by', 'updated_location', 'image', 'created_at'
+            'OR', 'AR', 'updated_by', 'updated_location', 'image', 'created_at', 'creator'
         ])
         ->orderBy('orderId', 'asc')
         ->get();
@@ -952,7 +952,7 @@ class MasterListController extends Controller
                 'shipperName', 'recName', 'checkName', 'remark', 'note', 'origin', 'destination',
                 'blStatus', 'totalAmount', 'freight', 'valuation', 'wharfage', 'value', 'other',
                 'bir', 'discount', 'originalFreight', 'padlock_fee', 'or_ar_date',
-                'OR', 'AR', 'updated_by', 'updated_location', 'image', 'created_at'
+                'OR', 'AR', 'updated_by', 'updated_location', 'image', 'created_at', 'creator'
             ])
             ->orderBy('orderId', 'asc')
             ->get(); // Load ALL orders (removed pagination limit)
@@ -1003,7 +1003,7 @@ class MasterListController extends Controller
                 'shipperName', 'recName', 'checkName', 'remark', 'note', 'origin', 'destination',
                 'blStatus', 'totalAmount', 'freight', 'valuation', 'wharfage', 'value', 'other',
                 'bir', 'discount', 'originalFreight', 'padlock_fee', 'or_ar_date',
-                'OR', 'AR', 'updated_by', 'updated_location', 'image', 'created_at', 'dock_number'
+                'OR', 'AR', 'updated_by', 'updated_location', 'image', 'created_at', 'dock_number', 'creator'
             ])
             ->orderBy('orderId', 'asc')
             ->get(); // Load ALL orders (removed pagination limit)

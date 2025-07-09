@@ -68,7 +68,7 @@
                         @if(Auth::user()->hasSubpagePermission('masterlist', 'list', 'delete'))
                         <th class="p-2 delete-bl-column">DELETE BL</th>
                         @endif
-                        <th hidden class="p-2">CREATED BY</th>
+                        <th class="p-2">CREATED BY</th>
                     </tr>
                     <tr>
                         <th>
@@ -490,7 +490,7 @@
                                 </form>
                             </td>
                             @endif
-                            <td hidden class="p-2">{{ $order->creator }}</td>
+                            <td class="p-2">{{ $order->creator }}</td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -544,7 +544,7 @@
     /* Ensure the table layout is fixed with proper width */
     #ordersTable {
         table-layout: fixed;
-        width: 4200px; /* Fixed width to accommodate all columns */
+        width: 4450px; /* Fixed width to accommodate all columns including CREATED BY */
         border-collapse: collapse;
     }
 
@@ -701,9 +701,12 @@
     #ordersTable th:nth-child(24), #ordersTable td:nth-child(24) { width: 300px; } /* NOTE */ 
     #ordersTable th:nth-child(25), #ordersTable td:nth-child(25) { width: 170px; } /* IMAGE */ 
     #ordersTable th:nth-child(26), #ordersTable td:nth-child(26) { width: 100px; } /* VIEW BL */
+    #ordersTable th:nth-child(27), #ordersTable td:nth-child(27) { width: 100px; } /* VIEW NO-PRICE BL */
     /* UPDATE and DELETE BL columns are conditionally displayed, so we use classes instead of fixed nth-child selectors */
     .update-bl-column { width: 100px; }
     .delete-bl-column { width: 100px; }
+    /* CREATED BY column - positioned at the end */
+    #ordersTable th:last-child, #ordersTable td:last-child { width: 150px; } /* CREATED BY */
     /* Sticky horizontal scroll bar */
     .sticky-scroll-container {
         position: fixed;
@@ -777,7 +780,7 @@
     /* Ensure the table layout is fixed */
     #ordersTable {
         table-layout: fixed;
-        width: 4200px; /* Fixed width to accommodate all columns */
+        width: 4450px; /* Fixed width to accommodate all columns including CREATED BY */
     }
     /* Dark mode styles for table headers */
     .dark #ordersTable th {
