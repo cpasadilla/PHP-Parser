@@ -23,6 +23,28 @@
     <div class="p-6 bg-white rounded-md shadow-md dark:bg-dark-eval-1 w-full overflow-hidden">
         <h1 class="text-lg font-bold text-center md:text-left">MASTER LIST FOR M/V EVERWIN STAR {{ $shipNum }} VOYAGE {{ $voyageNum }}</h1>
         <br>
+        
+        <!-- Column Visibility Controls -->
+        <div class="mb-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
+            <div class="flex flex-wrap items-center gap-2 mb-3">
+                <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mr-4">Column Visibility:</h3>
+                <button id="showAllColumns" class="px-3 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600">
+                    Show All
+                </button>
+                <button id="hideAllColumns" class="px-3 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600">
+                    Hide All
+                </button>
+                <button id="toggleColumnControls" class="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600">
+                    Toggle Controls
+                </button>
+            </div>
+            
+            <!-- Individual Column Controls -->
+            <div id="columnControls" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2 text-xs">
+                <!-- Column toggles will be populated by JavaScript -->
+            </div>
+        </div>
+        
         <!-- Orders Table -->
         <div class="table-container">
             <table id="ordersTable" class="table-auto border-collapse border border-gray-300">
@@ -544,7 +566,7 @@
     /* Ensure the table layout is fixed with proper width */
     #ordersTable {
         table-layout: fixed;
-        width: 4450px; /* Fixed width to accommodate all columns including CREATED BY */
+        width: 4320px; /* Fixed width to accommodate all columns (reduced by 130px from original 4450px due to removal of ORIGINAL FREIGHT column) */
         border-collapse: collapse;
     }
 
@@ -684,19 +706,19 @@
     #ordersTable th:nth-child(7), #ordersTable td:nth-child(7) { width: 140px; } /* CHECKER */
     #ordersTable th:nth-child(8), #ordersTable td:nth-child(8) { width: 300px; } /* DESCRIPTION */
     #ordersTable th:nth-child(9), #ordersTable td:nth-child(9) { width: 130px; }  /* FREIGHT */
-    #ordersTable th:nth-child(10), #ordersTable td:nth-child(10) { width: 130px; } /* ORIGINAL FREIGHT */ 
-    #ordersTable th:nth-child(11), #ordersTable td:nth-child(11) { width: 180px; } /* VALUATION */ 
-    #ordersTable th:nth-child(12), #ordersTable td:nth-child(12) { width: 130px; } /* VALUE */
-    #ordersTable th:nth-child(13), #ordersTable td:nth-child(13) { width: 130px; }  /* WHARFAGE */ 
-    #ordersTable th:nth-child(14), #ordersTable td:nth-child(14) { width: 130px; } /* 5% DISCOUNT */ 
-    #ordersTable th:nth-child(15), #ordersTable td:nth-child(15) { width: 130px; } /* BIR */ 
-    #ordersTable th:nth-child(16), #ordersTable td:nth-child(16) { width: 130px; } /* OTHERS */ 
-    #ordersTable th:nth-child(17), #ordersTable td:nth-child(17) { width: 130px; } /* TOTAL */ 
-    #ordersTable th:nth-child(18), #ordersTable td:nth-child(18) { width: 120px; } /* OR# */
-    #ordersTable th:nth-child(19), #ordersTable td:nth-child(19) { width: 110px; } /* AR# */ 
-    #ordersTable th:nth-child(20), #ordersTable td:nth-child(20) { width: 150px; } /* DATE PAID */ 
-    #ordersTable th:nth-child(21), #ordersTable td:nth-child(21) { width: 150px; } /* UPDATED BY */ 
-    #ordersTable th:nth-child(22), #ordersTable td:nth-child(22) { width: 100px; } /* BL STATUS */ 
+    #ordersTable th:nth-child(10), #ordersTable td:nth-child(10) { width: 180px; } /* VALUATION */ 
+    #ordersTable th:nth-child(11), #ordersTable td:nth-child(11) { width: 130px; } /* VALUE */
+    #ordersTable th:nth-child(12), #ordersTable td:nth-child(12) { width: 130px; }  /* WHARFAGE */ 
+    #ordersTable th:nth-child(13), #ordersTable td:nth-child(13) { width: 130px; } /* 5% DISCOUNT */ 
+    #ordersTable th:nth-child(14), #ordersTable td:nth-child(14) { width: 130px; } /* BIR */ 
+    #ordersTable th:nth-child(15), #ordersTable td:nth-child(15) { width: 130px; } /* OTHERS */ 
+    #ordersTable th:nth-child(16), #ordersTable td:nth-child(16) { width: 130px; } /* TOTAL */ 
+    #ordersTable th:nth-child(17), #ordersTable td:nth-child(17) { width: 120px; } /* OR# */
+    #ordersTable th:nth-child(18), #ordersTable td:nth-child(18) { width: 110px; } /* AR# */ 
+    #ordersTable th:nth-child(19), #ordersTable td:nth-child(19) { width: 150px; } /* DATE PAID */ 
+    #ordersTable th:nth-child(20), #ordersTable td:nth-child(20) { width: 150px; } /* UPDATED BY */ 
+    #ordersTable th:nth-child(21), #ordersTable td:nth-child(21) { width: 100px; } /* BL STATUS */ 
+    #ordersTable th:nth-child(22), #ordersTable td:nth-child(22) { width: 100px; } /* PAID IN */ 
     #ordersTable th:nth-child(23), #ordersTable td:nth-child(23) { width: 250px; } /* BL REMARK */
     #ordersTable th:nth-child(24), #ordersTable td:nth-child(24) { width: 300px; } /* NOTE */ 
     #ordersTable th:nth-child(25), #ordersTable td:nth-child(25) { width: 170px; } /* IMAGE */ 
@@ -707,6 +729,55 @@
     .delete-bl-column { width: 100px; }
     /* CREATED BY column - positioned at the end */
     #ordersTable th:last-child, #ordersTable td:last-child { width: 150px; } /* CREATED BY */
+    
+    /* Column visibility controls */
+    .column-toggle {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 8px;
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        transition: background-color 0.2s;
+    }
+    
+    .column-toggle:hover {
+        background-color: #e9ecef;
+    }
+    
+    .dark .column-toggle {
+        background-color: #374151;
+        border-color: #4b5563;
+        color: #f3f4f6;
+    }
+    
+    .dark .column-toggle:hover {
+        background-color: #4b5563;
+    }
+    
+    .column-toggle input[type="checkbox"] {
+        margin: 0;
+        transform: scale(0.9);
+    }
+    
+    .column-toggle label {
+        font-size: 11px;
+        cursor: pointer;
+        user-select: none;
+        margin: 0;
+        line-height: 1.2;
+    }
+    
+    /* Hidden column styling */
+    .column-hidden {
+        display: none !important;
+    }
+    
+    /* Column controls toggle */
+    #columnControls.hidden {
+        display: none;
+    }
     /* Sticky horizontal scroll bar */
     .sticky-scroll-container {
         position: fixed;
@@ -780,7 +851,7 @@
     /* Ensure the table layout is fixed */
     #ordersTable {
         table-layout: fixed;
-        width: 4450px; /* Fixed width to accommodate all columns including CREATED BY */
+        width: 4320px; /* Fixed width to accommodate all columns (reduced by 130px from original 4450px due to removal of ORIGINAL FREIGHT column) */
     }
     /* Dark mode styles for table headers */
     .dark #ordersTable th {
@@ -2866,6 +2937,152 @@
         console.log('Testing modal with image:', testImage);
         openModal(testImage);
     };
+</script>
+
+<script>
+    // Column Visibility Management
+    document.addEventListener('DOMContentLoaded', function() {
+        // Define column information with their names and indices
+        const columnInfo = [
+            { name: 'BL', index: 1, essential: true },
+            { name: 'Date', index: 2, essential: false },
+            { name: 'Container', index: 3, essential: false },
+            { name: 'Cargo Status', index: 4, essential: false },
+            { name: 'Shipper', index: 5, essential: true },
+            { name: 'Consignee', index: 6, essential: true },
+            { name: 'Checker', index: 7, essential: false },
+            { name: 'Description', index: 8, essential: false },
+            { name: 'Freight', index: 9, essential: false },
+            { name: 'Valuation', index: 10, essential: false },
+            { name: 'Value', index: 11, essential: false },
+            { name: 'Wharfage', index: 12, essential: false },
+            { name: '5% Discount', index: 13, essential: false },
+            { name: 'BIR (2307)', index: 14, essential: false },
+            { name: 'Others', index: 15, essential: false },
+            { name: 'Total', index: 16, essential: true },
+            { name: 'OR#', index: 17, essential: false },
+            { name: 'AR#', index: 18, essential: false },
+            { name: 'Date Paid', index: 19, essential: false },
+            { name: 'Noted By', index: 20, essential: false },
+            { name: 'Paid In', index: 21, essential: false },
+            { name: 'BL Status', index: 22, essential: false },
+            { name: 'Remark', index: 23, essential: false },
+            { name: 'Note', index: 24, essential: false },
+            { name: 'Image', index: 25, essential: false },
+            { name: 'View BL', index: 26, essential: false },
+            { name: 'No-Price BL', index: 27, essential: false },
+            { name: 'Update BL', className: 'update-bl-column', essential: false },
+            { name: 'Delete BL', className: 'delete-bl-column', essential: false },
+            { name: 'Created By', isLastChild: true, essential: false }
+        ];
+
+        // Load saved column preferences from localStorage
+        const savedPreferences = JSON.parse(localStorage.getItem('masterListColumnVisibility') || '{}');
+
+        // Create column toggle controls
+        function createColumnControls() {
+            const controlsContainer = document.getElementById('columnControls');
+            controlsContainer.innerHTML = '';
+
+            columnInfo.forEach((column, index) => {
+                const isVisible = savedPreferences[column.name] !== false; // Default to visible unless explicitly hidden
+                
+                const toggleDiv = document.createElement('div');
+                toggleDiv.className = 'column-toggle';
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = `toggle-${index}`;
+                checkbox.checked = isVisible;
+                checkbox.addEventListener('change', () => toggleColumn(column, checkbox.checked));
+                
+                const label = document.createElement('label');
+                label.htmlFor = `toggle-${index}`;
+                label.textContent = column.name;
+                
+                // Add essential indicator
+                if (column.essential) {
+                    label.textContent += ' *';
+                    label.title = 'Essential column';
+                    checkbox.disabled = true; // Prevent hiding essential columns
+                }
+                
+                toggleDiv.appendChild(checkbox);
+                toggleDiv.appendChild(label);
+                controlsContainer.appendChild(toggleDiv);
+
+                // Apply initial visibility
+                toggleColumn(column, isVisible, false);
+            });
+        }
+
+        // Toggle column visibility
+        function toggleColumn(column, isVisible, savePreference = true) {
+            let selector;
+            
+            if (column.isLastChild) {
+                selector = '#ordersTable th:last-child, #ordersTable td:last-child';
+            } else if (column.className) {
+                selector = `.${column.className}`;
+            } else if (column.index) {
+                selector = `#ordersTable th:nth-child(${column.index}), #ordersTable td:nth-child(${column.index})`;
+            }
+
+            const elements = document.querySelectorAll(selector);
+            elements.forEach(element => {
+                if (isVisible) {
+                    element.classList.remove('column-hidden');
+                } else {
+                    element.classList.add('column-hidden');
+                }
+            });
+
+            // Save preference to localStorage
+            if (savePreference && !column.essential) {
+                savedPreferences[column.name] = isVisible;
+                localStorage.setItem('masterListColumnVisibility', JSON.stringify(savedPreferences));
+            }
+        }
+
+        // Show all columns
+        function showAllColumns() {
+            columnInfo.forEach((column, index) => {
+                const checkbox = document.getElementById(`toggle-${index}`);
+                if (checkbox && !checkbox.disabled) {
+                    checkbox.checked = true;
+                    toggleColumn(column, true);
+                }
+            });
+        }
+
+        // Hide all non-essential columns
+        function hideAllColumns() {
+            columnInfo.forEach((column, index) => {
+                const checkbox = document.getElementById(`toggle-${index}`);
+                if (checkbox && !checkbox.disabled && !column.essential) {
+                    checkbox.checked = false;
+                    toggleColumn(column, false);
+                }
+            });
+        }
+
+        // Toggle column controls visibility
+        function toggleColumnControls() {
+            const controls = document.getElementById('columnControls');
+            controls.classList.toggle('hidden');
+        }
+
+        // Initialize
+        createColumnControls();
+
+        // Add event listeners to control buttons
+        document.getElementById('showAllColumns').addEventListener('click', showAllColumns);
+        document.getElementById('hideAllColumns').addEventListener('click', hideAllColumns);
+        document.getElementById('toggleColumnControls').addEventListener('click', toggleColumnControls);
+
+        // Initially hide the column controls to keep the interface clean
+        document.getElementById('columnControls').classList.add('hidden');
+    });
 </script>
 
 <!-- Include editable fields scripts -->
