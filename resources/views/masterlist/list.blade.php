@@ -368,24 +368,32 @@
                                 @endif
                             </td>
                             <td class="total text-right" data-column="total">{{ number_format($order->totalAmount, 2) }}</td>
-                            <td class="p-2" data-column="or">
+                            <td class="p-2 or-cell" data-column="or">
                                 @if(Auth::user()->hasSubpagePermission('masterlist', 'list', 'edit'))
-                                <input type="text" style="width: 100px; border: none; outline: none;" class="or-input p-2 border rounded" 
-                                    data-order-id="{{ $order->id }}"  value="{{ $order->OR }}"  placeholder="Enter OR#"/>
+                                <textarea 
+                                    class="or-textarea"
+                                    data-order-id="{{ $order->id }}"
+                                    style="border: none; width: 100%; min-height: 40px; text-align: center; background: transparent; word-wrap: break-word; white-space: normal; resize: none; overflow: hidden; padding: 5px; vertical-align: top;"
+                                    placeholder="Enter OR#"
+                                >{{ $order->OR }}</textarea>
                                 @else
-                                <span style="width: 100px; text-align:center; display: inline-block;">
+                                <div style="width: 100%; min-height: 40px; display: flex; align-items: center; justify-content: center; text-align: center; word-wrap: break-word; white-space: normal; padding: 5px;">
                                     {{ $order->OR }}
-                                </span>
+                                </div>
                                 @endif
                             </td>
-                            <td class="p-2" data-column="ar">
+                            <td class="p-2 ar-cell" data-column="ar">
                                 @if(Auth::user()->hasSubpagePermission('masterlist', 'list', 'edit'))
-                                <input type="text" style="width: 100px; border: none; outline: none;" class="ar-input p-2 border rounded" 
-                                    data-order-id="{{ $order->id }}" value="{{ $order->AR }}" placeholder="Enter AR#"/>
+                                <textarea 
+                                    class="ar-textarea"
+                                    data-order-id="{{ $order->id }}"
+                                    style="border: none; width: 100%; min-height: 40px; text-align: center; background: transparent; word-wrap: break-word; white-space: normal; resize: none; overflow: hidden; padding: 5px; vertical-align: top;"
+                                    placeholder="Enter AR#"
+                                >{{ $order->AR }}</textarea>
                                 @else
-                                <span style="width: 100px; text-align:center; display: inline-block;">
+                                <div style="width: 100%; min-height: 40px; display: flex; align-items: center; justify-content: center; text-align: center; word-wrap: break-word; white-space: normal; padding: 5px;">
                                     {{ $order->AR }}
-                                </span>
+                                </div>
                                 @endif
                             </td>
                             <td class="p-2" data-column="dp">{{ $order->or_ar_date ? \Carbon\Carbon::parse($order->or_ar_date)->format('F d, Y h:i A') : ' ' }}</td>
@@ -512,7 +520,7 @@
                                 </form>
                             </td>
                             @endif
-                            <td class="p-2">{{ $order->creator }}</td>
+                            <td class="p-2">{{ $order->creator ?? 'No Creator Data' }}</td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -965,14 +973,18 @@
     .cargo-status-textarea,
     .remark-textarea,
     .container-textarea,
-    .checker-textarea {
+    .checker-textarea,
+    .or-textarea,
+    .ar-textarea {
         transition: background-color 0.3s;
     }
     
     /* Special handling for auto-resizing textareas */
     .remark-textarea,
     .container-textarea,
-    .checker-textarea {
+    .checker-textarea,
+    .or-textarea,
+    .ar-textarea {
         min-height: 40px;
         overflow: hidden;
         transition: height 0.2s ease;
@@ -981,7 +993,9 @@
     .cargo-status-textarea:focus,
     .remark-textarea:focus,
     .container-textarea:focus,
-    .checker-textarea:focus {
+    .checker-textarea:focus,
+    .or-textarea:focus,
+    .ar-textarea:focus {
         background-color: rgba(200, 200, 200, 0.2) !important;
         outline: 1px solid #4f46e5 !important;
     }
@@ -989,7 +1003,9 @@
     .cargo-status-textarea.saving,
     .remark-textarea.saving,
     .container-textarea.saving,
-    .checker-textarea.saving {
+    .checker-textarea.saving,
+    .or-textarea.saving,
+    .ar-textarea.saving {
         background-color: rgba(79, 70, 229, 0.1) !important;
     }
     
@@ -997,7 +1013,9 @@
     .remark-cell,
     .container-cell,
     .checker-cell,
-    .cargo-status-cell {
+    .cargo-status-cell,
+    .or-cell,
+    .ar-cell {
         vertical-align: top !important;
         transition: all 0.3s ease;
         word-wrap: break-word;
@@ -1011,11 +1029,15 @@
     #ordersTable th:nth-child(3), #ordersTable td:nth-child(3) { width: 150px !important; }  /* CONTAINER */
     #ordersTable th:nth-child(4), #ordersTable td:nth-child(4) { width: 150px !important; } /* CARGO STATUS */
     #ordersTable th:nth-child(7), #ordersTable td:nth-child(7) { width: 140px !important; } /* CHECKER */
+    #ordersTable th:nth-child(17), #ordersTable td:nth-child(17) { width: 120px !important; } /* OR# */
+    #ordersTable th:nth-child(18), #ordersTable td:nth-child(18) { width: 110px !important; } /* AR# */
     
     /* Ensure textareas fit within their fixed column widths */
     .container-cell .container-textarea,
     .checker-cell .checker-textarea,
-    .cargo-status-cell .cargo-status-textarea {
+    .cargo-status-cell .cargo-status-textarea,
+    .or-cell .or-textarea,
+    .ar-cell .ar-textarea {
         width: 100% !important;
         max-width: 100% !important;
         box-sizing: border-box !important;
@@ -1025,7 +1047,9 @@
     .remark-cell textarea,
     .container-cell textarea,
     .checker-cell textarea,
-    .cargo-status-cell textarea {
+    .cargo-status-cell textarea,
+    .or-cell textarea,
+    .ar-cell textarea {
         display: block !important;
         vertical-align: top !important;
         line-height: 1.4 !important;
@@ -1050,7 +1074,9 @@
     .container-textarea,
     .checker-textarea,
     .cargo-status-textarea,
-    .remark-textarea {
+    .remark-textarea,
+    .or-textarea,
+    .ar-textarea {
         transition: height 0.2s ease, background-color 0.3s;
         line-height: 1.4 !important;
         font-family: inherit !important;
@@ -1148,7 +1174,7 @@
         
         // Function to reinitialize auto-resize for visible textareas
         function reinitializeAutoResize() {
-            const visibleTextareas = document.querySelectorAll('.container-textarea:not([style*="display: none"]), .checker-textarea:not([style*="display: none"]), .cargo-status-textarea:not([style*="display: none"]), .remark-textarea:not([style*="display: none"])');
+            const visibleTextareas = document.querySelectorAll('.container-textarea:not([style*="display: none"]), .checker-textarea:not([style*="display: none"]), .cargo-status-textarea:not([style*="display: none"]), .remark-textarea:not([style*="display: none"]), .or-textarea:not([style*="display: none"]), .ar-textarea:not([style*="display: none"])');
             visibleTextareas.forEach(textarea => {
                 // Only trigger auto-resize if textarea has content that might need resizing
                 if (textarea.value && textarea.value.length > 0) {
@@ -1720,61 +1746,14 @@
 <script>
     // For updating OR and AR fields
     document.addEventListener('DOMContentLoaded', function () {
-        const orInputs = document.querySelectorAll('.or-input');
-        const arInputs = document.querySelectorAll('.ar-input');
+        const orTextareas = document.querySelectorAll('.or-textarea');
+        const arTextareas = document.querySelectorAll('.ar-textarea');
 
-        // Function to update the order field
-        function updateOrderField(orderId, field, value) {
-            fetch(`/update-order-field/${orderId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({ field, value }) // Send the correct field and value
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    console.log(`${field} updated successfully`);
-                } else {
-                    console.error(`Failed to update ${field}`);
-                }
-            })
-            .catch(error => console.error('Error:', error));
+        // Function to auto-resize textarea
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.max(40, textarea.scrollHeight) + 'px';
         }
-
-        function submitFormAndRefresh(form) {
-            form.submit(); // Submit the form
-            setTimeout(() => {
-                // Force a hard reload by appending a unique query parameter
-                window.location.href = window.location.href.split('?')[0] + '?t=' + new Date().getTime();
-            }, 500); // Add a slight delay to ensure the form submission completes
-        }
-
-        // Add event listeners to the OR and AR inputs
-        orInputs.forEach(input => {
-            input.addEventListener('input', function () {
-                const orderId = this.getAttribute('data-order-id');
-                const value = this.value;
-                updateOrderField(orderId, 'OR', value); // Update the OR field
-            });
-        });
-
-        arInputs.forEach(input => {
-            input.addEventListener('input', function () {
-                const orderId = this.getAttribute('data-order-id');
-                const value = this.value;
-                updateOrderField(orderId, 'AR', value); // Update the AR field
-            });
-        });
-    });
-</script>
-<script>
-    // For updating OR and AR fields with date
-    document.addEventListener('DOMContentLoaded', function () {
-        const orInputs = document.querySelectorAll('.or-input');
-        const arInputs = document.querySelectorAll('.ar-input');
 
         // Function to update the order field
         function updateOrderField(orderId, field, value) {
@@ -1807,48 +1786,56 @@
             .catch(error => console.error('Error:', error));
         }
 
-        // Add event listeners to the OR and AR inputs
-        orInputs.forEach(input => {
-            input.addEventListener('input', function () {
-                const orderId = this.getAttribute('data-order-id');
-                const value = this.value;
-                updateOrderField(orderId, 'OR', value); // Update the OR field
+        // Debounce function to limit the frequency of requests
+        function debounce(func, delay) {
+            let timeout;
+            return function (...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), delay);
+            };
+        }
+
+        // Add event listeners to the OR textareas
+        orTextareas.forEach(textarea => {
+            // Auto-resize on input
+            textarea.addEventListener('input', function () {
+                autoResize(this);
             });
+
+            // Initial auto-resize
+            autoResize(textarea);
+
+            // Debounced update function
+            const debouncedUpdate = debounce(function () {
+                const orderId = textarea.getAttribute('data-order-id');
+                const value = textarea.value;
+                updateOrderField(orderId, 'OR', value);
+            }, 300);
+
+            // Add update listener
+            textarea.addEventListener('input', debouncedUpdate);
         });
 
-        arInputs.forEach(input => {
-            input.addEventListener('input', function () {
-                const orderId = this.getAttribute('data-order-id');
-                const value = this.value;
-                updateOrderField(orderId, 'AR', value); // Update the AR field
+        // Add event listeners to the AR textareas
+        arTextareas.forEach(textarea => {
+            // Auto-resize on input
+            textarea.addEventListener('input', function () {
+                autoResize(this);
             });
+
+            // Initial auto-resize
+            autoResize(textarea);
+
+            // Debounced update function
+            const debouncedUpdate = debounce(function () {
+                const orderId = textarea.getAttribute('data-order-id');
+                const value = textarea.value;
+                updateOrderField(orderId, 'AR', value);
+            }, 300);
+
+            // Add update listener
+            textarea.addEventListener('input', debouncedUpdate);
         });
-    });
-
-    // Function to open the modal
-    function debounce(func, delay) {
-        let timeout;
-        return function (...args) {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => func.apply(this, args), delay);
-        };
-    }
-
-    // Add event listeners to the OR and AR inputs with debounce
-    orInputs.forEach(input => {
-        input.addEventListener('input', debounce(function () {
-            const orderId = this.getAttribute('data-order-id');
-            const value = this.value;
-            updateOrderField(orderId, 'OR', value);
-        }, 300)); // 300ms debounce
-    });
-
-    arInputs.forEach(input => {
-        input.addEventListener('input', debounce(function () {
-            const orderId = this.getAttribute('data-order-id');
-            const value = this.value;
-            updateOrderField(orderId, 'AR', value);
-        }, 300)); // 300ms debounce
     });
 </script>
 
