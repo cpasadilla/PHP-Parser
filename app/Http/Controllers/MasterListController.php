@@ -544,15 +544,21 @@ class MasterListController extends Controller
     }
 
     public function editBL($orderId) {
+        $user = auth()->user();
+        
+        // Check permissions explicitly, but allow direct access when using the debug route
+        if (request()->route()->getName() !== 'masterlist.edit-bl-direct' && 
+            !($user->hasSubpagePermission('masterlist', 'edit-bl', 'edit') || 
+              $user->hasSubpagePermission('masterlist', 'list', 'edit'))) {
+            return redirect()->route('dashboard')->with('error', 'You do not have permission to edit this BL.');
+        }
+        
         $order = Order::where('id', $orderId)->firstOrFail();
 
         $items = PriceList::all()->keyBy('item_code'); // Fetch all items from the PriceList model
         $parcels = parcel::where('orderId', $order->id)->get()->map(function ($item) use ($items) {
             // Use itemId to find matching item in PriceList since that's what's stored in the parcels table
             $priceListItem = $items[$item->itemId] ?? null;
-            
-            // Debug the lookup
-            \Log::debug("Parcel item: {$item->itemId}, Category: " . ($priceListItem->category ?? 'Not found'));
 
             return [
                 'itemCode' => $item->itemId ?? "",

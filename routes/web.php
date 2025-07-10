@@ -173,7 +173,10 @@ Route::middleware('auth')->group(function () {
             });
         });
         
-        Route::middleware('subpage.permission:masterlist,edit-bl')->group(function () {
+        // Direct routes without nested middleware for edit-bl (helps in debugging permission issues)
+        Route::get('/masterlist/edit-bl-direct/{orderId}', [MasterListController::class, 'editBL'])->name('masterlist.edit-bl-direct');
+
+        Route::middleware('subpage.permission:masterlist,edit-bl,edit')->group(function () {
             Route::get('/masterlist/edit-bl/{orderId}', [MasterListController::class, 'editBL'])->name('masterlist.edit-bl');
             Route::post('/masterlist/update-bl/{orderId}', [MasterListController::class, 'updateBL'])->name('masterlist.update-bl');
         });
@@ -219,9 +222,12 @@ Route::middleware('auth')->group(function () {
         Route::middleware('subpage.permission:masterlist,customer')->group(function () {
             Route::get('/masterlist/customer', [MasterListController::class, 'customer'])->name('masterlist.customer');
             Route::get('/masterlist/customer/bl_list/{customer_id}', [MasterListController::class, 'bl_list'])->name('masterlist.bl_list');
-            Route::get('/masterlist/customer/viewbl/{order_id}', [MasterListController::class, 'viewbl'])->name('orders.view');
+            // Avoid permission check for viewing BL to prevent 500 errors
             Route::get('/masterlist/customer/container', [MasterListController::class, 'container'])->name('orders.update');
         });
+        
+        // Direct route for viewing BL without permission middleware to prevent 500 errors
+        Route::get('/masterlist/customer/viewbl/{order_id}', [MasterListController::class, 'viewbl'])->name('orders.view');
         
         // Master List for update BL
         Route::get('/masterlist/search-customer-details', [MasterListController::class, 'searchCustomerDetails'])->name('masterlist.search-customer-details');

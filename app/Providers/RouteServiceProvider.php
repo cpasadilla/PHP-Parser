@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\CheckPagePermission;
+use App\Http\Middleware\CheckSubpagePermission;
 
 class RouteServiceProvider extends ServiceProvider
 {
@@ -38,5 +39,6 @@ class RouteServiceProvider extends ServiceProvider
         
         // Register the middleware directly
         app('router')->aliasMiddleware('page.permission', CheckPagePermission::class);
+        app('router')->aliasMiddleware('subpage.permission', CheckSubpagePermission::class);
     }
 }
