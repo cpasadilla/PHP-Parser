@@ -105,7 +105,7 @@
                         <td class="p-2 text-center">{{ $order->cargoType }}</td>
                         <td class="p-2 text-center">{{ $order->blStatus }}</td>
                         <td class="p-2 text-center">{{ \Carbon\Carbon::parse($order->created_at)->format('F d, Y') }}</td>
-                        @if(Auth::user()->hasSubpagePermission('masterlist', 'customer', 'edit'))
+                        @if(Auth::user()->hasSubpagePermission('masterlist', 'list', 'edit'))
                         <td class="p-2 text-center">
                             <a href="{{ route('masterlist.edit-bl', $order->id) }}" class="text-blue-500 hover:underline flex items-center justify-center gap-2">
                                 <x-heroicon-o-pencil-alt class="w-6 h-6" aria-hidden="true" />
@@ -113,7 +113,7 @@
                         </td>
                         @endif
                         <td class="p-2 text-center">
-                            <a href="{{ route('orders.view', $order->id) }}" class="text-yellow-500 hover:underline flex items-center justify-center gap-2">
+                            <a href="{{ route('masterlist.view-bl', [$order->shipNum, $order->voyageNum, $order->id]) }}" class="text-yellow-500 hover:underline flex items-center justify-center gap-2">
                                 <x-heroicon-o-document class="w-6 h-6" aria-hidden="true" />
                             </a>
                         </td>
@@ -205,7 +205,7 @@
                             <td class="p-2 text-center">{{ $order->cargoType }}</td>
                             <td class="p-2 text-center">{{ $order->blStatus }}</td>
                             <td class="p-2 text-center">{{ \Carbon\Carbon::parse($order->created_at)->format('F d, Y') }}</td>
-                            @if(Auth::user()->hasSubpagePermission('masterlist', 'customer', 'edit'))
+                            @if(Auth::user()->hasSubpagePermission('masterlist', 'list', 'edit'))
                             <td class="p-2 text-center">
                                 <a href="{{ route('masterlist.edit-bl', $order->id) }}" class="text-blue-500 hover:underline flex items-center justify-center gap-2">
                                     <x-heroicon-o-pencil-alt class="w-6 h-6" aria-hidden="true" />
@@ -213,7 +213,7 @@
                             </td>
                             @endif
                             <td class="p-2 text-center">
-                                <a href="{{ route('orders.view', $order->id) }}" class="text-yellow-500 hover:underline flex items-center justify-center gap-2">
+                                <a href="{{ route('masterlist.view-bl', [$order->shipNum, $order->voyageNum, $order->id]) }}" class="text-yellow-500 hover:underline flex items-center justify-center gap-2">
                                     <x-heroicon-o-document class="w-6 h-6" aria-hidden="true" />
                                 </a>
                             </td>

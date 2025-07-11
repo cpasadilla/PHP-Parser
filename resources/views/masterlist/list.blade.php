@@ -84,7 +84,7 @@
                         <th class="p-2" style="text-align: center;">IMAGE</th>
                         <th class="p-2" style="width: 80px; text-align: center;">VIEW BL</th>
                         <th class="p-2" style="width: 100px; text-align: center;">NO-PRICE BL</th>
-                        @if(Auth::user()->hasSubpagePermission('masterlist', 'edit-bl', 'edit') || Auth::user()->hasSubpagePermission('masterlist', 'list', 'edit'))
+                        @if(Auth::user()->hasSubpagePermission('masterlist', 'list', 'edit'))
                         <th class="p-2 update-bl-column">UPDATE BL</th>
                         @endif
                         @if(Auth::user()->hasSubpagePermission('masterlist', 'list', 'delete'))
@@ -498,7 +498,7 @@
                                     </x-button>
                                 </a>
                             </td>
-                            @if(Auth::user()->hasSubpagePermission('masterlist', 'edit-bl', 'edit') || Auth::user()->hasSubpagePermission('masterlist', 'list', 'edit'))
+                            @if(Auth::user()->hasSubpagePermission('masterlist', 'list', 'edit'))
                             <td class="p-2 text-center update-bl-column">
                                 <a href="{{ route('masterlist.edit-bl', $order->id) }}" class="text-blue-500 hover:underline flex items-center justify-center gap-2">
                                     <x-button variant="warning" class="items-center max-w-xs gap-2">
@@ -536,7 +536,7 @@
                         <td id="totalBir" class="font-bold text-right">0.00</td>
                         <td id="totalOthers" class="font-bold text-right">0.00</td>
                         <td id="totalAmount" class="font-bold text-right">0.00</td>
-                        <td colspan="{{ 11 + ((Auth::user()->hasSubpagePermission('masterlist', 'edit-bl', 'edit') || Auth::user()->hasSubpagePermission('masterlist', 'list', 'edit')) ? 1 : 0) + (Auth::user()->hasSubpagePermission('masterlist', 'list', 'delete') ? 1 : 0) }}"></td>
+                        <td colspan="{{ 11 + (Auth::user()->hasSubpagePermission('masterlist', 'list', 'edit') ? 1 : 0) + (Auth::user()->hasSubpagePermission('masterlist', 'list', 'delete') ? 1 : 0) }}"></td>
                     </tr>
                 </tfoot>
                 <!-- Modal for Image Preview -->

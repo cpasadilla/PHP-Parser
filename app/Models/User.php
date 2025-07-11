@@ -140,7 +140,7 @@ class User extends Authenticatable
      * 
      * @return array
      */
-    private function getPermissionsData(): array
+    public function getPermissionsData(): array
     {
         if (!$this->permissions || !$this->permissions->pages) {
             return [];

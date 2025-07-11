@@ -166,17 +166,19 @@ Route::middleware('auth')->group(function () {
         // BL List and Edit/View BL subpages
         Route::middleware('subpage.permission:masterlist,bl-list')->group(function () {
             Route::get('/masterlist/bl-list', [MasterListController::class, 'blListAll'])->name('masterlist.bl-list');
-            // Delete operations require delete permission
-            Route::middleware('subpage.permission:masterlist,bl-list,delete')->group(function () {
-                Route::delete('/masterlist/delete-order/{orderId}', [MasterListController::class, 'destroyOrder'])->name('masterlist.delete-order');
-                Route::post('/masterlist/restore-order/{deleteLogId}', [MasterListController::class, 'restoreOrder'])->name('masterlist.restore-order');
-            });
+        });
+        
+        // Delete operations require delete permission - moved outside of the bl-list group
+        Route::middleware('subpage.permission:masterlist,list,delete')->group(function () {
+            Route::delete('/masterlist/delete-order/{orderId}', [MasterListController::class, 'destroyOrder'])->name('masterlist.delete-order');
+            Route::post('/masterlist/restore-order/{deleteLogId}', [MasterListController::class, 'restoreOrder'])->name('masterlist.restore-order');
         });
         
         // Direct routes without nested middleware for edit-bl (helps in debugging permission issues)
         Route::get('/masterlist/edit-bl-direct/{orderId}', [MasterListController::class, 'editBL'])->name('masterlist.edit-bl-direct');
 
-        Route::middleware('subpage.permission:masterlist,edit-bl,edit')->group(function () {
+        // Separate middleware for edit-bl operations
+        Route::middleware('subpage.permission:masterlist,list,edit')->group(function () {
             Route::get('/masterlist/edit-bl/{orderId}', [MasterListController::class, 'editBL'])->name('masterlist.edit-bl');
             Route::post('/masterlist/update-bl/{orderId}', [MasterListController::class, 'updateBL'])->name('masterlist.update-bl');
         });
@@ -232,7 +234,7 @@ Route::middleware('auth')->group(function () {
         // Master List for update BL
         Route::get('/masterlist/search-customer-details', [MasterListController::class, 'searchCustomerDetails'])->name('masterlist.search-customer-details');
         
-        // Master List for voyage
+        // Master List for voyage - moved outside permission middleware for better access
         Route::get('/masterlist/bl/{shipNum}/{voyageNum}/{orderId}', [MasterListController::class, 'viewbl'])->name('masterlist.view-bl');
         Route::get('/masterlist/no-price-bl/{shipNum}/{voyageNum}/{orderId}', [MasterListController::class, 'viewNoPriceBl'])->name('masterlist.view-no-price-bl');
         Route::get('/masterlist/voyage/orders/{shipNum}/{voyageNum}', [MasterListController::class, 'voyageOrders'])->name('masterlist.voyage-orders');

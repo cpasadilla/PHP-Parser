@@ -24,12 +24,17 @@ class CheckSubpagePermission
         // Debug information
         \Log::debug("CheckSubpagePermission middleware: {$module}, {$subpage}, {$operation}");
         \Log::debug("User: {$user->id}, Role: " . ($user->roles ? $user->roles->roles : 'No Role'));
+        \Log::debug("URL: " . $request->fullUrl());
 
         // Allow admin users to access all pages and operations
         if ($user->roles && in_array(strtoupper(trim($user->roles->roles)), ['ADMIN', 'ADMINISTRATOR'])) {
             \Log::debug("User is admin, allowing access");
             return $next($request);
         }
+        
+        // Get permission data for detailed logging
+        $permissionsData = $user->getPermissionsData();
+        \Log::debug("User permissions: " . json_encode($permissionsData));
         
         // Check if user has permission for this operation on this subpage
         if ($user->hasSubpagePermission($module, $subpage, $operation)) {
@@ -40,6 +45,6 @@ class CheckSubpagePermission
         \Log::debug("User DENIED permission for {$module}, {$subpage}, {$operation}");
         
         // Redirect to dashboard with access denied message
-        return redirect()->route('dashboard')->with('error', 'You do not have permission to access this page.');
+        return redirect()->route('dashboard')->with('error', 'You do not have permission to access this page or perform this action.');
     }
 }

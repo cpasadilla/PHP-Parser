@@ -14,6 +14,13 @@
         </div>
     </x-slot>
 
+    <!-- Permission Error Message -->
+    @if(session('error'))
+    <div class="mb-4 px-4 py-3 bg-red-100 border border-red-200 text-red-700 rounded">
+        <strong>Permission Error:</strong> {{ session('error') }}
+    </div>
+    @endif
+
     <style>
         .tab-link.active {
             color: #3B82F6;
