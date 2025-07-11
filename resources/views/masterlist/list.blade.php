@@ -2930,6 +2930,7 @@
     // Column Visibility Management
     document.addEventListener('DOMContentLoaded', function() {
         // Define column information with their names and indices
+        // Add totalId property to link columns with their corresponding total elements in the footer
         const columnInfo = [
             { name: 'BL', index: 1, essential: true },
             { name: 'Date', index: 2, essential: false },
@@ -2939,14 +2940,14 @@
             { name: 'Consignee', index: 6, essential: true },
             { name: 'Checker', index: 7, essential: false },
             { name: 'Description', index: 8, essential: false },
-            { name: 'Freight', index: 9, essential: false },
-            { name: 'Valuation', index: 10, essential: false },
-            { name: 'Value', index: 11, essential: false },
-            { name: 'Wharfage', index: 12, essential: false },
-            { name: '5% Discount', index: 13, essential: false },
-            { name: 'BIR (2307)', index: 14, essential: false },
-            { name: 'Others', index: 15, essential: false },
-            { name: 'Total', index: 16, essential: true },
+            { name: 'Freight', index: 9, essential: false, totalId: 'totalFreight' },
+            { name: 'Valuation', index: 10, essential: false, totalId: 'totalValuation' },
+            { name: 'Value', index: 11, essential: false, totalId: 'totalValue' },
+            { name: 'Wharfage', index: 12, essential: false, totalId: 'totalWharfage' },
+            { name: '5% Discount', index: 13, essential: false, totalId: 'totalDiscount' },
+            { name: 'BIR (2307)', index: 14, essential: false, totalId: 'totalBir' },
+            { name: 'Others', index: 15, essential: false, totalId: 'totalOthers' },
+            { name: 'Total', index: 16, essential: true, totalId: 'totalAmount' },
             { name: 'OR#', index: 17, essential: false },
             { name: 'AR#', index: 18, essential: false },
             { name: 'Date Paid', index: 19, essential: false },
@@ -3023,6 +3024,18 @@
                     element.classList.add('column-hidden');
                 }
             });
+            
+            // Toggle visibility of corresponding total cell in the footer if exists
+            if (column.totalId) {
+                const totalElement = document.getElementById(column.totalId);
+                if (totalElement) {
+                    if (isVisible) {
+                        totalElement.classList.remove('column-hidden');
+                    } else {
+                        totalElement.classList.add('column-hidden');
+                    }
+                }
+            }
 
             // Save preference to localStorage
             if (savePreference && !column.essential) {
@@ -3061,6 +3074,21 @@
 
         // Initialize
         createColumnControls();
+        
+        // Apply initial column visibility to total cells based on saved preferences
+        columnInfo.forEach(column => {
+            if (column.totalId) {
+                const isVisible = savedPreferences[column.name] !== false;
+                const totalElement = document.getElementById(column.totalId);
+                if (totalElement) {
+                    if (isVisible) {
+                        totalElement.classList.remove('column-hidden');
+                    } else {
+                        totalElement.classList.add('column-hidden');
+                    }
+                }
+            }
+        });
 
         // Add event listeners to control buttons
         document.getElementById('showAllColumns').addEventListener('click', showAllColumns);
