@@ -39,8 +39,9 @@
             </div>
         </div>
         
-        <div id="printContainer" class="border p-6 shadow-lg text-black bg-white" style="font-family: Arial, sans-serif;" data-ship="{{ $ship }}" data-voyage="{{ htmlspecialchars_decode($voyage, ENT_QUOTES) }}">
-            <div style="display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 20px;">
+        <div id="printContainer" class="border p-6 shadow-lg text-black bg-white print-container" style="font-family: Arial, sans-serif;" data-ship="{{ $ship }}" data-voyage="{{ htmlspecialchars_decode($voyage, ENT_QUOTES) }}">
+            <div class="main-content">
+                <div style="display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 20px;">
                 <img style="width: 250px; height: 45px;" src="{{ asset('images/logo-sfx.png') }}" alt="Logo">
                 <div style="font-size: 12px; line-height: 1; margin-top: 3px;">
                     <p style="margin: 0;">National Road Brgy. Kaychanarianan, Basco Batanes</p>
@@ -216,9 +217,10 @@
                     </table>
                 </div>
             </div>
-            
-            <footer style="margin-top: auto;">
-                <!-- Your existing footer content here -->
+            </div>
+
+            <!-- Signature section for screen display -->
+            <div class="signature-section">
                 <div style="margin: -1px 0 0 0; padding: 0; display: flex; justify-content: space-between; font-size: 12px; line-height: 1;">
                     <div style="width: 60%;">
                         <p style="margin: 0; line-height: 2;"><strong>PREPARED BY:</strong></p>
@@ -260,7 +262,52 @@
                         <p style="margin-bottom: 0; line-height: 1;"><strong></strong></p>
                     </div>
                 </div>
-            </footer>
+            </div>
+
+            <!-- Print-only signature section that will stick to bottom -->
+            <div class="print-signature" style="display: none;">
+                <div style="margin: -1px 0 0 0; padding: 0; display: flex; justify-content: space-between; font-size: 12px; line-height: 1;">
+                    <div style="width: 60%;">
+                        <p style="margin: 0; line-height: 2;"><strong>PREPARED BY:</strong></p>
+                        <p style="margin-bottom: 0; line-height: 1;"><strong style="margin-left: 100px; font-size: 12px; text-decoration: underline; font-size: 14px;">CHERRY MAE E. CAMAYA</strong></p>
+                        <p style="margin-top: 0; margin-left: 145px; font-size: 13px; line-height: 1;">Billing Officer</p>
+                        <p style="margin-bottom: 0; line-height: 1;"><strong style="font-size: 12px; text-decoration: underline; font-size: 14px; color: red;">Kindly settle your account at St. Francis office, or by bank</strong></p>
+                        <p style="margin-top: 0; line-height: 1;"><strong style="font-size: 12px; text-decoration: underline; font-size: 14px; color: red;">transfer using the details below:</strong></p>
+                    </div>
+                    <div style="width: 35%; text-align: left; line-height: 1;">
+                        <p style="margin-bottom: 0; line-height: 2;"><strong>RECEIVED BY:</strong></p>
+                        <p style="margin-bottom: 0; line-height: 1;"><strong style="margin-left: 100px; font-size: 12px; text-decoration: underline; font-size: 14px;">_________________________</strong></p>
+                        <p style="margin-top: 0; margin-left: 100px; font-size: 13px; line-height: 1;">Signature over Printed Name</p>
+                        <p style="margin-bottom: 0; line-height: 0;"><strong>DATE:</strong></p>
+                        <p style="margin-bottom: 0; line-height: 1;"><strong style="margin-left: 100px; font-size: 12px; text-decoration: underline; font-size: 14px;">_________________________</strong></p>
+                        <p style="margin-top: 0; margin-left: 150px; font-size: 13px; line-height: 1;">MM/DD/YR</p>
+                    </div>
+                </div>
+                <div style="margin: 0; padding: 0; display: flex; justify-content: space-between; font-size: 12px; line-height: 1;">
+                    <div style="width: 35%;">
+                        <table style="border-collapse: collapse; width: 100%; font-size: 12px; line-height: 1;">
+                            <tr>
+                                <td style="border: 1px solid black; padding: 5px; line-height: 1;"><strong>ACCOUNT NAME:</strong></td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid black; padding: 5px; line-height: 1;">St. Francis Xavier Star Shipping Lines, Inc.</td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid black; padding: 5px; line-height: 1;"><strong>ACCOUNT NUMBER:</strong></td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid black; padding: 5px; line-height: 1;"><strong>PNB:</strong> 2277-7000-1147</td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid black; padding: 5px; line-height: 1;"><strong>LBP:</strong> 1082-1039-76</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div style="width: 35%; text-align: left; line-height: 1;">
+                        <p style="margin-bottom: 0; line-height: 1;"><strong></strong></p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div><br>
 
@@ -282,6 +329,45 @@
                 }
             });
 
+            // Clone the print container to measure ONLY the main content
+            var tempContainer = printContainer.cloneNode(true);
+            tempContainer.style.position = 'absolute';
+            tempContainer.style.visibility = 'hidden';
+            tempContainer.style.width = '210mm'; // A4 width
+            tempContainer.style.padding = '0.5in'; // Page margins
+            tempContainer.style.fontFamily = 'Arial, sans-serif';
+            document.body.appendChild(tempContainer);
+
+            // Hide BOTH signature sections to measure only main content
+            var tempSignatureSection = tempContainer.querySelector('.signature-section');
+            var tempPrintSignature = tempContainer.querySelector('.print-signature');
+            if (tempSignatureSection) tempSignatureSection.style.display = 'none';
+            if (tempPrintSignature) tempPrintSignature.style.display = 'none';
+
+            // Measure only the main content height
+            var mainContentHeight = tempContainer.offsetHeight;
+            
+            // Now add the signature to measure total height
+            if (tempPrintSignature) {
+                tempPrintSignature.style.display = 'block';
+                tempPrintSignature.style.position = 'relative';
+                tempPrintSignature.style.marginTop = '20px';
+            }
+            var totalContentHeight = tempContainer.offsetHeight;
+
+            // Calculate if main content + signature fits on one page
+            // A4 height minus margins = ~277mm - 25.4mm = ~251mm ≈ 950px
+            var maxSinglePageHeight = 950;
+            var needsPageBreak = totalContentHeight > maxSinglePageHeight;
+
+            // Remove temp container
+            document.body.removeChild(tempContainer);
+
+            console.log('Main content height:', mainContentHeight);
+            console.log('Total content height:', totalContentHeight);
+            console.log('Max page height:', maxSinglePageHeight);
+            console.log('Needs page break:', needsPageBreak);
+
             // Get print content
             var printContents = printContainer.innerHTML;
 
@@ -290,21 +376,68 @@
             printWindow.document.write("<html><head><title>Statement of Account</title>");
             printWindow.document.write("<style>");
             printWindow.document.write(`
+                @page {
+                    size: A4;
+                    margin: 0.5in;
+                }
                 @media print {
-                    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; margin: 0; font-family: Arial, sans-serif; }
+                    html, body { 
+                        margin: 0; 
+                        padding: 0; 
+                        -webkit-print-color-adjust: exact; 
+                        print-color-adjust: exact; 
+                        font-family: Arial, sans-serif; 
+                    }
+                    .print-container {
+                        position: relative;
+                        ${needsPageBreak ? '' : 'min-height: calc(100vh - 1in);'}
+                    }
+                    .main-content {
+                        position: relative;
+                    }
+                    .signature-section {
+                        display: none !important;
+                    }
+                    .print-signature {
+                        display: block !important;
+                        ${needsPageBreak ? 
+                            'page-break-before: always; position: relative; margin-top: 20px;' : 
+                            'position: absolute; bottom: 0; left: 0; right: 0; margin-top: 20px;'
+                        }
+                    }
                     img { display: block !important; margin: 0 auto; }
-                    table { border-collapse: collapse; width: 100%; font-family: Arial, sans-serif; table-layout: fixed; }
-                    th, td { border: 1px solid #ddd; padding: 4px 8px; font-family: Arial, sans-serif; word-wrap: break-word; white-space: normal; line-height: 1.2; }
-                    thead { background-color: #f2f2f2 !important; }
+                    table { 
+                        border-collapse: collapse; 
+                        width: 100%; 
+                        font-family: Arial, sans-serif; 
+                        table-layout: auto;
+                    }
+                    th, td { 
+                        border: 1px solid #ddd; 
+                        padding: 4px 8px; 
+                        font-family: Arial, sans-serif; 
+                        word-wrap: break-word; 
+                        white-space: normal; 
+                        line-height: 1.2; 
+                    }
+                    thead { 
+                        background-color: #f2f2f2 !important;
+                    }
+                    tbody tr {
+                        page-break-inside: avoid;
+                    }
+                    .accordion-content {
+                        page-break-inside: auto;
+                        ${needsPageBreak ? '' : 'margin-bottom: 200px;'}
+                    }
                     button { display: none; }
-                    footer { position: absolute; bottom: 0; left: 0; width: 100%; }
                     .non-printable { display: none; }
                     input { font-family: Arial, sans-serif; font-size: 12px; }
                     .description-cell { word-wrap: break-word; white-space: normal; }
-                    tr { page-break-inside: avoid; }
-                    tbody tr { min-height: 24px; }
-                    #printContainer > div { margin: 0 !important; padding: 0 !important; }
-                    #printContainer > div + div { margin-top: -1px !important; }
+                }
+                @media screen {
+                    .print-signature { display: none !important; }
+                    .signature-section { display: block !important; }
                 }
             `);
             printWindow.document.write("</style></head><body>");
