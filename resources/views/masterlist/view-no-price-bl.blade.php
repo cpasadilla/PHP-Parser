@@ -84,57 +84,59 @@
                 </table>
 
                 <!-- Main Table -->
-                <table class="w-full border-collapse text-sm main-table" style="padding: 0 5px; margin-top: 20px;">
-                    <thead class="text-white border border-gray" style="background-color: #78BF65;">
-                        <tr class="border border-gray">
-                            <th class="p-2" style="font-family: Arial; font-size: 13px;">QTY</th>
-                            <th class="p-2" style="font-family: Arial; font-size: 13px; width: 70px;">UNIT</th>
-                            <th class="p-2" style="font-family: Arial; font-size: 13px;">DESCRIPTION</th>
-                            <th class="p-2" style="font-family: Arial; font-size: 13px;">VALUE</th>
-                            <th class="p-2" style="font-family: Arial; font-size: 13px;">WEIGHT</th>
-                            <th class="p-2" style="font-family: Arial; font-size: 13px;">MEASUREMENT</th>
-                            <th class="p-2" style="font-family: Arial; font-size: 13px;">RATE</th>
-                            <th class="p-2" style="font-family: Arial; font-size: 13px;">FREIGHT</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($parcels as $parcel)
-                        <tr class="border-gray" style="border-bottom: 1px solid #cccccc;">
-                            <td class="p-2 text-center" style="font-family: Arial; font-size: 13px; text-align: center;">{{$parcel->quantity}}</td>
-                            <td class="p-2" style="font-family: Arial; font-size: 13px; text-align: center; width: 70px;">{{$parcel->unit}}</td>
-                            <td class="p-2" style="font-family: Arial; font-size: 13px; text-align: left;">
-                                {{$parcel->itemName}}{{ !empty($parcel->desc) ? ' - '.$parcel->desc : '' }}
-                            </td>
-                            <td class="p-2" style="font-family: Arial; font-size: 13px;"></td>
-                            <td class="p-2" style="font-family: Arial; font-size: 13px; width: 60px;">
-                                @if ($parcel->weight && $parcel->weight != '0' && $parcel->weight != '0.00')
-                                    {{$parcel->weight}}
-                                @endif
-                            </td>
-                            <td class="p-2" style="font-family: Arial; font-size: 13px;">
-                                @if (!empty($parcel->length) && !empty($parcel->width) && !empty($parcel->height) && 
-                                    $parcel->length != '0' && $parcel->length != '0.00' && 
-                                    $parcel->width != '0' && $parcel->width != '0.00' && 
-                                    $parcel->height != '0' && $parcel->height != '0.00')
-                                    {{$parcel->length}} × {{$parcel->width}} × {{$parcel->height}}
-                                @endif
-                            </td>
-                            <td class="p-2" style="font-family: Arial; font-size: 13px; text-align: right; width: 100px;"></td>
-                            <td class="p-2" style="font-family: Arial; font-size: 13px; text-align: right; width: 100px;"></td>
-                        </tr>
-                        @endforeach
-                        <tr class="border-gray" style="border-bottom: none;">
-                            <td class="p-2"></td>
-                            <td class="p-2"></td>
-                            <td class="p-2"></td>
-                            <td class="p-2" style="font-family: Arial; font-weight: bold; font-size: 13px; height: 30px;">VALUE: {{ number_format($order->value, 2) }}</td>
-                            <td class="p-2"></td>
-                            <td class="p-2"></td>
-                            <td class="p-2" style="font-family: Arial; font-weight: bold; font-size: 13px; text-align: right; height: 30px;">₱</td>
-                            <td class="p-2" style="font-family: Arial; font-weight: bold; font-size: 13px; text-align: right; height: 30px;"></td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="main-table-container">
+                    <table class="w-full border-collapse text-sm main-table" style="padding: 0 5px; margin-top: 20px;">
+                        <thead class="text-white border border-gray" style="background-color: #78BF65;">
+                            <tr class="border border-gray">
+                                <th class="p-2" style="font-family: Arial; font-size: 13px;">QTY</th>
+                                <th class="p-2" style="font-family: Arial; font-size: 13px; width: 70px;">UNIT</th>
+                                <th class="p-2" style="font-family: Arial; font-size: 13px;">DESCRIPTION</th>
+                                <th class="p-2" style="font-family: Arial; font-size: 13px;">VALUE</th>
+                                <th class="p-2" style="font-family: Arial; font-size: 13px;">WEIGHT</th>
+                                <th class="p-2" style="font-family: Arial; font-size: 13px;">MEASUREMENT</th>
+                                <th class="p-2" style="font-family: Arial; font-size: 13px;">RATE</th>
+                                <th class="p-2" style="font-family: Arial; font-size: 13px;">FREIGHT</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($parcels as $parcel)
+                            <tr class="border-gray" style="border-bottom: 1px solid #cccccc;">
+                                <td class="p-2 text-center" style="font-family: Arial; font-size: 13px; text-align: center;">{{$parcel->quantity}}</td>
+                                <td class="p-2" style="font-family: Arial; font-size: 13px; text-align: center; width: 70px;">{{$parcel->unit}}</td>
+                                <td class="p-2" style="font-family: Arial; font-size: 13px; text-align: left;">
+                                    {{$parcel->itemName}}{{ !empty($parcel->desc) ? ' - '.$parcel->desc : '' }}
+                                </td>
+                                <td class="p-2" style="font-family: Arial; font-size: 13px;"></td>
+                                <td class="p-2" style="font-family: Arial; font-size: 13px; width: 60px;">
+                                    @if ($parcel->weight && $parcel->weight != '0' && $parcel->weight != '0.00')
+                                        {{$parcel->weight}}
+                                    @endif
+                                </td>
+                                <td class="p-2" style="font-family: Arial; font-size: 13px;">
+                                    @if (!empty($parcel->length) && !empty($parcel->width) && !empty($parcel->height) && 
+                                        $parcel->length != '0' && $parcel->length != '0.00' && 
+                                        $parcel->width != '0' && $parcel->width != '0.00' && 
+                                        $parcel->height != '0' && $parcel->height != '0.00')
+                                        {{$parcel->length}} × {{$parcel->width}} × {{$parcel->height}}
+                                    @endif
+                                </td>
+                                <td class="p-2" style="font-family: Arial; font-size: 13px; text-align: right; width: 100px;"></td>
+                                <td class="p-2" style="font-family: Arial; font-size: 13px; text-align: right; width: 100px;"></td>
+                            </tr>
+                            @endforeach
+                            <tr class="border-gray" style="border-bottom: none;">
+                                <td class="p-2"></td>
+                                <td class="p-2"></td>
+                                <td class="p-2"></td>
+                                <td class="p-2" style="font-family: Arial; font-weight: bold; font-size: 13px; height: 30px;">VALUE: {{ number_format($order->value, 2) }}</td>
+                                <td class="p-2"></td>
+                                <td class="p-2"></td>
+                                <td class="p-2" style="font-family: Arial; font-weight: bold; font-size: 13px; text-align: right; height: 30px;">₱</td>
+                                <td class="p-2" style="font-family: Arial; font-weight: bold; font-size: 13px; text-align: right; height: 30px;"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
 
                 <script>
                     function removePaddingForPrint() {
@@ -303,12 +305,47 @@
                 #printContainer { 
                     position: relative; 
                     width: 100%; 
-                    min-height: 11in; 
                     margin: 0;
                     padding: 0;
+                    padding-bottom: 200px; /* Space for footer */
                 }
                 img { display: block !important; margin: 0 auto; }
-                footer { position: absolute; bottom: 0; left: 0; width: 100%; }
+                
+                /* Footer positioning */
+                footer { 
+                    position: fixed; 
+                    bottom: 0; 
+                    left: 0; 
+                    right: 0; 
+                    width: 100%; 
+                    background: white;
+                    padding: 10px 0.5in;
+                    box-sizing: border-box;
+                    z-index: 999;
+                }
+                
+                /* Main table flexibility */
+                .main-table { 
+                    border-collapse: collapse; 
+                    width: 100%;
+                    page-break-inside: auto;
+                }
+                
+                .main-table thead {
+                    background-color: #78BF65 !important; 
+                    color: white !important;
+                    page-break-after: avoid;
+                }
+                
+                .main-table tbody tr {
+                    page-break-inside: avoid;
+                    page-break-after: auto;
+                }
+                
+                .main-table tbody tr:last-child {
+                    page-break-after: avoid;
+                }
+                
                 table { border-collapse: collapse; width: 100%; }
                 thead { background-color: #78BF65 !important; color: white !important; }
                 button { display: none; }
@@ -324,11 +361,6 @@
                     background-position: 0 0, 4px 4px !important;
                     border: 3px dashed #d32f2f !important;
                     color: #d32f2f !important;
-                }
-                
-                /* Main table styles for print */
-                .main-table {
-                    border-collapse: collapse !important;
                 }
                 
                 .main-table tr {
@@ -348,6 +380,11 @@
                 /* Remove border from VALUE row specifically */
                 .border-gray[style*="border-bottom: none"] {
                     border-bottom: none !important;
+                }
+                
+                /* Ensure content doesn't overlap with footer */
+                .main-table-container {
+                    margin-bottom: 200px;
                 }
             }
         `);
