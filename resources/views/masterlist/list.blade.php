@@ -94,53 +94,71 @@
                     </tr>
                     <tr>
                         <th>
-                            <select class="filter-dropdown" data-column="bl">
-                                <option value="">All</option>
-                                @foreach(($filterData['uniqueOrderIds'] ?? []) as $bl)
-                                    <option value="{{ $bl }}">{{ $bl }}</option>
-                                @endforeach
-                            </select>
+                            <div class="flex flex-col gap-1">
+                                <input type="text" class="filter-input mb-1" data-column="bl" placeholder="Search BL...">
+                                <select class="filter-dropdown" data-column="bl">
+                                    <option value="">All</option>
+                                    @foreach(($filterData['uniqueOrderIds'] ?? []) as $bl)
+                                        <option value="{{ $bl }}">{{ $bl }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
                         </th>
                         <th></th> <!-- DATE excluded -->
                         <th>
-                            <select class="filter-dropdown" data-column="container">
-                                <option value="">All</option>
-                                @foreach(($filterData['uniqueContainers'] ?? []) as $container)
-                                    <option value="{{ $container }}">{{ $container }}</option>
-                                @endforeach
-                            </select>
+                            <div class="flex flex-col gap-1">
+                                <input type="text" class="filter-input mb-1" data-column="container" placeholder="Search container...">
+                                <select class="filter-dropdown" data-column="container">
+                                    <option value="">All</option>
+                                    @foreach(($filterData['uniqueContainers'] ?? []) as $container)
+                                        <option value="{{ $container }}">{{ $container }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
                         </th>
                         <th>
-                            <select class="filter-dropdown" data-column="cargo_status">
-                                <option value="">All</option>
-                                @foreach(($filterData['uniqueCargoTypes'] ?? []) as $cargoStatus)
-                                    <option value="{{ $cargoStatus }}">{{ $cargoStatus }}</option>
-                                @endforeach
-                            </select>
+                            <div class="flex flex-col gap-1">
+                                <input type="text" class="filter-input mb-1" data-column="cargo_status" placeholder="Search cargo status...">
+                                <select class="filter-dropdown" data-column="cargo_status">
+                                    <option value="">All</option>
+                                    @foreach(($filterData['uniqueCargoTypes'] ?? []) as $cargoStatus)
+                                        <option value="{{ $cargoStatus }}">{{ $cargoStatus }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
                         </th>
                         <th>
-                            <select class="filter-dropdown" data-column="shipper">
-                                <option value="">All</option>
-                                @foreach(($filterData['uniqueShippers'] ?? []) as $shipper)
-                                    <option value="{{ $shipper }}">{{ $shipper }}</option>
-                                @endforeach
-                            </select>
+                            <div class="flex flex-col gap-1">
+                                <input type="text" class="filter-input mb-1" data-column="shipper" placeholder="Search shipper...">
+                                <select class="filter-dropdown" data-column="shipper">
+                                    <option value="">All</option>
+                                    @foreach(($filterData['uniqueShippers'] ?? []) as $shipper)
+                                        <option value="{{ $shipper }}">{{ $shipper }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
                         </th>
                         <th>
-                            <select class="filter-dropdown" data-column="consignee">
-                                <option value="">All</option>
-                                @foreach(($filterData['uniqueConsignees'] ?? []) as $consignee)
-                                    <option value="{{ $consignee }}">{{ $consignee }}</option>
-                                @endforeach
-                            </select>
+                            <div class="flex flex-col gap-1">
+                                <input type="text" class="filter-input mb-1" data-column="consignee" placeholder="Search consignee...">
+                                <select class="filter-dropdown" data-column="consignee">
+                                    <option value="">All</option>
+                                    @foreach(($filterData['uniqueConsignees'] ?? []) as $consignee)
+                                        <option value="{{ $consignee }}">{{ $consignee }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
                         </th>
                         <th>
-                            <select class="filter-dropdown" data-column="checker">
-                                <option value="">All</option>
-                                @foreach(($filterData['uniqueCheckers'] ?? []) as $checker)
-                                    <option value="{{ $checker }}">{{ $checker }}</option>
-                                @endforeach
-                            </select>
+                            <div class="flex flex-col gap-1">
+                                <input type="text" class="filter-input mb-1" data-column="checker" placeholder="Search checker...">
+                                <select class="filter-dropdown" data-column="checker">
+                                    <option value="">All</option>
+                                    @foreach(($filterData['uniqueCheckers'] ?? []) as $checker)
+                                        <option value="{{ $checker }}">{{ $checker }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
                         </th>
                         <th>
                             <div class="flex flex-col gap-1">
@@ -163,20 +181,26 @@
                         <th></th> <!-- OTHERS excluded -->
                         <th></th> <!-- TOTAL excluded -->
                         <th>
-                            <select class="filter-dropdown" data-column="or">
-                                <option value="">All</option>
-                                @foreach(($filterData['uniqueORs'] ?? []) as $or)
-                                    <option value="{{ $or }}">{{ $or }}</option>
-                                @endforeach
-                            </select>
+                            <div class="flex flex-col gap-1">
+                                <input type="text" class="filter-input mb-1" data-column="or" placeholder="Search OR#...">
+                                <select class="filter-dropdown" data-column="or">
+                                    <option value="">All</option>
+                                    @foreach(($filterData['uniqueORs'] ?? []) as $or)
+                                        <option value="{{ $or }}">{{ $or }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
                         </th>
                         <th>
-                            <select class="filter-dropdown" data-column="ar">
-                                <option value="">All</option>
-                                @foreach(($filterData['uniqueARs'] ?? []) as $ar)
-                                    <option value="{{ $ar }}">{{ $ar }}</option>
-                                @endforeach
-                            </select>
+                            <div class="flex flex-col gap-1">
+                                <input type="text" class="filter-input mb-1" data-column="ar" placeholder="Search AR#...">
+                                <select class="filter-dropdown" data-column="ar">
+                                    <option value="">All</option>
+                                    @foreach(($filterData['uniqueARs'] ?? []) as $ar)
+                                        <option value="{{ $ar }}">{{ $ar }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
                         </th>
                         <th><input type="text" class="filter-input" data-column="dp" placeholder="Date Paid"></th>
                         <th>
@@ -204,12 +228,15 @@
                             </select>
                         </th>
                         <th>
-                            <select class="filter-dropdown" data-column="bl_remark">
-                                <option value="">All</option>
-                                @foreach($orders->pluck('remark')->unique()->sort() as $blRemark)
-                                    <option value="{{ $blRemark }}">{{ $blRemark }}</option>
-                                @endforeach
-                            </select>
+                            <div class="flex flex-col gap-1">
+                                <input type="text" class="filter-input mb-1" data-column="bl_remark" placeholder="Search remark...">
+                                <select class="filter-dropdown" data-column="bl_remark">
+                                    <option value="">All</option>
+                                    @foreach($orders->pluck('remark')->unique()->sort() as $blRemark)
+                                        <option value="{{ $blRemark }}">{{ $blRemark }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
                         </th>
                         <th>
                             <select class="filter-dropdown" data-column="note">
