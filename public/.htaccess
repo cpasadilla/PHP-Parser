@@ -18,4 +18,19 @@
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
+
+    # Set timeout values
+    <IfModule mod_proxy_fcgi.c>
+        ProxyTimeout 300
+        TimeOut 300
+    </IfModule>
+
+    # Increase upload limits
+    <IfModule mod_php.c>
+        php_value max_execution_time 300
+        php_value max_input_time 300
+        php_value memory_limit 512M
+        php_value post_max_size 64M
+        php_value upload_max_filesize 64M
+    </IfModule>
 </IfModule>
