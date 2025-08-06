@@ -42,6 +42,31 @@ class MasterListController extends Controller
         return redirect()->back()->with('success', 'Ship added successfully!');
     }
 
+    public function updateParcels(Request $request)
+    {
+        try {
+            DB::beginTransaction();
+
+            $documents = $request->input('documents', []);
+            $keys = $request->input('key', []);
+
+            foreach ($documents as $id => $document) {
+                $parcel = Parcel::find($id);
+                if ($parcel) {
+                    $parcel->documents = $document;
+                    $parcel->key = $keys[$id] ?? null;
+                    $parcel->save();
+                }
+            }
+
+            DB::commit();
+            return redirect()->back()->with('success', 'Parcels updated successfully');
+        } catch (\Exception $e) {
+            DB::rollback();
+            return redirect()->back()->with('error', 'Error updating parcels: ' . $e->getMessage());
+        }
+    }
+
     public function voyage($id) {
         $ship = Ship::findOrFail($id);
         $voyages = voyage::where('ship', $ship->ship_number)->orderBy('dock_number', 'desc')->orderBy('created_at', 'desc')->get();
@@ -2015,7 +2040,9 @@ class MasterListController extends Controller
                 'orders.orderId as blNumber',
                 'orders.containerNum',
                 'orders.shipperName',
-                'orders.recName'
+                'orders.recName',
+                'orders.checkName',
+                'orders.created_at as order_date'
             )
             ->join('orders', 'parcels.orderId', '=', 'orders.id');
 

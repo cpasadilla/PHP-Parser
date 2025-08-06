@@ -191,6 +191,7 @@ Route::middleware('auth')->group(function () {
         // Parcel subpage
         Route::middleware('subpage.permission:masterlist,parcel')->group(function () {
             Route::get('/masterlist/parcel', [MasterListController::class, 'parcel'])->name('masterlist.parcel');
+            Route::put('/masterlist/parcel/update', [MasterListController::class, 'updateParcels'])->name('masterlist.parcel.update');
         });
         
         // SOA subpage

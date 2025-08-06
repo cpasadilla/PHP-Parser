@@ -165,10 +165,20 @@
         @endif
 
         <!-- Table Section with enhanced styling -->
-        <div class="overflow-x-auto border border-gray-200 rounded-lg dark:border-gray-700">
-            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+        <form method="POST" action="{{ route('masterlist.parcel.update') }}" class="mb-4">
+            @csrf
+            @method('PUT')
+            <div class="flex justify-end mb-4">
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition duration-150">
+                    Save Changes
+                </button>
+            </div>
+            <div class="overflow-x-auto border border-gray-200 rounded-lg dark:border-gray-700">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <thead class="bg-gray-200 dark:bg-dark-eval-0">
                     <tr>
+                        <th scope="col" class="px-6 py-4 text-xs font-medium tracking-wider text-center text-gray-500 uppercase dark:text-gray-300 border-b dark:border-gray-700">#</th>
+                        <th scope="col" class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase dark:text-gray-300 border-b dark:border-gray-700">DATE</th>
                         <th scope="col" class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase dark:text-gray-300 border-b dark:border-gray-700">SHIP</th>
                         <th scope="col" class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase dark:text-gray-300 border-b dark:border-gray-700">VOYAGE</th>
                         <th scope="col" class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase dark:text-gray-300 border-b dark:border-gray-700">
@@ -176,7 +186,7 @@
                                 'sort' => 'orders.orderId',
                                 'direction' => request('sort') == 'orders.orderId' && request('direction') == 'asc' ? 'desc' : 'asc'
                             ])) }}" class="flex items-center group">
-                                BL NUMBER
+                                BL#
                                 <span class="ml-1 text-gray-400 dark:text-gray-500 group-hover:text-gray-500 dark:group-hover:text-gray-400">
                                     @if(request('sort') == 'orders.orderId')
                                         @if(request('direction') == 'asc')
@@ -230,11 +240,16 @@
                         <th scope="col" class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase dark:text-gray-300 border-b dark:border-gray-700">DESCRIPTION</th>
                         <th scope="col" class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase dark:text-gray-300 border-b dark:border-gray-700">RATE</th>
                         <th scope="col" class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase dark:text-gray-300 border-b dark:border-gray-700">FREIGHT</th>
+                        <th scope="col" class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase dark:text-gray-300 border-b dark:border-gray-700">DOCUMENTS</th>
+                        <th scope="col" class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase dark:text-gray-300 border-b dark:border-gray-700">KEY</th>
+                        <th scope="col" class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase dark:text-gray-300 border-b dark:border-gray-700">CHECKER</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-900 dark:divide-gray-700">
                     @forelse($parcels as $parcel)
                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-800 transition duration-150">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 dark:text-gray-300 text-center">{{ $loop->iteration }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{{ $parcel->order_date ? \Carbon\Carbon::parse($parcel->order_date)->format('F d, Y') : '' }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 dark:text-gray-300">{{ $parcel->shipNum }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{{ $parcel->voyageNum }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300 font-medium">{{ $parcel->blNumber }}</td>
@@ -252,6 +267,15 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 dark:text-gray-300">
                                 ₱{{ number_format($parcel->total, 2) }}
                             </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
+                                <input type="text" name="documents[{{ $parcel->id }}]" value="{{ $parcel->documents }}"
+                                    class="w-full px-2 py-1 text-sm border border-gray-300 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300">
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
+                                <input type="text" name="key[{{ $parcel->id }}]" value="{{ $parcel->key }}"
+                                    class="w-full px-2 py-1 text-sm border border-gray-300 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300">
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{{ $parcel->checkName ?? '' }}</td>
                         </tr>
                     @empty
                         <tr>
@@ -269,6 +293,7 @@
                 </tbody>
             </table>
         </div>
+        </form>
 
         <!-- Enhanced Pagination -->
         <div class="mt-8 bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
@@ -693,7 +718,7 @@
                 .set(opt)
                 .from(container)
                 .toPdf() // Generate PDF object first
-                .get('pdf') // Get the PDF object
+                .get('pdf') // Get the PDF objecta
                 .then(function(pdf) {
                     const totalPages = pdf.internal.getNumberOfPages();
                     

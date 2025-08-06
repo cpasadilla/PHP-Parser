@@ -7,6 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class parcel extends Model
 {
+    public function order()
+    {
+        return $this->belongsTo(Order::class, 'orderId', 'id');
+    }
+
     protected $fillable = [
         'orderId',
         'itemId',
@@ -21,6 +26,8 @@ class parcel extends Model
         'total',
         'unit',
         'weight',
-
+        'documents',
+        'key',
+        'date'
     ];
 }
