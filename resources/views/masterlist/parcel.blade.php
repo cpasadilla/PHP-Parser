@@ -496,41 +496,72 @@
                 }
             });
             
-            // Define columns to exclude (0-based index)
-            // SHIP(0), VOYAGE(1), ITEM CODE(6), UNIT(8), RATE(11), FREIGHT(12)
-            const columnsToExclude = [0, 1, 6, 8, 11, 12];
-            
-            // Remove excluded columns from header
+            // Define the columns we want to keep (in order)
+            const columnsToKeep = [
+                '#',
+                'DATE',
+                'BL#',
+                'SHIPPER',
+                'CONSIGNEE',
+                'CONTAINER#',
+                'ITEM NAME',
+                'DESCRIPTION',
+                'QUANTITY',
+                'DOCUMENTS',
+                'KEY',
+                'CHECKER'
+            ];
+
+            // Get header row and all cells
             const headerRow = tableClone.querySelector('thead tr');
+            const bodyRows = tableClone.querySelectorAll('tbody tr');
+
             if (headerRow) {
+                // Get all header cells
                 const headerCells = Array.from(headerRow.querySelectorAll('th'));
-                columnsToExclude.sort((a, b) => b - a).forEach(index => {
-                    if (headerCells[index]) {
-                        headerCells[index].remove();
+                
+                // Create a map of column indices we want to keep
+                const columnIndices = columnsToKeep.map(columnName => {
+                    return headerCells.findIndex(cell => {
+                        const cellText = cell.textContent.trim();
+                        return cellText === columnName || 
+                               (columnName === 'BL#' && cellText === 'BL NUMBER');
+                    });
+                }).filter(index => index !== -1);
+
+                // Remove all columns that are not in our keep list
+                headerCells.forEach((cell, index) => {
+                    if (!columnIndices.includes(index)) {
+                        cell.remove();
                     }
+                });
+
+                // Remove unwanted columns from body rows
+                bodyRows.forEach(row => {
+                    const cells = Array.from(row.querySelectorAll('td'));
+                    cells.forEach((cell, index) => {
+                        if (!columnIndices.includes(index)) {
+                            cell.remove();
+                        }
+                    });
                 });
             }
             
-            // Remove excluded columns from all body rows
-            const bodyRows = tableClone.querySelectorAll('tbody tr');
-            bodyRows.forEach(row => {
-                const cells = Array.from(row.querySelectorAll('td'));
-                columnsToExclude.sort((a, b) => b - a).forEach(index => {
-                    if (cells[index]) {
-                        cells[index].remove();
-                    }
-                });
-            });
-            
-            // Define custom column widths for better space distribution
+            // Define custom column widths optimized for A4 landscape PDF
             const columnWidths = {
-                'BL NUMBER': '80px',
-                'QUANTITY': '80px',
-                'CONSIGNEE': '140px',
-                'SHIPPER': '140px',
-                'ITEM NAME': '160px',
-                'DESCRIPTION': '200px',
-                'CONTAINER#': '100px'
+                '#': '30px',          // Minimal width for row numbers
+                'DATE': '65px',       // Enough for date format
+                'BL#': '70px',        // Compact but readable
+                'BL NUMBER': '70px',  // Matching BL#
+                'SHIPPER': '110px',   // Optimized for names
+                'CONSIGNEE': '110px', // Matching SHIPPER
+                'CONTAINER#': '80px',  // Just right for container numbers
+                'ITEM NAME': '110px', // Balanced for item names
+                'DESCRIPTION': '130px', // Slightly wider for descriptions
+                'QUANTITY': '50px',    // Sufficient for numbers
+                'DOCUMENTS': '65px',   // Compact document references
+                'KEY': '55px',        // Minimal width needed
+                'CHECKER': '70px'     // Space for checker name
             };
             
             // Apply custom widths to columns based on header text
@@ -555,28 +586,28 @@
             
             // Configure the PDF options
             const opt = {
-                margin: [0.3, 0.1, 0.2, 0.3], // [top, right, bottom, left] - reduced bottom and left margins
+                margin: [0.4, 0.2, 0.4, 0.2], // Balanced margins for better fit
                 filename: 'ITEM LIST.pdf',
                 pagebreak: {
-                    mode: ['avoid-all', 'css', 'legacy'], // Prevent unnecessary page breaks
+                    mode: ['avoid-all', 'css', 'legacy'],
                     after: '.pagebreak-after',
-                    avoid: ['tr', 'td'] // Try to avoid breaking inside table rows
+                    avoid: ['tr', 'td']
                 },
                 html2canvas: { 
-                    scale: 3, // Increased from 2 to 3 for better quality with larger text
+                    scale: 2, // Adjusted for better balance of quality and size
                     useCORS: true,
                     allowTaint: true,
-                    letterRendering: true, // Better text rendering
-                    removeContainer: true, // Remove the temporary container
-                    logging: false // Disable logging
+                    letterRendering: true,
+                    removeContainer: true,
+                    logging: false
                 },
                 jsPDF: { 
                     unit: 'in', 
                     format: 'a4', 
                     orientation: 'landscape',
-                    compress: true, // Better PDF compression
-                    hotfixes: ["px_scaling"], // Fix for better text extraction
-                    textLayer: true // Enable text layer for copying
+                    compress: true,
+                    hotfixes: ["px_scaling"],
+                    textLayer: true
                 }
             };
 
@@ -644,12 +675,54 @@
             // Style header cells with stronger borders and background
             const headerCells = tableClone.querySelectorAll('th');
             headerCells.forEach(cell => {
-                cell.style.backgroundColor = '#e6e6e6'; // Slightly darker for better contrast
+                cell.style.backgroundColor = '#f0f0f0';
                 cell.style.fontWeight = 'bold';
-                cell.style.fontSize = '13px'; // Slightly larger headers (13px)
+                cell.style.fontSize = '12px';
                 cell.style.textAlign = 'center';
-                cell.style.borderBottom = '1px solid #666'; // Thinner and lighter border below headers
-                cell.style.padding = '6px 4px'; // Slightly more vertical padding
+                cell.style.borderBottom = '1px solid #000';
+                cell.style.padding = '8px 6px';
+                cell.style.whiteSpace = 'nowrap';
+                
+                // Align specific headers
+                const headerText = cell.textContent.trim();
+                if (headerText === 'DESCRIPTION') {
+                    cell.style.textAlign = 'left';
+                }
+            });
+
+            // Style body cells
+            const bodyCells = tableClone.querySelectorAll('tbody td');
+            bodyCells.forEach(cell => {
+                const columnIndex = Array.from(cell.parentElement.children).indexOf(cell);
+                const headerText = headerCells[columnIndex]?.textContent.trim();
+                
+                // Base styling
+                cell.style.padding = '4px 5px';
+                cell.style.fontSize = '10px';
+                cell.style.border = '1px solid #000';
+                cell.style.whiteSpace = 'normal';
+                cell.style.overflow = 'hidden';
+                cell.style.wordBreak = 'break-word';
+                
+                // Special alignment and styling for specific columns
+                if (headerText === '#' || headerText === 'QUANTITY') {
+                    cell.style.textAlign = 'center';
+                    cell.style.whiteSpace = 'nowrap';
+                } else if (headerText === 'DATE' || headerText === 'BL#' || headerText === 'BL NUMBER' || headerText === 'CONTAINER#') {
+                    cell.style.whiteSpace = 'nowrap';
+                } else if (headerText === 'DESCRIPTION' || headerText === 'ITEM NAME') {
+                    cell.style.textAlign = 'left';
+                    cell.style.maxWidth = columnWidths[headerText];
+                }
+                
+                // Handle DOCUMENTS and KEY columns
+                if (headerText === 'DOCUMENTS' || headerText === 'KEY') {
+                    const input = cell.querySelector('input');
+                    if (input) {
+                        cell.textContent = input.value || '';
+                    }
+                    cell.style.whiteSpace = 'nowrap';
+                }
             });
             
             // Add a title to the PDF
