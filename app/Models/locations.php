@@ -11,4 +11,20 @@ class locations extends Model
         'location',
         'name'
     ];
+
+    /**
+     * Set the location to uppercase before saving
+     */
+    public function setLocationAttribute($value)
+    {
+        $this->attributes['location'] = strtoupper($value);
+    }
+
+    /**
+     * Set the name to uppercase before saving
+     */
+    public function setNameAttribute($value)
+    {
+        $this->attributes['name'] = strtoupper($value);
+    }
 }

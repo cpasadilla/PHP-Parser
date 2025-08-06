@@ -48,6 +48,14 @@ class User extends Authenticatable
         ];
     }
 
+    /**
+     * Set the location to uppercase before saving
+     */
+    public function setLocationAttribute($value)
+    {
+        $this->attributes['location'] = strtoupper($value);
+    }
+
     public function roles(){
         return $this->hasOne(Roles::class, 'user_id');
     }

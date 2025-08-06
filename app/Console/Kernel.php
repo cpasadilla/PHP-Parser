@@ -16,6 +16,7 @@ class Kernel extends ConsoleKernel
         \App\Console\Commands\CheckNewYear::class,
         \App\Console\Commands\ResetSoaNumbers::class,
         \App\Console\Commands\ResetInterestActivation::class,
+        \App\Console\Commands\UpdateLocationsCase::class,
     ];/**
      * Define the application's command schedule.
      */

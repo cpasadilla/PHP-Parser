@@ -7,6 +7,30 @@ use Illuminate\Database\Eloquent\Model;
 
 class order extends Model
 {
+    /**
+     * Set the origin to uppercase before saving
+     */
+    public function setOriginAttribute($value)
+    {
+        $this->attributes['origin'] = strtoupper($value);
+    }
+
+    /**
+     * Set the destination to uppercase before saving
+     */
+    public function setDestinationAttribute($value)
+    {
+        $this->attributes['destination'] = strtoupper($value);
+    }
+
+    /**
+     * Set the updated_location to uppercase before saving
+     */
+    public function setUpdatedLocationAttribute($value)
+    {
+        $this->attributes['updated_location'] = $value ? strtoupper($value) : null;
+    }
+
     protected $fillable = [
         'orderId',
         'totalAmount',
@@ -27,7 +51,7 @@ class order extends Model
         'creator',
         'freight',
         'valuation',
-        'padlock_fee', // Add padlock fee
+        'padlock_fee',
         'shipperId',
         'recId',
         'value',
@@ -35,18 +59,19 @@ class order extends Model
         'wharfage',
         'cargoType',
         'blStatus',
-        'discount', // Add this field
-        'bir', // Ensure this field is fillable
-        'OR', // Add OR field
-        'AR', // Add AR field
-        'or_ar_date', // Add this field
-        'originalFreight', // Ensure this field is fillable
-        'interest_start_date', // Field for tracking interest activation date
+        'discount',
+        'bir',
+        'OR',
+        'AR',
+        'or_ar_date',
+        'originalFreight',
+        'interest_start_date',
         'image',
         'note',
-        'updated_by', // Add this field
-        'dock_period', // Add dock_period field to track which dock period this order belongs to
-        'dock_number', // Add dock_number field to track which dock cycle this order belongs to
+        'updated_by',
+        'updated_location',
+        'dock_period',
+        'dock_number'
     ];
 
     protected $casts = [

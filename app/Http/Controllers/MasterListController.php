@@ -1588,7 +1588,7 @@ class MasterListController extends Controller
             if (in_array($field, ['OR', 'AR'])) {
                 $order->or_ar_date = $request->date ?? now();
                 $order->updated_by = Auth::user()->fName . ' ' . Auth::user()->lName; // Set the updated_by field
-                $order->updated_location = Auth::user()->location === 'MANILA' ? 'MANILA' : 'BATANES';
+                $order->updated_location = Auth::user()->location; // Use the user's actual location
 
                 if (empty($order->OR) && empty($order->AR)) {
                     $order->or_ar_date = null;
