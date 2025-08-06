@@ -164,6 +164,27 @@
             </div>
         @endif
 
+        <!-- Column Visibility Controls -->
+        <div class="mb-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
+            <div class="flex flex-wrap items-center gap-2 mb-3">
+                <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mr-4">Column Visibility:</h3>
+                <button id="showAllColumns" class="px-3 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600">
+                    Show All
+                </button>
+                <button id="hideAllColumns" class="px-3 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600">
+                    Hide All
+                </button>
+                <button id="toggleColumnControls" class="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600">
+                    Toggle Controls
+                </button>
+            </div>
+            
+            <!-- Individual Column Controls -->
+            <div id="columnControls" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2 text-xs hidden">
+                <!-- Column toggles will be populated by JavaScript -->
+            </div>
+        </div>
+
         <!-- Table Section with enhanced styling -->
         <form method="POST" action="{{ route('masterlist.parcel.update') }}" class="mb-4">
             @csrf
@@ -336,6 +357,41 @@
     </div>
     <br>
 
+    <style>
+        /* Hidden column styling */
+        .column-hidden {
+            display: none !important;
+        }
+        
+        /* Column controls toggle */
+        #columnControls.hidden {
+            display: none;
+        }
+        
+        /* Column toggle styling */
+        .column-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem;
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 0.25rem;
+        }
+        
+        .column-toggle input[type="checkbox"] {
+            margin: 0;
+        }
+        
+        .column-toggle label {
+            font-size: 11px;
+            cursor: pointer;
+            user-select: none;
+            margin: 0;
+            line-height: 1.2;
+        }
+    </style>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script>
         // Store all voyages data for filtering
@@ -496,7 +552,7 @@
                 }
             });
             
-            // Define the columns we want to keep (in order)
+            // Define the columns we want to keep (in order) - but only if they're visible
             const columnsToKeep = [
                 '#',
                 'DATE',
@@ -520,18 +576,25 @@
                 // Get all header cells
                 const headerCells = Array.from(headerRow.querySelectorAll('th'));
                 
-                // Create a map of column indices we want to keep
-                const columnIndices = columnsToKeep.map(columnName => {
-                    return headerCells.findIndex(cell => {
-                        const cellText = cell.textContent.trim();
-                        return cellText === columnName || 
-                               (columnName === 'BL#' && cellText === 'BL NUMBER');
-                    });
-                }).filter(index => index !== -1);
-
-                // Remove all columns that are not in our keep list
+                // Filter out columns that are hidden in the original table
+                const originalTable = document.querySelector('table');
+                const originalHeaders = originalTable.querySelectorAll('thead th');
+                const visibleColumnIndices = [];
+                
                 headerCells.forEach((cell, index) => {
-                    if (!columnIndices.includes(index)) {
+                    const originalHeader = originalHeaders[index];
+                    if (originalHeader && !originalHeader.classList.contains('column-hidden')) {
+                        const headerText = cell.textContent.trim();
+                        if (columnsToKeep.includes(headerText) || 
+                            (headerText === 'BL NUMBER' && columnsToKeep.includes('BL#'))) {
+                            visibleColumnIndices.push(index);
+                        }
+                    }
+                });
+
+                // Remove all columns that are not in our keep list or are hidden
+                headerCells.forEach((cell, index) => {
+                    if (!visibleColumnIndices.includes(index)) {
                         cell.remove();
                     }
                 });
@@ -540,7 +603,7 @@
                 bodyRows.forEach(row => {
                     const cells = Array.from(row.querySelectorAll('td'));
                     cells.forEach((cell, index) => {
-                        if (!columnIndices.includes(index)) {
+                        if (!visibleColumnIndices.includes(index)) {
                             cell.remove();
                         }
                     });
@@ -815,5 +878,140 @@
                 })
                 .catch(error => console.error('Error generating PDF:', error));
         }
+
+        // Column Visibility Management
+        document.addEventListener('DOMContentLoaded', function() {
+            // Define column information with their names and indices
+            const columnInfo = [
+                { name: '#', index: 0, essential: true },
+                { name: 'Date', index: 1, essential: false },
+                { name: 'Ship', index: 2, essential: false },
+                { name: 'Voyage', index: 3, essential: false },
+                { name: 'BL#', index: 4, essential: true },
+                { name: 'Shipper', index: 5, essential: true },
+                { name: 'Consignee', index: 6, essential: true },
+                { name: 'Container#', index: 7, essential: false },
+                { name: 'Item Code', index: 8, essential: false },
+                { name: 'Quantity', index: 9, essential: false },
+                { name: 'Unit', index: 10, essential: false },
+                { name: 'Item Name', index: 11, essential: true },
+                { name: 'Description', index: 12, essential: false },
+                { name: 'Rate', index: 13, essential: false },
+                { name: 'Freight', index: 14, essential: false },
+                { name: 'Documents', index: 15, essential: false },
+                { name: 'Key', index: 16, essential: false },
+                { name: 'Checker', index: 17, essential: false }
+            ];
+
+            // Load saved column preferences from localStorage
+            const savedPreferences = JSON.parse(localStorage.getItem('parcelColumnVisibility') || '{}');
+
+            // Create column toggle controls
+            function createColumnControls() {
+                const controlsContainer = document.getElementById('columnControls');
+                controlsContainer.innerHTML = '';
+
+                columnInfo.forEach((column, index) => {
+                    const isVisible = savedPreferences[column.name] !== false; // Default to visible unless explicitly hidden
+                    
+                    const toggleDiv = document.createElement('div');
+                    toggleDiv.className = 'column-toggle';
+                    
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.id = `toggle-${index}`;
+                    checkbox.checked = isVisible;
+                    checkbox.addEventListener('change', () => toggleColumn(column, checkbox.checked));
+                    
+                    const label = document.createElement('label');
+                    label.htmlFor = `toggle-${index}`;
+                    label.textContent = column.name;
+                    
+                    // Add essential indicator
+                    if (column.essential) {
+                        label.textContent += ' *';
+                        label.title = 'Essential column';
+                        checkbox.disabled = true; // Prevent hiding essential columns
+                    }
+                    
+                    toggleDiv.appendChild(checkbox);
+                    toggleDiv.appendChild(label);
+                    controlsContainer.appendChild(toggleDiv);
+
+                    // Apply initial visibility
+                    toggleColumn(column, isVisible, false);
+                });
+            }
+
+            // Toggle column visibility
+            function toggleColumn(column, isVisible, savePreference = true) {
+                const table = document.querySelector('table');
+                const headers = table.querySelectorAll('thead th');
+                const rows = table.querySelectorAll('tbody tr');
+
+                // Toggle header visibility
+                if (headers[column.index]) {
+                    if (isVisible) {
+                        headers[column.index].classList.remove('column-hidden');
+                    } else {
+                        headers[column.index].classList.add('column-hidden');
+                    }
+                }
+
+                // Toggle body cell visibility
+                rows.forEach(row => {
+                    const cells = row.querySelectorAll('td');
+                    if (cells[column.index]) {
+                        if (isVisible) {
+                            cells[column.index].classList.remove('column-hidden');
+                        } else {
+                            cells[column.index].classList.add('column-hidden');
+                        }
+                    }
+                });
+
+                // Save preference to localStorage
+                if (savePreference && !column.essential) {
+                    savedPreferences[column.name] = isVisible;
+                    localStorage.setItem('parcelColumnVisibility', JSON.stringify(savedPreferences));
+                }
+            }
+
+            // Show all columns
+            function showAllColumns() {
+                columnInfo.forEach((column, index) => {
+                    const checkbox = document.getElementById(`toggle-${index}`);
+                    if (checkbox && !checkbox.disabled) {
+                        checkbox.checked = true;
+                        toggleColumn(column, true);
+                    }
+                });
+            }
+
+            // Hide all non-essential columns
+            function hideAllColumns() {
+                columnInfo.forEach((column, index) => {
+                    const checkbox = document.getElementById(`toggle-${index}`);
+                    if (checkbox && !checkbox.disabled && !column.essential) {
+                        checkbox.checked = false;
+                        toggleColumn(column, false);
+                    }
+                });
+            }
+
+            // Toggle column controls visibility
+            function toggleColumnControls() {
+                const controls = document.getElementById('columnControls');
+                controls.classList.toggle('hidden');
+            }
+
+            // Initialize
+            createColumnControls();
+
+            // Add event listeners to control buttons
+            document.getElementById('showAllColumns').addEventListener('click', showAllColumns);
+            document.getElementById('hideAllColumns').addEventListener('click', hideAllColumns);
+            document.getElementById('toggleColumnControls').addEventListener('click', toggleColumnControls);
+        });
     </script>
 </x-app-layout>
