@@ -230,6 +230,7 @@
                         <th scope="col" class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase dark:text-gray-300 border-b dark:border-gray-700">SHIPPER</th>
                         <th scope="col" class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase dark:text-gray-300 border-b dark:border-gray-700">CONSIGNEE</th>
                         <th scope="col" class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase dark:text-gray-300 border-b dark:border-gray-700">CONTAINER#</th>
+                        <th scope="col" class="px-6 py-4 text-xs font-medium tracking-wider text-center text-gray-500 uppercase dark:text-gray-300 border-b dark:border-gray-700">CARGO STATUS</th>
                         <th scope="col" class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase dark:text-gray-300 border-b dark:border-gray-700">ITEM CODE</th>
                         <th scope="col" class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase dark:text-gray-300 border-b dark:border-gray-700">QUANTITY</th>
                         <th scope="col" class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase dark:text-gray-300 border-b dark:border-gray-700">UNIT</th>
@@ -277,6 +278,7 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{{ $parcel->shipperName }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{{ $parcel->recName }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{{ $parcel->containerNum }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300 text-center">{{ $parcel->cargoType ?? '' }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{{ $parcel->itemId }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{{ $parcel->quantity }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{{ $parcel->unit }}</td>
@@ -552,6 +554,46 @@
                 }
             });
             
+            // Change header names for PDF export
+            const allHeaders = tableClone.querySelectorAll('th');
+            allHeaders.forEach(header => {
+                let headerText = header.textContent.trim();
+                if (headerText === 'QUANTITY') {
+                    header.textContent = 'QTY';
+                } else if (headerText === 'DOCUMENTS') {
+                    header.textContent = 'DOCS';
+                } else if (headerText === 'CONTAINER#') {
+                    header.textContent = 'CONT #';
+                }
+            });
+            
+            // Convert date format for PDF export
+            const dateColumnIndex = Array.from(tableClone.querySelectorAll('thead th')).findIndex(th => th.textContent.trim() === 'DATE');
+            if (dateColumnIndex !== -1) {
+                const bodyRows = tableClone.querySelectorAll('tbody tr');
+                bodyRows.forEach(row => {
+                    const dateCell = row.cells[dateColumnIndex];
+                    if (dateCell && dateCell.textContent.trim()) {
+                        const dateText = dateCell.textContent.trim();
+                        // Convert from "August 09, 2025" format to "08/09/2025" format
+                        if (dateText && dateText !== '') {
+                            try {
+                                const date = new Date(dateText);
+                                if (!isNaN(date.getTime())) {
+                                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                                    const day = String(date.getDate()).padStart(2, '0');
+                                    const year = date.getFullYear();
+                                    dateCell.textContent = `${month}/${day}/${year}`;
+                                }
+                            } catch (e) {
+                                // Keep original text if parsing fails
+                                console.log('Date parsing failed for:', dateText);
+                            }
+                        }
+                    }
+                });
+            }
+            
             // Define the columns we want to keep (in order) - but only if they're visible
             const columnsToKeep = [
                 '#',
@@ -559,11 +601,12 @@
                 'BL#',
                 'SHIPPER',
                 'CONSIGNEE',
-                'CONTAINER#',
+                'CONT #',
+                'CARGO STATUS',
                 'ITEM NAME',
                 'DESCRIPTION',
-                'QUANTITY',
-                'DOCUMENTS',
+                'QTY',
+                'DOCS',
                 'KEY',
                 'CHECKER'
             ];
@@ -613,17 +656,21 @@
             // Define custom column widths optimized for A4 landscape PDF
             const columnWidths = {
                 '#': '30px',          // Minimal width for row numbers
-                'DATE': '65px',       // Enough for date format
-                'BL#': '70px',        // Compact but readable
-                'BL NUMBER': '70px',  // Matching BL#
+                'DATE': '60px',       // Enough for date format
+                'BL#': '40px',        // Compact but readable
+                'BL NUMBER': '40px',  // Matching BL#
                 'SHIPPER': '110px',   // Optimized for names
                 'CONSIGNEE': '110px', // Matching SHIPPER
-                'CONTAINER#': '80px',  // Just right for container numbers
-                'ITEM NAME': '110px', // Balanced for item names
-                'DESCRIPTION': '130px', // Slightly wider for descriptions
-                'QUANTITY': '50px',    // Sufficient for numbers
-                'DOCUMENTS': '65px',   // Compact document references
-                'KEY': '55px',        // Minimal width needed
+                'CONT #': '80px',     // Just right for container numbers (renamed from CONTAINER#)
+                'CONTAINER#': '80px', // Keep original for backward compatibility
+                'CARGO STATUS': '80px', // Space for cargo status
+                'ITEM NAME': '90px', // Balanced for item names
+                'DESCRIPTION': '160px', // Slightly wider for descriptions
+                'QTY': '15px',        // Reduced width for numbers (renamed from QUANTITY)
+                'QUANTITY': '15px',   // Keep original for backward compatibility with reduced width
+                'DOCS': '85px',       // Compact document references (renamed from DOCUMENTS)
+                'DOCUMENTS': '95px',  // Keep original for backward compatibility
+                'KEY': '60px',        // Minimal width needed
                 'CHECKER': '70px'     // Space for checker name
             };
             
@@ -640,7 +687,7 @@
                         cell.style.width = columnWidths[headerText];
                         
                         // Center align numeric data
-                        if (headerText === 'QUANTITY') {
+                        if (headerText === 'QUANTITY' || headerText === 'QTY') {
                             cell.style.textAlign = 'center';
                         }
                     });
@@ -679,7 +726,7 @@
             container.appendChild(tableClone);
 
             // Add some basic styling for the PDF
-            container.style.padding = '10px';
+            container.style.padding = '0 10px 10px 10px'; // Remove top padding, keep others
             container.style.fontSize = '12px';
             container.style.fontFamily = 'Arial, sans-serif';
             
@@ -710,7 +757,7 @@
             };
             
             const blNumberColIndex = findColumnIndex('BL NUMBER');
-            const quantityColIndex = findColumnIndex('QUANTITY');
+            const quantityColIndex = findColumnIndex('QTY'); // Updated to look for QTY instead of QUANTITY
             
             // Apply specific widths if columns are found
             if (blNumberColIndex !== -1) {
@@ -724,8 +771,8 @@
             if (quantityColIndex !== -1) {
                 const quantityCells = tableClone.querySelectorAll(`thead th:nth-child(${quantityColIndex + 1}), tbody td:nth-child(${quantityColIndex + 1})`);
                 quantityCells.forEach(cell => {
-                    cell.style.width = '60px'; // Reduced width for QUANTITY
-                    cell.style.maxWidth = '60px';
+                    cell.style.width = '40px'; // Further reduced width for QUANTITY
+                    cell.style.maxWidth = '40px';
                     cell.style.textAlign = 'center'; // Center-align quantities for better readability
                 });
             }
@@ -768,23 +815,49 @@
                 cell.style.wordBreak = 'break-word';
                 
                 // Special alignment and styling for specific columns
-                if (headerText === '#' || headerText === 'QUANTITY') {
+                if (headerText === '#' || headerText === 'QUANTITY' || headerText === 'QTY') {
                     cell.style.textAlign = 'center';
                     cell.style.whiteSpace = 'nowrap';
-                } else if (headerText === 'DATE' || headerText === 'BL#' || headerText === 'BL NUMBER' || headerText === 'CONTAINER#') {
+                    cell.style.wordBreak = 'normal'; // Reset word break for numbers
+                } else if (headerText === 'DATE' || headerText === 'BL#' || headerText === 'BL NUMBER') {
                     cell.style.whiteSpace = 'nowrap';
+                    cell.style.wordBreak = 'normal'; // Reset word break for short identifiers
+                } else if (headerText === 'CONTAINER#' || headerText === 'CONT #') {
+                    // Allow text wrapping for container numbers
+                    cell.style.whiteSpace = 'normal';
+                    cell.style.wordBreak = 'break-word';
                 } else if (headerText === 'DESCRIPTION' || headerText === 'ITEM NAME') {
                     cell.style.textAlign = 'left';
                     cell.style.maxWidth = columnWidths[headerText];
+                    cell.style.whiteSpace = 'normal';
+                    cell.style.wordBreak = 'break-word';
+                } else if (headerText === 'SHIPPER' || headerText === 'CONSIGNEE') {
+                    // Apply text wrapping for shipper and consignee names
+                    cell.style.whiteSpace = 'normal';
+                    cell.style.wordBreak = 'break-word';
+                } else if (headerText === 'UNIT') {
+                    // Keep units compact but allow breaking if needed
+                    cell.style.whiteSpace = 'normal';
+                    cell.style.wordBreak = 'break-word';
+                } else if (headerText === 'CHECKER') {
+                    // Allow text wrapping for checker names
+                    cell.style.whiteSpace = 'normal';
+                    cell.style.wordBreak = 'break-word';
+                } else {
+                    // Default: allow text wrapping for all other columns
+                    cell.style.whiteSpace = 'normal';
+                    cell.style.wordBreak = 'break-word';
                 }
                 
-                // Handle DOCUMENTS and KEY columns
-                if (headerText === 'DOCUMENTS' || headerText === 'KEY') {
+                // Handle DOCUMENTS and KEY columns (check for both old and new names)
+                if (headerText === 'DOCUMENTS' || headerText === 'DOCS' || headerText === 'KEY') {
                     const input = cell.querySelector('input');
                     if (input) {
                         cell.textContent = input.value || '';
                     }
-                    cell.style.whiteSpace = 'nowrap';
+                    // Allow text wrapping for document and key fields
+                    cell.style.whiteSpace = 'normal';
+                    cell.style.wordBreak = 'break-word';
                 }
             });
             
@@ -823,8 +896,8 @@
             title.style.textAlign = 'center';
             title.style.fontSize = '20px'; // Increased from 18px to 22px
             title.style.color = '#000'; // Darker color for better visibility
-            title.style.marginTop = '0'; // Remove top margin
-            title.style.marginBottom = '5px'; // Reduced space below title
+            title.style.margin = '0'; // Remove all margins
+            title.style.marginBottom = '5px'; // Add only bottom margin
             title.style.fontWeight = 'bold'; // Make title bold
             container.insertBefore(title, tableClone);
 
@@ -891,16 +964,17 @@
                 { name: 'Shipper', index: 5, essential: true },
                 { name: 'Consignee', index: 6, essential: true },
                 { name: 'Container#', index: 7, essential: false },
-                { name: 'Item Code', index: 8, essential: false },
-                { name: 'Quantity', index: 9, essential: false },
-                { name: 'Unit', index: 10, essential: false },
-                { name: 'Item Name', index: 11, essential: true },
-                { name: 'Description', index: 12, essential: false },
-                { name: 'Rate', index: 13, essential: false },
-                { name: 'Freight', index: 14, essential: false },
-                { name: 'Documents', index: 15, essential: false },
-                { name: 'Key', index: 16, essential: false },
-                { name: 'Checker', index: 17, essential: false }
+                { name: 'Cargo Status', index: 8, essential: false },
+                { name: 'Item Code', index: 9, essential: false },
+                { name: 'Quantity', index: 10, essential: false },
+                { name: 'Unit', index: 11, essential: false },
+                { name: 'Item Name', index: 12, essential: true },
+                { name: 'Description', index: 13, essential: false },
+                { name: 'Rate', index: 14, essential: false },
+                { name: 'Freight', index: 15, essential: false },
+                { name: 'Documents', index: 16, essential: false },
+                { name: 'Key', index: 17, essential: false },
+                { name: 'Checker', index: 18, essential: false }
             ];
 
             // Load saved column preferences from localStorage

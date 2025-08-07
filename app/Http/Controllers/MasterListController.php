@@ -2042,6 +2042,7 @@ class MasterListController extends Controller
                 'orders.shipperName',
                 'orders.recName',
                 'orders.checkName',
+                'orders.cargoType',
                 'orders.created_at as order_date'
             )
             ->join('orders', 'parcels.orderId', '=', 'orders.id');
