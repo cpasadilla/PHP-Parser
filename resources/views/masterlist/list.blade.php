@@ -37,6 +37,9 @@
                 <button id="toggleColumnControls" class="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600">
                     Toggle Controls
                 </button>
+                <button id="toggleRowHighlights" class="px-3 py-1 text-xs bg-purple-500 text-white rounded hover:bg-purple-600" style="background-color: #8b5cf6 !important; color: white !important; padding: 0.25rem 0.75rem; border-radius: 0.25rem; font-size: 0.75rem; border: none; cursor: pointer;">
+                    <span id="highlightButtonText">Enable Highlights</span>
+                </button>
             </div>
             
             <!-- Individual Column Controls -->
@@ -880,6 +883,154 @@
 
     .dark thead.bg-gray-200 {
         background-color: #2d3748; /* Dark mode background */
+    }
+
+    /* Row highlighting styles for different conditions - MAXIMUM specificity to override ALL other styles */
+    table#ordersTable tbody tr.highlight-red,
+    table#ordersTable tbody tr.highlight-red td,
+    table#ordersTable tbody tr.border-b.highlight-red,
+    table#ordersTable tbody tr.border-b.highlight-red td {
+        background-color: #fee2e2 !important; /* Light red */
+        background: #fee2e2 !important;
+    }
+    
+    table#ordersTable tbody tr.highlight-dark-blue,
+    table#ordersTable tbody tr.highlight-dark-blue td,
+    table#ordersTable tbody tr.border-b.highlight-dark-blue,
+    table#ordersTable tbody tr.border-b.highlight-dark-blue td {
+        background-color: #1e3a8a !important; /* Dark blue */
+        background: #1e3a8a !important;
+        color: white !important;
+    }
+    
+    table#ordersTable tbody tr.highlight-sky-blue,
+    table#ordersTable tbody tr.highlight-sky-blue td,
+    table#ordersTable tbody tr.border-b.highlight-sky-blue,
+    table#ordersTable tbody tr.border-b.highlight-sky-blue td {
+        background-color: #bae6fd !important; /* Sky blue */
+        background: #bae6fd !important;
+    }
+    
+    table#ordersTable tbody tr.highlight-light-green,
+    table#ordersTable tbody tr.highlight-light-green td,
+    table#ordersTable tbody tr.border-b.highlight-light-green,
+    table#ordersTable tbody tr.border-b.highlight-light-green td {
+        background-color: #dcfce7 !important; /* Light green */
+        background: #dcfce7 !important;
+    }
+    
+    table#ordersTable tbody tr.highlight-dark-green,
+    table#ordersTable tbody tr.highlight-dark-green td,
+    table#ordersTable tbody tr.border-b.highlight-dark-green,
+    table#ordersTable tbody tr.border-b.highlight-dark-green td {
+        background-color: #166534 !important; /* Dark green */
+        background: #166534 !important;
+        color: white !important;
+    }
+    
+    table#ordersTable tbody tr.highlight-pink-violet,
+    table#ordersTable tbody tr.highlight-pink-violet td,
+    table#ordersTable tbody tr.border-b.highlight-pink-violet,
+    table#ordersTable tbody tr.border-b.highlight-pink-violet td {
+        background-color: #f3e8ff !important; /* Pink violet */
+        background: #f3e8ff !important;
+    }
+    
+    table#ordersTable tbody tr.highlight-light-orange,
+    table#ordersTable tbody tr.highlight-light-orange td,
+    table#ordersTable tbody tr.border-b.highlight-light-orange,
+    table#ordersTable tbody tr.border-b.highlight-light-orange td {
+        background-color: #fed7aa !important; /* Light orange */
+        background: #fed7aa !important;
+    }
+    
+    table#ordersTable tbody tr.highlight-dark-orange,
+    table#ordersTable tbody tr.highlight-dark-orange td,
+    table#ordersTable tbody tr.border-b.highlight-dark-orange,
+    table#ordersTable tbody tr.border-b.highlight-dark-orange td {
+        background-color: #ea580c !important; /* Dark orange */
+        background: #ea580c !important;
+        color: white !important;
+    }
+    
+    table#ordersTable tbody tr.highlight-blue-green,
+    table#ordersTable tbody tr.highlight-blue-green td,
+    table#ordersTable tbody tr.border-b.highlight-blue-green,
+    table#ordersTable tbody tr.border-b.highlight-blue-green td {
+        background-color: #67e8f9 !important; /* Blue green */
+        background: #67e8f9 !important;
+    }
+    
+    table#ordersTable tbody tr.highlight-yellow,
+    table#ordersTable tbody tr.highlight-yellow td,
+    table#ordersTable tbody tr.border-b.highlight-yellow,
+    table#ordersTable tbody tr.border-b.highlight-yellow td {
+        background-color: #fef3c7 !important; /* Yellow (highest priority) */
+        background: #fef3c7 !important;
+    }
+
+    /* Dark mode overrides for highlights */
+    .dark table#ordersTable tbody tr.highlight-red,
+    .dark table#ordersTable tbody tr.highlight-red td,
+    .dark table#ordersTable tbody tr.border-b.highlight-red,
+    .dark table#ordersTable tbody tr.border-b.highlight-red td {
+        background-color: #991b1b !important;
+        background: #991b1b !important;
+        color: white !important;
+    }
+    
+    .dark table#ordersTable tbody tr.highlight-sky-blue,
+    .dark table#ordersTable tbody tr.highlight-sky-blue td,
+    .dark table#ordersTable tbody tr.border-b.highlight-sky-blue,
+    .dark table#ordersTable tbody tr.border-b.highlight-sky-blue td {
+        background-color: #0369a1 !important;
+        background: #0369a1 !important;
+        color: white !important;
+    }
+    
+    .dark table#ordersTable tbody tr.highlight-light-green,
+    .dark table#ordersTable tbody tr.highlight-light-green td,
+    .dark table#ordersTable tbody tr.border-b.highlight-light-green,
+    .dark table#ordersTable tbody tr.border-b.highlight-light-green td {
+        background-color: #166534 !important;
+        background: #166534 !important;
+        color: white !important;
+    }
+    
+    .dark table#ordersTable tbody tr.highlight-pink-violet,
+    .dark table#ordersTable tbody tr.highlight-pink-violet td,
+    .dark table#ordersTable tbody tr.border-b.highlight-pink-violet,
+    .dark table#ordersTable tbody tr.border-b.highlight-pink-violet td {
+        background-color: #7c3aed !important;
+        background: #7c3aed !important;
+        color: white !important;
+    }
+    
+    .dark table#ordersTable tbody tr.highlight-light-orange,
+    .dark table#ordersTable tbody tr.highlight-light-orange td,
+    .dark table#ordersTable tbody tr.border-b.highlight-light-orange,
+    .dark table#ordersTable tbody tr.border-b.highlight-light-orange td {
+        background-color: #c2410c !important;
+        background: #c2410c !important;
+        color: white !important;
+    }
+    
+    .dark table#ordersTable tbody tr.highlight-blue-green,
+    .dark table#ordersTable tbody tr.highlight-blue-green td,
+    .dark table#ordersTable tbody tr.border-b.highlight-blue-green,
+    .dark table#ordersTable tbody tr.border-b.highlight-blue-green td {
+        background-color: #0891b2 !important;
+        background: #0891b2 !important;
+        color: white !important;
+    }
+    
+    .dark table#ordersTable tbody tr.highlight-yellow,
+    .dark table#ordersTable tbody tr.highlight-yellow td,
+    .dark table#ordersTable tbody tr.border-b.highlight-yellow,
+    .dark table#ordersTable tbody tr.border-b.highlight-yellow td {
+        background-color: #ca8a04 !important;
+        background: #ca8a04 !important;
+        color: white !important;
     }
 </style>
 <style>
@@ -3124,6 +3275,250 @@
 
         // Initially hide the column controls to keep the interface clean
         document.getElementById('columnControls').classList.add('hidden');
+
+        // Row highlighting functionality
+        let highlightsEnabled = false;
+
+        // Function to check if text contains any of the keywords (case insensitive)
+        function containsKeywords(text, keywords) {
+            if (!text) return false;
+            const lowerText = text.toLowerCase();
+            return keywords.some(keyword => lowerText.includes(keyword.toLowerCase()));
+        }
+
+        // Function to extract text from cells that might contain textareas or divs
+        function extractCellText(cell) {
+            if (!cell) return '';
+            
+            // Try to get text from textarea first
+            const textarea = cell.querySelector('textarea');
+            if (textarea) {
+                return textarea.value || textarea.textContent || '';
+            }
+            
+            // Try to get text from div
+            const div = cell.querySelector('div');
+            if (div) {
+                return div.textContent || '';
+            }
+            
+            // Fallback to cell textContent
+            return cell.textContent || '';
+        }
+
+        // Function to apply row highlights based on conditions
+        function applyRowHighlights() {
+            console.log('Applying row highlights, enabled:', highlightsEnabled);
+            const rows = document.querySelectorAll('#ordersTable tbody tr');
+            console.log('Found rows:', rows.length);
+            
+            rows.forEach((row, index) => {
+                // Remove all existing highlight classes
+                row.classList.remove(
+                    'highlight-red', 'highlight-dark-blue', 'highlight-sky-blue', 
+                    'highlight-light-green', 'highlight-dark-green', 'highlight-pink-violet',
+                    'highlight-light-orange', 'highlight-dark-orange', 'highlight-blue-green', 
+                    'highlight-yellow'
+                );
+
+                if (!highlightsEnabled) return;
+
+                // Get cell contents using improved text extraction
+                const containerCell = row.querySelector('td[data-column="container"]');
+                const descriptionCell = row.querySelector('td[data-column="description"]');
+                const blStatusCell = row.querySelector('td[data-column="bl_status"]');
+                const remarkCell = row.querySelector('td[data-column="bl_remark"]');
+                const cargoStatusCell = row.querySelector('td[data-column="cargo_status"]');
+
+                const containerText = extractCellText(containerCell).trim();
+                const descriptionText = extractCellText(descriptionCell).trim();
+                const blStatusText = extractCellText(blStatusCell).trim();
+                const remarkText = extractCellText(remarkCell).trim();
+                const cargoStatusText = extractCellText(cargoStatusCell).trim();
+
+                console.log(`Row ${index + 1}:`, {
+                    container: `"${containerText}"`,
+                    description: `"${descriptionText.substring(0, 50)}..."`,
+                    blStatus: `"${blStatusText}"`,
+                    cargoStatus: `"${cargoStatusText}"`,
+                    remark: `"${remarkText}"`
+                });
+
+                // Priority 1: YELLOW - BL STATUS is PAID (highest priority)
+                if (blStatusText.toUpperCase() === 'PAID') {
+                    row.classList.add('highlight-yellow');
+                    console.log(`Row ${index + 1}: Applied YELLOW highlight (PAID)`);
+                    return; // Skip other conditions if PAID
+                }
+
+                // Check all other conditions regardless of BL STATUS
+                // (Removed the UNPAID blocking logic)
+
+                // RED - CONTAINER OR REMARK contains "MISSING"
+                const containerHasMissing = containsKeywords(containerText, ['MISSING']);
+                const remarkHasMissing = containsKeywords(remarkText, ['MISSING']);
+                console.log(`Row ${index + 1}: Checking RED - Container has MISSING: ${containerHasMissing}, Remark has MISSING: ${remarkHasMissing}`);
+                if (containerHasMissing || remarkHasMissing) {
+                    row.classList.add('highlight-red');
+                    console.log(`Row ${index + 1}: Applied RED highlight (MISSING in CONTAINER or REMARK)`);
+                    return;
+                }
+
+                // DARK BLUE - CONTAINER OR REMARK contains "DOUBLE BL"
+                const containerHasDoubleBL = containsKeywords(containerText, ['DOUBLE BL']);
+                const remarkHasDoubleBL = containsKeywords(remarkText, ['DOUBLE BL']);
+                console.log(`Row ${index + 1}: Checking DARK BLUE - Container has DOUBLE BL: ${containerHasDoubleBL}, Remark has DOUBLE BL: ${remarkHasDoubleBL}`);
+                if (containerHasDoubleBL || remarkHasDoubleBL) {
+                    row.classList.add('highlight-dark-blue');
+                    console.log(`Row ${index + 1}: Applied DARK BLUE highlight (DOUBLE BL in CONTAINER or REMARK)`);
+                    return;
+                }
+
+                // SKY BLUE - DESCRIPTION contains "CEMENT"
+                const descHasCement = containsKeywords(descriptionText, ['CEMENT']);
+                console.log(`Row ${index + 1}: Checking SKY BLUE - Description has CEMENT: ${descHasCement}`);
+                if (descHasCement) {
+                    row.classList.add('highlight-sky-blue');
+                    console.log(`Row ${index + 1}: Applied SKY BLUE highlight (CEMENT in DESCRIPTION)`);
+                    return;
+                }
+
+                // LIGHT GREEN - DESCRIPTION OR REMARK contains "PARCEL" or "SAND"
+                const descHasParcelOrSand = containsKeywords(descriptionText, ['PARCEL', 'SAND']);
+                const remarkHasParcelOrSand = containsKeywords(remarkText, ['PARCEL', 'SAND']);
+                console.log(`Row ${index + 1}: Checking LIGHT GREEN - Description has PARCEL/SAND: ${descHasParcelOrSand}, Remark has PARCEL/SAND: ${remarkHasParcelOrSand}`);
+                if (descHasParcelOrSand || remarkHasParcelOrSand) {
+                    row.classList.add('highlight-light-green');
+                    console.log(`Row ${index + 1}: Applied LIGHT GREEN highlight (PARCEL/SAND in DESCRIPTION or REMARK)`);
+                    return;
+                }
+
+                // DARK GREEN - REMARK contains "TRANSFER"
+                const remarkHasTransfer = containsKeywords(remarkText, ['TRANSFER']);
+                console.log(`Row ${index + 1}: Checking DARK GREEN - Remark has TRANSFER: ${remarkHasTransfer}`);
+                if (remarkHasTransfer) {
+                    row.classList.add('highlight-dark-green');
+                    console.log(`Row ${index + 1}: Applied DARK GREEN highlight (TRANSFER in REMARK)`);
+                    return;
+                }
+
+                // PINK VIOLET - DESCRIPTION contains "MOTORCYCLE" or "CAR"
+                const descHasMotorOrCar = containsKeywords(descriptionText, ['MOTORCYCLE', 'CAR', 'MODEL']);
+                console.log(`Row ${index + 1}: Checking PINK VIOLET - Description has MOTORCYCLE/CAR/MODEL: ${descHasMotorOrCar}`);
+                if (descHasMotorOrCar) {
+                    row.classList.add('highlight-pink-violet');
+                    console.log(`Row ${index + 1}: Applied PINK VIOLET highlight (MOTORCYCLE/CAR/MODEL in DESCRIPTION)`);
+                    return;
+                }
+
+                // LIGHT ORANGE - CARGO STATUS contains "CHARTERED"
+                const cargoStatusHasChartered = containsKeywords(cargoStatusText, ['CHARTERED']);
+                console.log(`Row ${index + 1}: Checking LIGHT ORANGE - Cargo Status has CHARTERED: ${cargoStatusHasChartered}`);
+                if (cargoStatusHasChartered) {
+                    row.classList.add('highlight-light-orange');
+                    console.log(`Row ${index + 1}: Applied LIGHT ORANGE highlight (CHARTERED in CARGO STATUS)`);
+                    return;
+                }
+
+                // DARK ORANGE - DESCRIPTION OR REMARK contains "S4S"
+                const descHasS4S = containsKeywords(descriptionText, ['S4S']);
+                const remarkHasS4S = containsKeywords(remarkText, ['S4S']);
+                console.log(`Row ${index + 1}: Checking DARK ORANGE - Description has S4S: ${descHasS4S}, Remark has S4S: ${remarkHasS4S}`);
+                if (descHasS4S || remarkHasS4S) {
+                    row.classList.add('highlight-dark-orange');
+                    console.log(`Row ${index + 1}: Applied DARK ORANGE highlight (S4S in DESCRIPTION or REMARK)`);
+                    return;
+                }
+
+                // BLUE GREEN - DESCRIPTION OR REMARK contains fuel-related keywords
+                const fuelKeywords = ['DRUM', 'AVGAS', 'PREMIUM', 'UNLEADED', 'DIESEL', '4KL', '5KL'];
+                const descHasFuel = containsKeywords(descriptionText, fuelKeywords);
+                const remarkHasFuel = containsKeywords(remarkText, fuelKeywords);
+                console.log(`Row ${index + 1}: Checking BLUE GREEN - Description has FUEL: ${descHasFuel}, Remark has FUEL: ${remarkHasFuel}`);
+                if (descHasFuel || remarkHasFuel) {
+                    row.classList.add('highlight-blue-green');
+                    console.log(`Row ${index + 1}: Applied BLUE GREEN highlight (FUEL keywords in DESCRIPTION or REMARK)`);
+                    return;
+                }
+
+                console.log(`Row ${index + 1}: No highlight conditions met`);
+            });
+        }
+
+        // Toggle highlight button functionality
+        document.getElementById('toggleRowHighlights').addEventListener('click', function() {
+            highlightsEnabled = !highlightsEnabled;
+            const buttonText = document.getElementById('highlightButtonText');
+            
+            console.log('Toggle clicked, highlights enabled:', highlightsEnabled);
+            
+            if (highlightsEnabled) {
+                buttonText.textContent = 'Disable Highlights';
+                
+                // Simple test: add yellow highlight to first row to verify CSS is working
+                const firstRow = document.querySelector('#ordersTable tbody tr');
+                if (firstRow) {
+                    firstRow.classList.add('highlight-yellow');
+                    console.log('Added test yellow highlight to first row');
+                    console.log('First row classes:', firstRow.className);
+                }
+                
+                applyRowHighlights();
+            } else {
+                buttonText.textContent = 'Enable Highlights';
+                applyRowHighlights(); // This will remove all highlights
+            }
+        });
+
+        // Add hover effects to the highlight button
+        const highlightButton = document.getElementById('toggleRowHighlights');
+        highlightButton.addEventListener('mouseenter', function() {
+            this.style.backgroundColor = '#7c3aed !important'; // Darker purple on hover
+        });
+        highlightButton.addEventListener('mouseleave', function() {
+            this.style.backgroundColor = '#8b5cf6 !important'; // Original purple
+        });
+
+        // Apply highlights when page loads (initially disabled)
+        applyRowHighlights();
+
+        // Manual test function to verify CSS is working
+        window.testHighlight = function() {
+            const rows = document.querySelectorAll('#ordersTable tbody tr');
+            console.log('Testing highlights on', rows.length, 'rows');
+            
+            if (rows.length > 0) {
+                // Test yellow on first row
+                rows[0].classList.add('highlight-yellow');
+                console.log('Added yellow to row 1, classes:', rows[0].className);
+                
+                if (rows.length > 1) {
+                    // Test red on second row
+                    rows[1].classList.add('highlight-red');
+                    console.log('Added red to row 2, classes:', rows[1].className);
+                }
+                
+                if (rows.length > 2) {
+                    // Test blue on third row
+                    rows[2].classList.add('highlight-sky-blue');
+                    console.log('Added sky blue to row 3, classes:', rows[2].className);
+                }
+            }
+        };
+
+        // Clear test function
+        window.clearTestHighlight = function() {
+            const rows = document.querySelectorAll('#ordersTable tbody tr');
+            rows.forEach(row => {
+                row.classList.remove(
+                    'highlight-red', 'highlight-dark-blue', 'highlight-sky-blue', 
+                    'highlight-light-green', 'highlight-dark-green', 'highlight-pink-violet',
+                    'highlight-light-orange', 'highlight-dark-orange', 'highlight-blue-green', 
+                    'highlight-yellow'
+                );
+            });
+            console.log('Cleared all test highlights');
+        };
     });
 </script>
 
