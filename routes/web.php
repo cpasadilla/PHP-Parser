@@ -4,6 +4,8 @@ use App\Http\Controllers\HistoryController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\UsersController;
 use App\Http\Controllers\UserPermissionController;
+use App\Http\Controllers\AccountingController;
+use App\Http\Controllers\InventoryController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PriceListController;
@@ -67,6 +69,17 @@ Route::middleware('auth')->group(function () {
     // History routes
     Route::middleware('page.permission:history')->group(function () {
         Route::get('/history', [HistoryController::class, 'index'])->name('history');
+    });
+
+    // Accounting routes
+    Route::middleware('page.permission:accounting')->group(function () {
+        Route::get('/accounting', [AccountingController::class, 'index'])->name('accounting');
+    });
+
+    // Inventory routes
+    Route::middleware('page.permission:inventory')->group(function () {
+        Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory');
+        Route::post('/inventory/store', [InventoryController::class, 'store'])->name('inventory.store');
     });
 
     // Price List routes

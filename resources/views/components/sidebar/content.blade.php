@@ -122,6 +122,30 @@
     </x-sidebar.dropdown>
     @endif
 
+    @if(Auth::user()->hasPagePermission('accounting'))
+    <x-sidebar.link
+        title="Accounting"
+        href="{{ route('accounting') }}"
+        :isActive="request()->routeIs('accounting')"
+        >
+            <x-slot name="icon">
+                <x-heroicon-o-calculator class="flex-shrink-0 w-6 h-6" aria-hidden="true" />
+            </x-slot>
+    </x-sidebar.link>
+    @endif
+
+    @if(Auth::user()->hasPagePermission('inventory'))
+    <x-sidebar.link
+        title="Inventory"
+        href="{{ route('inventory') }}"
+        :isActive="request()->routeIs('inventory')"
+        >
+            <x-slot name="icon">
+                <x-heroicon-o-cube class="flex-shrink-0 w-6 h-6" aria-hidden="true" />
+            </x-slot>
+    </x-sidebar.link>
+    @endif
+    
     @if(Auth::user()->roles && in_array(strtoupper(trim(Auth::user()->roles->roles)), ['ADMIN', 'ADMINISTRATOR']))
     <div
         x-transition
