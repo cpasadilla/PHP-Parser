@@ -151,6 +151,11 @@ class CustomerController extends Controller {
                 $redirectParams['page'] = $request->input('page', 1);
             }
 
+            // Check if there's a custom redirect_to parameter
+            if ($request->has('redirect_to')) {
+                return redirect()->to($request->input('redirect_to'))->with('success', 'Main account created successfully!');
+            }
+
             return redirect()->route('customer', $redirectParams)->with('success', 'Main account created successfully!');
         } else {
             $validatedData = $request->validate([
@@ -207,6 +212,11 @@ class CustomerController extends Controller {
             $redirectParams = $request->only('search');
             if ($request->has('page')) {
                 $redirectParams['page'] = $request->input('page', 1);
+            }
+
+            // Check if there's a custom redirect_to parameter
+            if ($request->has('redirect_to')) {
+                return redirect()->to($request->input('redirect_to'))->with('success', 'Sub-account created successfully!');
             }
 
             return redirect()->route('customer', $redirectParams)

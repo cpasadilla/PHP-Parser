@@ -12,6 +12,9 @@ return new class extends Migration {
             $table->date('date');
             $table->unsignedBigInteger('customer_id');
             $table->string('customer_type'); // 'main' or 'sub'
+            $table->string('ship_number')->nullable();
+            $table->string('voyage_number')->nullable();
+            $table->boolean('is_starting_balance')->default(false);
             $table->decimal('in', 10, 0)->nullable();
             $table->decimal('out', 10, 3)->nullable();
             $table->decimal('balance', 10, 2)->nullable();

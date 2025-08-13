@@ -80,6 +80,8 @@ Route::middleware('auth')->group(function () {
     Route::middleware('page.permission:inventory')->group(function () {
         Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory');
         Route::post('/inventory/store', [InventoryController::class, 'store'])->name('inventory.store');
+        Route::post('/inventory/set-starting-balance', [InventoryController::class, 'setStartingBalance'])->name('inventory.set-starting-balance');
+        Route::put('/inventory/{id}', [InventoryController::class, 'update'])->name('inventory.update');
     });
 
     // Price List routes

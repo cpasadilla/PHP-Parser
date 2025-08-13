@@ -7,11 +7,16 @@ use Illuminate\Database\Eloquent\Model;
 class InventoryEntry extends Model
 {
     protected $fillable = [
-        'item', 'date', 'customer_id', 'in', 'out', 'balance', 'amount', 'or_ar', 'dr_number',
+        'item', 'date', 'customer_id', 'customer_type', 'ship_number', 'voyage_number', 
+        'is_starting_balance', 'in', 'out', 'balance', 'amount', 'or_ar', 'dr_number',
         'onsite_date', 'onsite_in', 'actual_out', 'onsite_balance'
     ];
     public function customer()
     {
-        return $this->belongsTo(Customer::class);
+        return $this->belongsTo(Customer::class)->withDefault([
+            'company_name' => 'Starting Balance',
+            'first_name' => '',
+            'last_name' => ''
+        ]);
     }
 }
