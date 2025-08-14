@@ -174,7 +174,7 @@
                     <!-- Tabs -->
                     <div class="border-b border-gray-200 dark:border-gray-700 mb-4">
                         <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="inventoryTabs">
-                            @foreach(['G1 DAMORTIS','G1 CURRIMAO','3/4 GRAVEL','VIBRO SAND','SAND S1 DAMORTIS','SAND S1 M'] as $idx => $item)
+                            @foreach(['G1 DAMORTIS','G1 CURRIMAO','3/4 GRAVEL','VIBRO SAND','SAND S1 DAMORTIS','SAND S1 M','HOLLOWBLOCKS'] as $idx => $item)
                                 <li class="mr-2">
                                     <button class="inline-block p-4 border-b-2 rounded-t-lg text-gray-700 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400" id="tab{{ $idx }}" onclick="showInventoryTab('tabContent{{ $idx }}', 'tab{{ $idx }}')">
                                         {{ $item }}
@@ -184,7 +184,7 @@
                         </ul>
                     </div>
                     <!-- Tab Contents -->
-                    @foreach(['G1 DAMORTIS','G1 CURRIMAO','3/4 GRAVEL','VIBRO SAND','SAND S1 DAMORTIS','SAND S1 M'] as $idx => $item)
+                    @foreach(['G1 DAMORTIS','G1 CURRIMAO','3/4 GRAVEL','VIBRO SAND','SAND S1 DAMORTIS','SAND S1 M','HOLLOWBLOCKS'] as $idx => $item)
                         <div id="tabContent{{ $idx }}" class="tab-content p-4 bg-white rounded-md shadow-md dark:bg-gray-800 dark:shadow-gray-900/25" style="display: {{ $idx === 0 ? 'block' : 'none' }}; overflow-x: auto; white-space: nowrap;">
                             <h3 class="font-semibold mb-2 text-gray-900 dark:text-gray-100">{{ $item }}</h3>
                             <table class="w-full border-collapse mb-4 bg-white dark:bg-gray-800">
@@ -286,7 +286,7 @@
                 <div class="mb-2">
                     <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Item</label>
                     <select name="item" class="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400" required>
-                        @foreach(['G1 DAMORTIS','G1 CURRIMAO','3/4 GRAVEL','VIBRO SAND','SAND S1 DAMORTIS','SAND S1 M'] as $item)
+                        @foreach(['G1 DAMORTIS','G1 CURRIMAO','3/4 GRAVEL','VIBRO SAND','SAND S1 DAMORTIS','SAND S1 M','HOLLOWBLOCKS'] as $item)
                             <option value="{{ $item }}">{{ $item }}</option>
                         @endforeach
                     </select>
@@ -372,7 +372,7 @@
                 <div class="mb-2">
                     <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Item</label>
                     <select name="item" class="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400" required>
-                        @foreach(['G1 DAMORTIS','G1 CURRIMAO','3/4 GRAVEL','VIBRO SAND','SAND S1 DAMORTIS','SAND S1 M'] as $item)
+                        @foreach(['G1 DAMORTIS','G1 CURRIMAO','3/4 GRAVEL','VIBRO SAND','SAND S1 DAMORTIS','SAND S1 M','HOLLOWBLOCKS'] as $item)
                             <option value="{{ $item }}">{{ $item }}</option>
                         @endforeach
                     </select>
@@ -610,7 +610,7 @@
                 const workbook = XLSX.utils.book_new();
                 
                 // Define the inventory items
-                const inventoryItems = ['G1 DAMORTIS','G1 CURRIMAO','3/4 GRAVEL','VIBRO SAND','SAND S1 DAMORTIS','SAND S1 M'];
+                const inventoryItems = ['G1 DAMORTIS','G1 CURRIMAO','3/4 GRAVEL','VIBRO SAND','SAND S1 DAMORTIS','SAND S1 M','HOLLOWBLOCKS'];
                 
                 // Process each inventory item
                 inventoryItems.forEach((itemName, index) => {
