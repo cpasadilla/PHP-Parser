@@ -9,17 +9,51 @@
         <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
             <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg dark:bg-gray-800">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
-                    <div class="flex justify-between items-center mb-4">
-                        <h1 class="text-2xl font-bold">Inventory</h1>
-                        <div class="flex gap-2">
-                            <button onclick="document.getElementById('startingBalanceModal').classList.remove('hidden')" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">Set Starting Balance</button>
-                            <button onclick="document.getElementById('inventoryModal').classList.remove('hidden')" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Add Entry</button>
+                    <div class="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-6 gap-4">
+                        <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Inventory</h1>
+                        
+                        <!-- Button Groups Container -->
+                        <div class="flex flex-col sm:flex-row gap-3 lg:flex-shrink-0">
+                            <!-- Export Group -->
+                            <div class="flex gap-2">
+                                <button id="exportExcel" class="flex items-center gap-2 px-4 py-2 text-white bg-green-500 rounded-md hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-800 transition-colors duration-200 shadow-sm dark:shadow-gray-900/25">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"/>
+                                    </svg>
+                                    Export Excel
+                                </button>
+                                <button id="exportPdf" class="flex items-center gap-2 px-4 py-2 text-white bg-red-500 rounded-md hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-800 transition-colors duration-200 shadow-sm dark:shadow-gray-900/25">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/>
+                                    </svg>
+                                    Export PDF
+                                </button>
+                            </div>
                             
-                            <!-- CREATE CUSTOMER BUTTON - Only show if user has create permission -->
+                            <!-- Action Group -->
+                            <div class="flex gap-2">
+                                <button onclick="document.getElementById('startingBalanceModal').classList.remove('hidden')" class="flex items-center gap-2 px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 dark:bg-yellow-600 dark:hover:bg-yellow-700 transition-colors duration-200 shadow-sm dark:shadow-gray-900/25 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/>
+                                    </svg>
+                                    Set Balance
+                                </button>
+                                <button onclick="document.getElementById('inventoryModal').classList.remove('hidden')" class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 transition-colors duration-200 shadow-sm dark:shadow-gray-900/25">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
+                                    </svg>
+                                    Add Entry
+                                </button>
+                            </div>
+                            
+                            <!-- Customer Group -->
                             <div x-data="{ openModal: false, isSubAccount: false }">
                                 @if(auth()->user()->hasPermission('customer', 'create'))
-                                <button @click="openModal = true; isSubAccount = false" class="px-4 py-2 text-white bg-purple-500 rounded-md hover:bg-purple-600 focus:ring focus:ring-purple-500">
-                                    + Create Customer
+                                <button @click="openModal = true; isSubAccount = false" class="flex items-center gap-2 px-4 py-2 text-white bg-purple-500 rounded-md hover:bg-purple-600 dark:bg-purple-600 dark:hover:bg-purple-700 transition-colors duration-200 shadow-sm dark:shadow-gray-900/25 focus:ring-2 focus:ring-purple-500 focus:ring-offset-1 dark:focus:ring-offset-gray-800">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z"/>
+                                    </svg>
+                                    Create Customer
                                 </button>
                                 @endif
 
@@ -36,8 +70,8 @@
 
                                         <!-- Validation Errors -->
                                         @if ($errors->any())
-                                            <div class="alert alert-danger mb-4">
-                                                <ul class="list-disc list-inside text-red-600">
+                                            <div class="alert alert-danger mb-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-4">
+                                                <ul class="list-disc list-inside text-red-600 dark:text-red-400">
                                                     @foreach ($errors->all() as $error)
                                                         <li>{{ $error }}</li>
                                                     @endforeach
@@ -119,14 +153,14 @@
 
                                             <!-- Submit & Close Buttons -->
                                             <div class="flex justify-between mt-4">
-                                                <button type="button" @click="resetFields" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
+                                                <button type="button" @click="resetFields" class="px-4 py-2 bg-red-500 dark:bg-red-600 text-white rounded hover:bg-red-600 dark:hover:bg-red-700 transition-colors duration-200">
                                                     Clear
                                                 </button>
                                                 <div class="flex space-x-2">
-                                                    <button type="button" @click="openModal = false" class="px-4 py-2 bg-gray-500 text-white rounded">
+                                                    <button type="button" @click="openModal = false" class="px-4 py-2 bg-gray-500 dark:bg-gray-600 text-white rounded hover:bg-gray-600 dark:hover:bg-gray-700 transition-colors duration-200">
                                                         Cancel
                                                     </button>
-                                                    <button type="submit" class="px-4 py-2 text-white bg-blue-500 rounded-md hover:bg-blue-600">
+                                                    <button type="submit" class="px-4 py-2 text-white bg-blue-500 dark:bg-blue-600 rounded-md hover:bg-blue-600 dark:hover:bg-blue-700 transition-colors duration-200">
                                                         Save
                                                     </button>
                                                 </div>
@@ -151,33 +185,33 @@
                     </div>
                     <!-- Tab Contents -->
                     @foreach(['G1 DAMORTIS','G1 CURRIMAO','3/4 GRAVEL','VIBRO SAND','SAND S1 DAMORTIS','SAND S1 M'] as $idx => $item)
-                        <div id="tabContent{{ $idx }}" class="tab-content p-4 bg-white rounded-md shadow-md dark:bg-dark-eval-1" style="display: {{ $idx === 0 ? 'block' : 'none' }}; overflow-x: auto; white-space: nowrap;">
-                            <h3 class="font-semibold mb-2">{{ $item }}</h3>
-                            <table class="w-full border-collapse mb-4">
+                        <div id="tabContent{{ $idx }}" class="tab-content p-4 bg-white rounded-md shadow-md dark:bg-gray-800 dark:shadow-gray-900/25" style="display: {{ $idx === 0 ? 'block' : 'none' }}; overflow-x: auto; white-space: nowrap;">
+                            <h3 class="font-semibold mb-2 text-gray-900 dark:text-gray-100">{{ $item }}</h3>
+                            <table class="w-full border-collapse mb-4 bg-white dark:bg-gray-800">
                             <thead>
                                 <tr class="bg-gray-100 dark:bg-gray-700">
-                                    <th colspan="10" class="border px-2 py-1 text-blue-700 font-bold text-center">{{ $item }}</th>
-                                    <th colspan="6" class="border px-2 py-1 text-blue-700 font-bold text-center">ACTUAL BALANCED ONSITE</th>
+                                    <th colspan="10" class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-blue-700 dark:text-blue-400 font-bold text-center">{{ $item }}</th>
+                                    <th colspan="6" class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-blue-700 dark:text-blue-400 font-bold text-center">ACTUAL BALANCED ONSITE</th>
                                 </tr>
                             </thead>    
                             <thead>
                                     <tr class="bg-gray-100 dark:bg-gray-700">
-                                        <th class="border px-2 py-1">DATE</th>
-                                        <th class="border px-2 py-1">CUSTOMER</th>
-                                        <th class="border px-2 py-1">SHIP#</th>
-                                        <th class="border px-2 py-1">VOYAGE#</th>
-                                        <th class="border px-2 py-1">IN</th>
-                                        <th class="border px-2 py-1">OUT</th>
-                                        <th class="border px-2 py-1">BALANCE</th>
-                                        <th class="border px-2 py-1">AMOUNT</th>
-                                        <th class="border px-2 py-1">OR/AR</th>
-                                        <th class="border px-2 py-1">DR#</th>
-                                        <th class="border px-2 py-1">DATE</th>
-                                        <th class="border px-2 py-1">IN</th>
-                                        <th class="border px-2 py-1">ACTUAL OUT</th>
-                                        <th class="border px-2 py-1">BALANCE</th>
-                                        <th class="border px-2 py-1"></th>
-                                        <th class="border px-2 py-1">UPDATE</th>
+                                        <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">DATE</th>
+                                        <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">CUSTOMER</th>
+                                        <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">SHIP#</th>
+                                        <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">VOYAGE#</th>
+                                        <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">IN</th>
+                                        <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">OUT</th>
+                                        <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">BALANCE</th>
+                                        <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">AMOUNT</th>
+                                        <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">OR/AR</th>
+                                        <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">DR#</th>
+                                        <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">DATE</th>
+                                        <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">IN</th>
+                                        <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">ACTUAL OUT</th>
+                                        <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">BALANCE</th>
+                                        <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100"></th>
+                                        <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">UPDATE</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -191,46 +225,46 @@
                                         @endphp
                                         @if($currentMonth !== $entryMonth)
                                             @php $currentMonth = $entryMonth; @endphp
-                                            <tr class="bg-gray-50">
-                                                <td colspan="16" class="border px-2 py-1 font-bold text-center">{{ strtoupper($entryMonth) }}</td>
+                                            <tr class="bg-gray-50 dark:bg-gray-700">
+                                                <td colspan="16" class="border border-gray-300 dark:border-gray-600 px-2 py-1 font-bold text-center text-gray-900 dark:text-gray-100">{{ strtoupper($entryMonth) }}</td>
                                             </tr>
                                         @endif
-                                    <tr class="{{ $entry->is_starting_balance ? 'bg-yellow-50' : '' }}">
-                                        <td class="border px-2 py-1">
+                                    <tr class="{{ $entry->is_starting_balance ? 'bg-yellow-50 dark:bg-yellow-900/30' : 'bg-white dark:bg-gray-800' }}">
+                                        <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">
                                             @if($entry->is_starting_balance)
                                                 {{ strtoupper(\Carbon\Carbon::parse($entry->date)->format('F')) }}
                                             @else
                                                 {{ \Carbon\Carbon::parse($entry->date)->format('m-d-Y') }}
                                             @endif
                                         </td>
-                                        <td class="border px-2 py-1">
+                                        <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">
                                             @if($entry->is_starting_balance)
                                                 <!-- Empty for starting balance -->
                                             @else
                                                 {{ strtoupper($entry->customer->company_name ?: ($entry->customer->first_name . ' ' . $entry->customer->last_name)) }}
                                             @endif
                                         </td>
-                                        <td class="border px-2 py-1">{{ $entry->ship_number }}</td>
-                                        <td class="border px-2 py-1">{{ $entry->voyage_number }}</td>
-                                        <td class="border px-2 py-1">{{ $entry->in ? number_format($entry->in, 2) : '' }}</td>
-                                        <td class="border px-2 py-1">{{ $entry->out ? number_format($entry->out, 3) : '' }}</td>
-                                        <td class="border px-2 py-1 font-semibold">{{ number_format($entry->balance, 2) }}</td>
-                                        <td class="border px-2 py-1">{{ $entry->amount ? number_format($entry->amount, 2) : '' }}</td>
-                                        <td class="border px-2 py-1">{{ $entry->or_ar }}</td>
-                                        <td class="border px-2 py-1">{{ $entry->dr_number }}</td>
-                                        <td class="border px-2 py-1">
+                                        <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">{{ $entry->ship_number }}</td>
+                                        <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">{{ $entry->voyage_number }}</td>
+                                        <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">{{ $entry->in ? number_format($entry->in, 2) : '' }}</td>
+                                        <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">{{ $entry->out ? number_format($entry->out, 3) : '' }}</td>
+                                        <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 font-semibold text-gray-900 dark:text-gray-100">{{ number_format($entry->balance, 2) }}</td>
+                                        <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">{{ $entry->amount ? number_format($entry->amount, 2) : '' }}</td>
+                                        <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">{{ $entry->or_ar }}</td>
+                                        <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">{{ $entry->dr_number }}</td>
+                                        <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">
                                             @if(!$entry->is_starting_balance && $entry->updated_onsite_date)
                                                 {{ \Carbon\Carbon::parse($entry->updated_onsite_date)->format('m-d-Y') }}
                                             @elseif(!$entry->is_starting_balance && $entry->onsite_date)
                                                 {{ \Carbon\Carbon::parse($entry->onsite_date)->format('m-d-Y') }}
                                             @endif
                                         </td>
-                                        <td class="border px-2 py-1">{{ $entry->onsite_in ? number_format($entry->onsite_in, 2) : '' }}</td>
-                                        <td class="border px-2 py-1">{{ $entry->actual_out ? number_format($entry->actual_out, 3) : '' }}</td>
-                                        <td class="border px-2 py-1 font-semibold">{{ number_format($entry->onsite_balance, 2) }}</td>
-                                        <td class="border px-2 py-1">0</td>
-                                        <td class="border px-2 py-1 text-center">
-                                            <button type="button" onclick="openEditModal({{ $entry->id }})" class="px-2 py-1 bg-yellow-500 text-white rounded text-xs">EDIT</button>
+                                        <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">{{ $entry->onsite_in ? number_format($entry->onsite_in, 2) : '' }}</td>
+                                        <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">{{ $entry->actual_out ? number_format($entry->actual_out, 3) : '' }}</td>
+                                        <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 font-semibold text-gray-900 dark:text-gray-100">{{ number_format($entry->onsite_balance, 2) }}</td>
+                                        <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">0</td>
+                                        <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center">
+                                            <button type="button" onclick="openEditModal({{ $entry->id }})" class="px-2 py-1 bg-yellow-500 text-white rounded text-xs hover:bg-yellow-600 dark:bg-yellow-600 dark:hover:bg-yellow-700 transition-colors duration-200">EDIT</button>
                                         </td>
                                     </tr>
                                     @endforeach
@@ -245,13 +279,13 @@
 
     <!-- Modal for Add Entry -->
     <div id="inventoryModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
-        <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-lg">
-            <h3 class="text-lg font-bold mb-4">Add Inventory Entry</h3>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-lg">
+            <h3 class="text-lg font-bold mb-4 text-gray-900 dark:text-gray-100">Add Inventory Entry</h3>
             <form method="POST" action="{{ route('inventory.store') }}">
                 @csrf
                 <div class="mb-2">
-                    <label class="block text-sm font-medium mb-1">Item</label>
-                    <select name="item" class="w-full border rounded px-2 py-1" required>
+                    <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Item</label>
+                    <select name="item" class="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400" required>
                         @foreach(['G1 DAMORTIS','G1 CURRIMAO','3/4 GRAVEL','VIBRO SAND','SAND S1 DAMORTIS','SAND S1 M'] as $item)
                             <option value="{{ $item }}">{{ $item }}</option>
                         @endforeach
@@ -259,12 +293,12 @@
                 </div>
                 <div class="mb-2 grid grid-cols-2 gap-2">
                     <div>
-                        <label class="block text-sm font-medium mb-1">Date</label>
-                        <input type="date" name="date" class="w-full border rounded px-2 py-1" required />
+                        <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Date</label>
+                        <input type="date" name="date" class="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400" required />
                     </div>
                     <div>
-                        <label class="block text-sm font-medium mb-1">Customer</label>
-                        <select name="customer_id" class="w-full border rounded px-2 py-1" required>
+                        <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Customer</label>
+                        <select name="customer_id" class="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400" required>
                             <option value="">Select Customer or Sub Account</option>
                             <optgroup label="Main Accounts">
                                 @foreach($customers as $customer)
@@ -285,29 +319,29 @@
                 </div>
                 <div class="mb-2 grid grid-cols-2 gap-2">
                     <div>
-                        <label class="block text-sm font-medium mb-1">IN</label>
-                        <input type="number" step="0.0001" name="in" class="w-full border rounded px-2 py-1" min="0" oninput="updateBalance()" />
+                        <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">IN</label>
+                        <input type="number" step="0.0001" name="in" class="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400" min="0" oninput="updateBalance()" />
                     </div>
                     <div>
-                        <label class="block text-sm font-medium mb-1">OUT</label>
-                        <input type="number" step="0.0001" name="out" class="w-full border rounded px-2 py-1" min="0" oninput="updateBalance()" />
+                        <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">OUT</label>
+                        <input type="number" step="0.0001" name="out" class="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400" min="0" oninput="updateBalance()" />
                     </div>
                 </div>
                 <div class="mb-2">
-                    <label class="block text-sm font-medium mb-1">BALANCE</label>
-                    <input type="number" step="0.01" name="balance" class="w-full border rounded px-2 py-1 bg-gray-100" min="0" max="999999.99" readonly />
+                    <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">BALANCE</label>
+                    <input type="number" step="0.01" name="balance" class="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-gray-100" min="0" max="999999.99" readonly />
                 </div>
                 <div class="mb-2">
-                    <label class="block text-sm font-medium mb-1">ONSITE BALANCE</label>
-                    <input type="number" step="0.01" name="onsite_balance" class="w-full border rounded px-2 py-1 bg-gray-100" min="0" max="999999.99" readonly />
+                    <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">ONSITE BALANCE</label>
+                    <input type="number" step="0.01" name="onsite_balance" class="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-gray-100" min="0" max="999999.99" readonly />
                 </div>
                 <div class="mb-2">
-                    <label class="block text-sm font-medium mb-1">AMOUNT</label>
-                    <input type="number" step="0.01" name="amount" class="w-full border rounded px-2 py-1" min="0" max="999999.99" />
+                    <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">AMOUNT</label>
+                    <input type="number" step="0.01" name="amount" class="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400" min="0" max="999999.99" />
                 </div>
                 <div class="flex justify-end gap-2 mt-4">
-                    <button type="button" onclick="document.getElementById('inventoryModal').classList.add('hidden')" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancel</button>
-                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Save</button>
+                    <button type="button" onclick="document.getElementById('inventoryModal').classList.add('hidden')" class="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded hover:bg-gray-400 dark:hover:bg-gray-700 transition-colors duration-200">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded hover:bg-blue-700 dark:hover:bg-blue-800 transition-colors duration-200">Save</button>
                 </div>
             </form>
         </div>
@@ -315,15 +349,15 @@
 
     <!-- Edit Modal -->
     <div id="editInventoryModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
-        <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-lg">
-            <h3 class="text-lg font-bold mb-4">Edit Inventory Entry</h3>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-lg">
+            <h3 class="text-lg font-bold mb-4 text-gray-900 dark:text-gray-100">Edit Inventory Entry</h3>
             <form id="editInventoryForm" method="POST">
                 @csrf
                 @method('PUT')
                 <div id="editInventoryFields"></div>
                 <div class="flex justify-end gap-2 mt-4">
-                    <button type="button" onclick="document.getElementById('editInventoryModal').classList.add('hidden')" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancel</button>
-                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Save</button>
+                    <button type="button" onclick="document.getElementById('editInventoryModal').classList.add('hidden')" class="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded hover:bg-gray-400 dark:hover:bg-gray-700 transition-colors duration-200">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded hover:bg-blue-700 dark:hover:bg-blue-800 transition-colors duration-200">Save</button>
                 </div>
             </form>
         </div>
@@ -331,13 +365,13 @@
 
     <!-- Starting Balance Modal -->
     <div id="startingBalanceModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
-        <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-lg">
-            <h3 class="text-lg font-bold mb-4">Set Starting Balance</h3>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-lg">
+            <h3 class="text-lg font-bold mb-4 text-gray-900 dark:text-gray-100">Set Starting Balance</h3>
             <form method="POST" action="{{ route('inventory.set-starting-balance') }}">
                 @csrf
                 <div class="mb-2">
-                    <label class="block text-sm font-medium mb-1">Item</label>
-                    <select name="item" class="w-full border rounded px-2 py-1" required>
+                    <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Item</label>
+                    <select name="item" class="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400" required>
                         @foreach(['G1 DAMORTIS','G1 CURRIMAO','3/4 GRAVEL','VIBRO SAND','SAND S1 DAMORTIS','SAND S1 M'] as $item)
                             <option value="{{ $item }}">{{ $item }}</option>
                         @endforeach
@@ -345,31 +379,31 @@
                 </div>
                 <div class="mb-2 grid grid-cols-2 gap-2">
                     <div>
-                        <label class="block text-sm font-medium mb-1">Date</label>
-                        <input type="date" name="date" class="w-full border rounded px-2 py-1" required />
+                        <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Date</label>
+                        <input type="date" name="date" class="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400" required />
                     </div>
                     <div>
-                        <label class="block text-sm font-medium mb-1">Ship Number</label>
-                        <input type="text" name="ship_number" class="w-full border rounded px-2 py-1" required />
+                        <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Ship Number</label>
+                        <input type="text" name="ship_number" class="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400" required />
                     </div>
                 </div>
                 <div class="mb-2">
-                    <label class="block text-sm font-medium mb-1">Voyage Number</label>
-                    <input type="text" name="voyage_number" class="w-full border rounded px-2 py-1" required />
+                    <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Voyage Number</label>
+                    <input type="text" name="voyage_number" class="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400" required />
                 </div>
                 <div class="mb-2 grid grid-cols-2 gap-2">
                     <div>
-                        <label class="block text-sm font-medium mb-1">Starting BALANCE</label>
-                        <input type="number" step="0.01" name="balance" class="w-full border rounded px-2 py-1" min="0" max="999999.99" required />
+                        <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Starting BALANCE</label>
+                        <input type="number" step="0.01" name="balance" class="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400" min="0" max="999999.99" required />
                     </div>
                     <div>
-                        <label class="block text-sm font-medium mb-1">Starting Onsite BALANCE</label>
-                        <input type="number" step="0.01" name="onsite_balance" class="w-full border rounded px-2 py-1" min="0" max="999999.99" required />
+                        <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Starting Onsite BALANCE</label>
+                        <input type="number" step="0.01" name="onsite_balance" class="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400" min="0" max="999999.99" required />
                     </div>
                 </div>
                 <div class="flex justify-end gap-2 mt-4">
-                    <button type="button" onclick="document.getElementById('startingBalanceModal').classList.add('hidden')" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancel</button>
-                    <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">Set Starting Balance</button>
+                    <button type="button" onclick="document.getElementById('startingBalanceModal').classList.add('hidden')" class="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded hover:bg-gray-400 dark:hover:bg-gray-700 transition-colors duration-200">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-green-600 dark:bg-green-700 text-white rounded hover:bg-green-700 dark:hover:bg-green-800 transition-colors duration-200">Set Starting Balance</button>
                 </div>
             </form>
         </div>
@@ -454,71 +488,71 @@
             var form = document.getElementById('editInventoryForm');
             form.action = '/inventory/' + id;
             var fields = `<div class='mb-2'>
-                <label class='block text-sm font-medium mb-1'>Item</label>
-                <input type='text' name='item' value='${found.item}' class='w-full border rounded px-2 py-1' required />
+                <label class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>Item</label>
+                <input type='text' name='item' value='${found.item}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' required />
             </div>
             <div class='mb-2 grid grid-cols-2 gap-2'>
                 <div>
-                    <label class='block text-sm font-medium mb-1'>Date</label>
-                    <input type='date' name='date' value='${found.date}' class='w-full border rounded px-2 py-1' required />
+                    <label class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>Date</label>
+                    <input type='date' name='date' value='${found.date}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' required />
                 </div>
                 <div>
-                    <label class='block text-sm font-medium mb-1'>Customer</label>
-                    <select name='customer_id' class='w-full border rounded px-2 py-1' required>`;
+                    <label class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>Customer</label>
+                    <select name='customer_id' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' required>`;
             customers.forEach(function(c) {
                 var selected = c.id === found.customer_id ? 'selected' : '';
                 fields += `<option value='${c.id}' ${selected}>${c.company_name ? c.company_name : (c.first_name + ' ' + c.last_name)}</option>`;
             });
             fields += `</select></div></div>`;
             fields += `<div class='mb-2'>
-                <label class='block text-sm font-medium mb-1'>AMOUNT</label>
-                <input type='number' step='0.01' name='amount' value='${found.amount ?? ''}' class='w-full border rounded px-2 py-1' min='0' max='999999.99' />
+                <label class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>AMOUNT</label>
+                <input type='number' step='0.01' name='amount' value='${found.amount ?? ''}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' min='0' max='999999.99' />
             </div>`;
             fields += `<div class='mb-2 grid grid-cols-2 gap-2'>
                 <div>
-                    <label class='block text-sm font-medium mb-1'>OR/AR</label>
-                    <input type='text' name='or_ar' value='${found.or_ar ?? ''}' class='w-full border rounded px-2 py-1' />
+                    <label class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>OR/AR</label>
+                    <input type='text' name='or_ar' value='${found.or_ar ?? ''}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' />
                 </div>
                 <div>
-                    <label class='block text-sm font-medium mb-1'>DR#</label>
-                    <input type='text' name='dr_number' value='${found.dr_number ?? ''}' class='w-full border rounded px-2 py-1' />
-                </div>
-            </div>`;
-            fields += `<div class='mb-2 grid grid-cols-3 gap-2'>
-                <div>
-                    <label class='block text-sm font-medium mb-1'>IN</label>
-                    <input type='number' step='0.0001' name='in' value='${found.in ?? ''}' class='w-full border rounded px-2 py-1' />
-                </div>
-                <div>
-                    <label class='block text-sm font-medium mb-1'>OUT ${isAdmin ? '' : '(Read-only)'}</label>
-                    <input type='number' step='0.0001' name='out' value='${found.out ?? ''}' class='w-full border rounded px-2 py-1 ${isAdmin ? '' : 'bg-gray-100'}' ${isAdmin ? '' : 'readonly'} />
-                </div>
-                <div>
-                    <label class='block text-sm font-medium mb-1'>BALANCE</label>
-                    <input type='number' step='0.0001' name='balance' value='${found.balance ?? ''}' class='w-full border rounded px-2 py-1' />
+                    <label class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>DR#</label>
+                    <input type='text' name='dr_number' value='${found.dr_number ?? ''}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' />
                 </div>
             </div>`;
             fields += `<div class='mb-2 grid grid-cols-3 gap-2'>
                 <div>
-                    <label class='block text-sm font-medium mb-1'>ONSITE IN</label>
-                    <input type='number' step='0.0001' name='onsite_in' value='${found.onsite_in ?? ''}' class='w-full border rounded px-2 py-1' />
+                    <label class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>IN</label>
+                    <input type='number' step='0.0001' name='in' value='${found.in ?? ''}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' />
                 </div>
                 <div>
-                    <label class='block text-sm font-medium mb-1'>ACTUAL OUT</label>
-                    <input type='number' step='0.0001' name='actual_out' value='${found.actual_out ?? ''}' class='w-full border rounded px-2 py-1' />
+                    <label class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>OUT ${isAdmin ? '' : '(Read-only)'}</label>
+                    <input type='number' step='0.0001' name='out' value='${found.out ?? ''}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 ${isAdmin ? 'bg-white dark:bg-gray-700' : 'bg-gray-100 dark:bg-gray-600'} text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' ${isAdmin ? '' : 'readonly'} />
                 </div>
                 <div>
-                    <label class='block text-sm font-medium mb-1'>ONSITE BALANCE</label>
-                    <input type='number' step='0.0001' name='onsite_balance' value='${found.onsite_balance ?? ''}' class='w-full border rounded px-2 py-1' />
+                    <label class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>BALANCE</label>
+                    <input type='number' step='0.0001' name='balance' value='${found.balance ?? ''}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' />
+                </div>
+            </div>`;
+            fields += `<div class='mb-2 grid grid-cols-3 gap-2'>
+                <div>
+                    <label class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>ONSITE IN</label>
+                    <input type='number' step='0.0001' name='onsite_in' value='${found.onsite_in ?? ''}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' />
+                </div>
+                <div>
+                    <label class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>ACTUAL OUT</label>
+                    <input type='number' step='0.0001' name='actual_out' value='${found.actual_out ?? ''}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' />
+                </div>
+                <div>
+                    <label class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>ONSITE BALANCE</label>
+                    <input type='number' step='0.0001' name='onsite_balance' value='${found.onsite_balance ?? ''}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' />
                 </div>
             </div>`;
             // Add Onsite Date field with permission check
             var onsiteDateReadonly = isAdmin ? '' : 'readonly';
-            var onsiteDateBg = isAdmin ? '' : 'bg-gray-100';
+            var onsiteDateBg = isAdmin ? 'bg-white dark:bg-gray-700' : 'bg-gray-100 dark:bg-gray-600';
             var currentDate = found.onsite_date || new Date().toISOString().split('T')[0];
             fields += `<div class='mb-2'>
-                <label class='block text-sm font-medium mb-1'>Onsite Date ${isAdmin ? '' : '(Auto-generated)'}</label>
-                <input type='date' name='onsite_date' value='${currentDate}' class='w-full border rounded px-2 py-1 ${onsiteDateBg}' ${onsiteDateReadonly} />
+                <label class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>Onsite Date ${isAdmin ? '' : '(Auto-generated)'}</label>
+                <input type='date' name='onsite_date' value='${currentDate}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 ${onsiteDateBg} text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' ${onsiteDateReadonly} />
             </div>`;
             document.getElementById('editInventoryFields').innerHTML = fields;
             document.getElementById('editInventoryModal').classList.remove('hidden');
@@ -561,6 +595,216 @@
                     window.location.reload();
                 }, 1000);
             @endif
+        });
+    </script>
+
+    <!-- Excel and PDF Export Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+        // Excel Export Function for Inventory
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('exportExcel').addEventListener('click', function () {
+                console.log('Excel export clicked');
+                
+                // Create a new workbook
+                const workbook = XLSX.utils.book_new();
+                
+                // Define the inventory items
+                const inventoryItems = ['G1 DAMORTIS','G1 CURRIMAO','3/4 GRAVEL','VIBRO SAND','SAND S1 DAMORTIS','SAND S1 M'];
+                
+                // Process each inventory item
+                inventoryItems.forEach((itemName, index) => {
+                    console.log(`Processing item: ${itemName}`);
+                    
+                    // Get the tab content for this item
+                    const tabContent = document.getElementById(`tabContent${index}`);
+                    if (!tabContent) {
+                        console.log(`Tab content not found for ${itemName}`);
+                        return;
+                    }
+                    
+                    const table = tabContent.querySelector('table');
+                    if (!table) {
+                        console.log(`Table not found for ${itemName}`);
+                        return;
+                    }
+                    
+                    // Clone table to avoid modifying original
+                    const clonedTable = table.cloneNode(true);
+                    
+                    // Remove the UPDATE column (last column) from all rows
+                    const rows = clonedTable.querySelectorAll('tr');
+                    rows.forEach(row => {
+                        const cells = row.querySelectorAll('th, td');
+                        if (cells.length > 0) {
+                            // Remove the last cell (UPDATE column)
+                            cells[cells.length - 1].remove();
+                        }
+                    });
+                    
+                    // Remove month separator rows (they have class bg-gray-50)
+                    const monthRows = clonedTable.querySelectorAll('tr.bg-gray-50');
+                    monthRows.forEach(row => row.remove());
+                    
+                    // Convert table to worksheet
+                    const worksheet = XLSX.utils.table_to_sheet(clonedTable, { raw: true });
+                    
+                    // Clean up sheet name for Excel compatibility
+                    let sheetName = itemName.replace(/[^\w\s]/g, '').substring(0, 31);
+                    console.log(`Adding sheet: ${sheetName}`);
+                    
+                    // Add worksheet to workbook
+                    XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+                });
+                
+                // Check if workbook has any sheets
+                if (workbook.SheetNames.length === 0) {
+                    console.error('No sheets to export');
+                    alert('No data found to export');
+                    return;
+                }
+                
+                // Generate filename with current date
+                const currentDate = new Date().toISOString().split('T')[0];
+                const fileName = `Inventory_Report_${currentDate}.xlsx`;
+                
+                console.log(`Exporting file: ${fileName}`);
+                console.log(`Sheets in workbook: ${workbook.SheetNames.join(', ')}`);
+                
+                // Export the workbook
+                try {
+                    XLSX.writeFile(workbook, fileName);
+                    console.log('Export successful');
+                } catch (error) {
+                    console.error('Export failed:', error);
+                    alert('Export failed: ' + error.message);
+                }
+            });
+        });
+    </script>
+
+    <!-- PDF Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('exportPdf').addEventListener('click', function () {
+                // Initialize jsPDF in landscape mode
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({
+                    orientation: 'landscape',
+                    unit: 'pt',
+                    format: 'a4',
+                });
+                
+                let startY = 40; // Starting Y position
+                const pageHeight = doc.internal.pageSize.height;
+                
+                // Get all tabs
+                const tabs = document.querySelectorAll('.tab-content');
+                
+                tabs.forEach((tab, tabIndex) => {
+                    const table = tab.querySelector('table');
+                    if (!table) return;
+                    
+                    // Get item name
+                    const itemName = tab.querySelector('h3').textContent.trim();
+                    
+                    // Add new page if not first tab
+                    if (tabIndex > 0) {
+                        doc.addPage();
+                        startY = 40;
+                    }
+                    
+                    // Add title for each item
+                    doc.setFontSize(16);
+                    doc.text(itemName, 40, startY);
+                    startY += 30;
+                    
+                    // Prepare table data
+                    const headers = [];
+                    const tableData = [];
+                    
+                    // Get headers (exclude UPDATE column)
+                    const headerRows = table.querySelectorAll('thead tr');
+                    if (headerRows.length > 1) {
+                        // Use the second header row (main headers)
+                        const headerCells = headerRows[1].querySelectorAll('th');
+                        headerCells.forEach((cell, index) => {
+                            if (index < headerCells.length - 1) { // Exclude last column (UPDATE)
+                                headers.push(cell.textContent.trim());
+                            }
+                        });
+                    }
+                    
+                    // Get data rows (exclude month separator rows)
+                    const dataRows = table.querySelectorAll('tbody tr');
+                    dataRows.forEach(row => {
+                        // Skip month separator rows
+                        if (row.classList.contains('bg-gray-50')) return;
+                        
+                        const rowData = [];
+                        const cells = row.querySelectorAll('td');
+                        cells.forEach((cell, index) => {
+                            if (index < cells.length - 1) { // Exclude last column (UPDATE)
+                                rowData.push(cell.textContent.trim());
+                            }
+                        });
+                        
+                        if (rowData.length > 0) {
+                            tableData.push(rowData);
+                        }
+                    });
+                    
+                    // Add table to PDF
+                    if (headers.length > 0 && tableData.length > 0) {
+                        doc.autoTable({
+                            head: [headers],
+                            body: tableData,
+                            startY: startY,
+                            margin: { top: 20, left: 20, right: 20, bottom: 20 },
+                            styles: { 
+                                fontSize: 8, 
+                                textColor: [0, 0, 0],
+                                cellPadding: 2
+                            },
+                            headStyles: {
+                                fillColor: [100, 100, 100],
+                                textColor: [255, 255, 255],
+                                fontSize: 9
+                            },
+                            theme: 'grid',
+                            columnStyles: {
+                                0: { cellWidth: 60 },  // DATE
+                                1: { cellWidth: 80 },  // CUSTOMER
+                                2: { cellWidth: 40 },  // SHIP#
+                                3: { cellWidth: 50 },  // VOYAGE#
+                                4: { cellWidth: 40 },  // IN
+                                5: { cellWidth: 40 },  // OUT
+                                6: { cellWidth: 50 },  // BALANCE
+                                7: { cellWidth: 50 },  // AMOUNT
+                                8: { cellWidth: 50 },  // OR/AR
+                                9: { cellWidth: 40 },  // DR#
+                                10: { cellWidth: 60 }, // DATE (Onsite)
+                                11: { cellWidth: 40 }, // IN (Onsite)
+                                12: { cellWidth: 50 }, // ACTUAL OUT
+                                13: { cellWidth: 50 }, // BALANCE (Onsite)
+                                14: { cellWidth: 30 }, // Empty column
+                            },
+                        });
+                        
+                        // Update startY for next table
+                        startY = doc.lastAutoTable.finalY + 30;
+                    }
+                });
+                
+                // Generate filename with current date
+                const currentDate = new Date().toISOString().split('T')[0];
+                const fileName = `Inventory_Report_${currentDate}.pdf`;
+                
+                // Save the PDF
+                doc.save(fileName);
+            });
         });
     </script>
 </x-app-layout>
