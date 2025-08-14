@@ -37,6 +37,9 @@ class InventoryController extends Controller
             'out' => 'nullable|numeric',
             'balance' => 'nullable|numeric',
             'onsite_balance' => 'nullable|numeric',
+            'pickup_delivery_type' => 'nullable|string',
+            'vat_type' => 'nullable|string',
+            'hollowblock_size' => 'nullable|string',
         ]);
         
         // Determine customer type
@@ -66,6 +69,9 @@ class InventoryController extends Controller
             $outValue = floatval($data['out'] ?? 0);
             $data['onsite_balance'] = $previousOnsiteBalance + $inValue - $outValue;
         }
+        
+        // Calculate amount based on item type and conditions
+        $data['amount'] = $this->calculateAmount($data);
         
         // Set automatic onsite_date to current date for new entries
         $data['onsite_date'] = now()->format('Y-m-d');
@@ -145,6 +151,9 @@ class InventoryController extends Controller
             'actual_out' => 'nullable|numeric',
             'onsite_balance' => 'nullable|numeric',
             'onsite_date' => 'nullable|date',
+            'pickup_delivery_type' => 'nullable|string',
+            'vat_type' => 'nullable|string',
+            'hollowblock_size' => 'nullable|string',
         ]);
 
         // Determine customer type
@@ -155,6 +164,9 @@ class InventoryController extends Controller
             $data['customer_type'] = 'sub';
             $data['customer_id'] = str_replace('sub-', '', $data['customer_id']);
         }
+
+        // Calculate amount based on item type and conditions
+        $data['amount'] = $this->calculateAmount($data);
 
         // Check if user is admin for onsite_date editing
         $user = auth()->user();
@@ -167,5 +179,91 @@ class InventoryController extends Controller
 
         $entry->update($data);
         return redirect()->route('inventory')->with('success', 'Inventory entry updated!');
+    }
+
+    /**
+     * Calculate amount based on item type and various conditions.
+     */
+    private function calculateAmount($data)
+    {
+        $item = $data['item'];
+        $outValue = floatval($data['out'] ?? 0);
+        $pickupDeliveryType = $data['pickup_delivery_type'] ?? '';
+        $vatType = $data['vat_type'] ?? '';
+        $hollowblockSize = $data['hollowblock_size'] ?? '';
+        
+        // Return 0 if no OUT value
+        if ($outValue <= 0) {
+            return 0;
+        }
+        
+        $priceMultiplier = 0;
+        
+        switch ($item) {
+            case 'SAND S1 M':
+                if ($pickupDeliveryType === 'pickup_pier') {
+                    $priceMultiplier = ($vatType === 'with_vat') ? 4336.20 : 4015.00;
+                } elseif ($pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
+                    $priceMultiplier = ($vatType === 'with_vat') ? 4465.80 : 4135.00;
+                } elseif ($pickupDeliveryType === 'delivered_stockpile') {
+                    $priceMultiplier = ($vatType === 'with_vat') ? 4595.40 : 4255.00;
+                }
+                break;
+                
+            case 'VIBRO SAND':
+                if ($pickupDeliveryType === 'pickup_pier') {
+                    $priceMultiplier = ($vatType === 'with_vat') ? 4681.80 : 4335.00;
+                } elseif ($pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
+                    $priceMultiplier = ($vatType === 'with_vat') ? 4811.40 : 4455.00;
+                } elseif ($pickupDeliveryType === 'delivered_stockpile') {
+                    $priceMultiplier = ($vatType === 'with_vat') ? 4941.00 : 4575.00;
+                }
+                break;
+                
+            case 'G1 CURRIMAO':
+                if ($pickupDeliveryType === 'pickup_pier') {
+                    $priceMultiplier = ($vatType === 'with_vat') ? 4082.40 : 3780.00;
+                } elseif ($pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
+                    $priceMultiplier = ($vatType === 'with_vat') ? 4212.00 : 3900.00;
+                } elseif ($pickupDeliveryType === 'delivered_stockpile') {
+                    $priceMultiplier = ($vatType === 'with_vat') ? 4341.60 : 4020.00;
+                }
+                break;
+                
+            case 'G1 DAMORTIS':
+                if ($pickupDeliveryType === 'pickup_pier') {
+                    $priceMultiplier = ($vatType === 'with_vat') ? 4336.20 : 4015.00;
+                } elseif ($pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
+                    $priceMultiplier = ($vatType === 'with_vat') ? 4465.80 : 4135.00;
+                } elseif ($pickupDeliveryType === 'delivered_stockpile') {
+                    $priceMultiplier = ($vatType === 'with_vat') ? 4595.40 : 4255.00;
+                }
+                break;
+                
+            case '3/4 GRAVEL':
+                if ($pickupDeliveryType === 'pickup_pier') {
+                    $priceMultiplier = ($vatType === 'with_vat') ? 4514.40 : 4180.00;
+                } elseif ($pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
+                    $priceMultiplier = ($vatType === 'with_vat') ? 4644.00 : 4300.00;
+                } elseif ($pickupDeliveryType === 'delivered_stockpile') {
+                    $priceMultiplier = ($vatType === 'with_vat') ? 4773.60 : 4420.00;
+                }
+                break;
+                
+            case 'HOLLOWBLOCKS':
+                if ($hollowblockSize === '4_inch') {
+                    $priceMultiplier = ($vatType === 'with_vat') ? 73.92 : 66.00;
+                } elseif ($hollowblockSize === '5_inch') {
+                    $priceMultiplier = ($vatType === 'with_vat') ? 80.08 : 71.00;
+                } elseif ($hollowblockSize === '6_inch') {
+                    $priceMultiplier = ($vatType === 'with_vat') ? 86.24 : 77.00;
+                }
+                break;
+                
+            default:
+                return 0;
+        }
+        
+        return $outValue * $priceMultiplier;
     }
 }

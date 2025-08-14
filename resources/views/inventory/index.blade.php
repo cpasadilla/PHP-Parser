@@ -285,7 +285,7 @@
                 @csrf
                 <div class="mb-2">
                     <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Item</label>
-                    <select name="item" class="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400" required>
+                    <select name="item" class="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400" required onchange="updateBalance()">
                         @foreach(['G1 DAMORTIS','G1 CURRIMAO','3/4 GRAVEL','VIBRO SAND','SAND S1 DAMORTIS','SAND S1 M','HOLLOWBLOCKS'] as $item)
                             <option value="{{ $item }}">{{ $item }}</option>
                         @endforeach
@@ -335,9 +335,42 @@
                     <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">ONSITE BALANCE</label>
                     <input type="number" step="0.01" name="onsite_balance" class="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-gray-100" min="0" max="999999.99" readonly />
                 </div>
+                
+                <!-- Amount Calculation Fields -->
                 <div class="mb-2">
-                    <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">AMOUNT</label>
-                    <input type="number" step="0.01" name="amount" class="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400" min="0" max="999999.99" />
+                    <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Pickup/Delivery Type</label>
+                    <select name="pickup_delivery_type" class="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400" onchange="updateAmountCalculation()">
+                        <option value="">Select Type</option>
+                        <option value="pickup_pier">Pick up from Pier</option>
+                        <option value="pickup_stockpile_delivered_pier">Pick up from Stock Pile & Delivered from Pier</option>
+                        <option value="delivered_stockpile">Delivered from Stock Pile</option>
+                        <option value="per_bag">Per Bag (Manual Amount)</option>
+                    </select>
+                </div>
+                
+                <div class="mb-2 grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">VAT Type</label>
+                        <select name="vat_type" class="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400" onchange="updateAmountCalculation()">
+                            <option value="">Select VAT</option>
+                            <option value="with_vat">With VAT</option>
+                            <option value="without_vat">Without VAT</option>
+                        </select>
+                    </div>
+                    <div id="hollowblockSizeField" style="display: none;">
+                        <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Hollowblock Size</label>
+                        <select name="hollowblock_size" class="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400" onchange="updateAmountCalculation()">
+                            <option value="">Select Size</option>
+                            <option value="4_inch">4 inches</option>
+                            <option value="5_inch">5 inches</option>
+                            <option value="6_inch">6 inches</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="mb-2">
+                    <label id="amountLabel" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">AMOUNT (Auto-calculated)</label>
+                    <input type="number" step="0.01" name="amount" id="amountInput" class="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-gray-100" min="0" max="999999.99" readonly />
                 </div>
                 <div class="flex justify-end gap-2 mt-4">
                     <button type="button" onclick="document.getElementById('inventoryModal').classList.add('hidden')" class="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded hover:bg-gray-400 dark:hover:bg-gray-700 transition-colors duration-200">Cancel</button>
@@ -477,6 +510,136 @@
             if (onsiteBalanceInput) {
                 onsiteBalanceInput.value = newOnsiteBalance.toFixed(2);
             }
+            
+            // Update hollowblock size field visibility and calculate amount
+            updateHollowblockSizeField();
+            updateAmountCalculation();
+        }
+
+        function updateHollowblockSizeField() {
+            var itemSelect = document.querySelector('#inventoryModal select[name="item"]');
+            var hollowblockSizeField = document.getElementById('hollowblockSizeField');
+            
+            if (itemSelect && hollowblockSizeField) {
+                if (itemSelect.value === 'HOLLOWBLOCKS') {
+                    hollowblockSizeField.style.display = 'block';
+                } else {
+                    hollowblockSizeField.style.display = 'none';
+                }
+            }
+        }
+
+        function updateAmountCalculation() {
+            var itemSelect = document.querySelector('#inventoryModal select[name="item"]');
+            var outInput = document.querySelector('#inventoryModal input[name="out"]');
+            var pickupDeliverySelect = document.querySelector('#inventoryModal select[name="pickup_delivery_type"]');
+            var vatSelect = document.querySelector('#inventoryModal select[name="vat_type"]');
+            var hollowblockSizeSelect = document.querySelector('#inventoryModal select[name="hollowblock_size"]');
+            var amountInput = document.querySelector('#inventoryModal input[name="amount"]');
+            var amountLabel = document.getElementById('amountLabel');
+            
+            if (!itemSelect || !outInput || !amountInput) return;
+            
+            var item = itemSelect.value;
+            var outValue = parseFloat(outInput.value) || 0;
+            var pickupDeliveryType = pickupDeliverySelect ? pickupDeliverySelect.value : '';
+            var vatType = vatSelect ? vatSelect.value : '';
+            var hollowblockSize = hollowblockSizeSelect ? hollowblockSizeSelect.value : '';
+            
+            // Check if per bag option is selected
+            if (pickupDeliveryType === 'per_bag') {
+                // Make amount field editable for manual entry
+                amountInput.readOnly = false;
+                amountInput.classList.remove('bg-gray-100', 'dark:bg-gray-600');
+                amountInput.classList.add('bg-white', 'dark:bg-gray-700');
+                if (amountLabel) {
+                    amountLabel.textContent = 'AMOUNT (Manual Entry)';
+                }
+                return;
+            } else {
+                // Make amount field auto-calculated and read-only
+                amountInput.readOnly = true;
+                amountInput.classList.remove('bg-white', 'dark:bg-gray-700');
+                amountInput.classList.add('bg-gray-100', 'dark:bg-gray-600');
+                if (amountLabel) {
+                    amountLabel.textContent = 'AMOUNT (Auto-calculated)';
+                }
+            }
+            
+            if (outValue <= 0) {
+                amountInput.value = '0.00';
+                return;
+            }
+            
+            var priceMultiplier = 0;
+            
+            switch (item) {
+                case 'SAND S1 M':
+                    if (pickupDeliveryType === 'pickup_pier') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4336.20 : 4015.00;
+                    } else if (pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4465.80 : 4135.00;
+                    } else if (pickupDeliveryType === 'delivered_stockpile') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4595.40 : 4255.00;
+                    }
+                    break;
+                    
+                case 'VIBRO SAND':
+                    if (pickupDeliveryType === 'pickup_pier') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4681.80 : 4335.00;
+                    } else if (pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4811.40 : 4455.00;
+                    } else if (pickupDeliveryType === 'delivered_stockpile') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4941.00 : 4575.00;
+                    }
+                    break;
+                    
+                case 'G1 CURRIMAO':
+                    if (pickupDeliveryType === 'pickup_pier') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4082.40 : 3780.00;
+                    } else if (pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4212.00 : 3900.00;
+                    } else if (pickupDeliveryType === 'delivered_stockpile') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4341.60 : 4020.00;
+                    }
+                    break;
+                    
+                case 'G1 DAMORTIS':
+                    if (pickupDeliveryType === 'pickup_pier') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4336.20 : 4015.00;
+                    } else if (pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4465.80 : 4135.00;
+                    } else if (pickupDeliveryType === 'delivered_stockpile') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4595.40 : 4255.00;
+                    }
+                    break;
+                    
+                case '3/4 GRAVEL':
+                    if (pickupDeliveryType === 'pickup_pier') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4514.40 : 4180.00;
+                    } else if (pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4644.00 : 4300.00;
+                    } else if (pickupDeliveryType === 'delivered_stockpile') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4773.60 : 4420.00;
+                    }
+                    break;
+                    
+                case 'HOLLOWBLOCKS':
+                    if (hollowblockSize === '4_inch') {
+                        priceMultiplier = (vatType === 'with_vat') ? 73.92 : 66.00;
+                    } else if (hollowblockSize === '5_inch') {
+                        priceMultiplier = (vatType === 'with_vat') ? 80.08 : 71.00;
+                    } else if (hollowblockSize === '6_inch') {
+                        priceMultiplier = (vatType === 'with_vat') ? 86.24 : 77.00;
+                    }
+                    break;
+                    
+                default:
+                    priceMultiplier = 0;
+            }
+            
+            var calculatedAmount = outValue * priceMultiplier;
+            amountInput.value = calculatedAmount.toFixed(2);
         }
 
         function openEditModal(id) {
@@ -504,9 +667,42 @@
                 fields += `<option value='${c.id}' ${selected}>${c.company_name ? c.company_name : (c.first_name + ' ' + c.last_name)}</option>`;
             });
             fields += `</select></div></div>`;
+            
+            // Amount Calculation Fields
             fields += `<div class='mb-2'>
-                <label class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>AMOUNT</label>
-                <input type='number' step='0.01' name='amount' value='${found.amount ?? ''}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' min='0' max='999999.99' />
+                <label class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>Pickup/Delivery Type</label>
+                <select name='pickup_delivery_type' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' onchange='updateEditAmountCalculation()'>
+                    <option value=''>Select Type</option>
+                    <option value='pickup_pier' ${found.pickup_delivery_type === 'pickup_pier' ? 'selected' : ''}>Pick up from Pier</option>
+                    <option value='pickup_stockpile_delivered_pier' ${found.pickup_delivery_type === 'pickup_stockpile_delivered_pier' ? 'selected' : ''}>Pick up from Stock Pile & Delivered from Pier</option>
+                    <option value='delivered_stockpile' ${found.pickup_delivery_type === 'delivered_stockpile' ? 'selected' : ''}>Delivered from Stock Pile</option>
+                    <option value='per_bag' ${found.pickup_delivery_type === 'per_bag' ? 'selected' : ''}>Per Bag (Manual Amount)</option>
+                </select>
+            </div>`;
+            
+            fields += `<div class='mb-2 grid grid-cols-2 gap-2'>
+                <div>
+                    <label class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>VAT Type</label>
+                    <select name='vat_type' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' onchange='updateEditAmountCalculation()'>
+                        <option value=''>Select VAT</option>
+                        <option value='with_vat' ${found.vat_type === 'with_vat' ? 'selected' : ''}>With VAT</option>
+                        <option value='without_vat' ${found.vat_type === 'without_vat' ? 'selected' : ''}>Without VAT</option>
+                    </select>
+                </div>
+                <div id='editHollowblockSizeField' style='display: ${found.item === 'HOLLOWBLOCKS' ? 'block' : 'none'}'>
+                    <label class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>Hollowblock Size</label>
+                    <select name='hollowblock_size' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' onchange='updateEditAmountCalculation()'>
+                        <option value=''>Select Size</option>
+                        <option value='4_inch' ${found.hollowblock_size === '4_inch' ? 'selected' : ''}>4 inches</option>
+                        <option value='5_inch' ${found.hollowblock_size === '5_inch' ? 'selected' : ''}>5 inches</option>
+                        <option value='6_inch' ${found.hollowblock_size === '6_inch' ? 'selected' : ''}>6 inches</option>
+                    </select>
+                </div>
+            </div>`;
+            
+            fields += `<div class='mb-2'>
+                <label id='editAmountLabel' class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>AMOUNT (Auto-calculated)</label>
+                <input type='number' step='0.01' name='amount' id='editAmountInput' value='${found.amount ?? ''}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-gray-100' min='0' max='999999.99' readonly />
             </div>`;
             fields += `<div class='mb-2 grid grid-cols-2 gap-2'>
                 <div>
@@ -525,7 +721,7 @@
                 </div>
                 <div>
                     <label class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>OUT ${isAdmin ? '' : '(Read-only)'}</label>
-                    <input type='number' step='0.0001' name='out' value='${found.out ?? ''}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 ${isAdmin ? 'bg-white dark:bg-gray-700' : 'bg-gray-100 dark:bg-gray-600'} text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' ${isAdmin ? '' : 'readonly'} />
+                    <input type='number' step='0.0001' name='out' value='${found.out ?? ''}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 ${isAdmin ? 'bg-white dark:bg-gray-700' : 'bg-gray-100 dark:bg-gray-600'} text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' ${isAdmin ? 'oninput="updateEditAmountCalculation()"' : 'readonly'} />
                 </div>
                 <div>
                     <label class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>BALANCE</label>
@@ -556,6 +752,119 @@
             </div>`;
             document.getElementById('editInventoryFields').innerHTML = fields;
             document.getElementById('editInventoryModal').classList.remove('hidden');
+        }
+
+        function updateEditAmountCalculation() {
+            var itemInput = document.querySelector('#editInventoryModal input[name="item"]');
+            var outInput = document.querySelector('#editInventoryModal input[name="out"]');
+            var pickupDeliverySelect = document.querySelector('#editInventoryModal select[name="pickup_delivery_type"]');
+            var vatSelect = document.querySelector('#editInventoryModal select[name="vat_type"]');
+            var hollowblockSizeSelect = document.querySelector('#editInventoryModal select[name="hollowblock_size"]');
+            var amountInput = document.querySelector('#editInventoryModal input[name="amount"]');
+            var amountLabel = document.getElementById('editAmountLabel');
+            
+            if (!itemInput || !outInput || !amountInput) return;
+            
+            var item = itemInput.value;
+            var outValue = parseFloat(outInput.value) || 0;
+            var pickupDeliveryType = pickupDeliverySelect ? pickupDeliverySelect.value : '';
+            var vatType = vatSelect ? vatSelect.value : '';
+            var hollowblockSize = hollowblockSizeSelect ? hollowblockSizeSelect.value : '';
+            
+            // Check if per bag option is selected
+            if (pickupDeliveryType === 'per_bag') {
+                // Make amount field editable for manual entry
+                amountInput.readOnly = false;
+                amountInput.classList.remove('bg-gray-100', 'dark:bg-gray-600');
+                amountInput.classList.add('bg-white', 'dark:bg-gray-700');
+                if (amountLabel) {
+                    amountLabel.textContent = 'AMOUNT (Manual Entry)';
+                }
+                return;
+            } else {
+                // Make amount field auto-calculated and read-only
+                amountInput.readOnly = true;
+                amountInput.classList.remove('bg-white', 'dark:bg-gray-700');
+                amountInput.classList.add('bg-gray-100', 'dark:bg-gray-600');
+                if (amountLabel) {
+                    amountLabel.textContent = 'AMOUNT (Auto-calculated)';
+                }
+            }
+            
+            if (outValue <= 0) {
+                amountInput.value = '0.00';
+                return;
+            }
+            
+            var priceMultiplier = 0;
+            
+            switch (item) {
+                case 'SAND S1 M':
+                    if (pickupDeliveryType === 'pickup_pier') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4336.20 : 4015.00;
+                    } else if (pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4465.80 : 4135.00;
+                    } else if (pickupDeliveryType === 'delivered_stockpile') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4595.40 : 4255.00;
+                    }
+                    break;
+                    
+                case 'VIBRO SAND':
+                    if (pickupDeliveryType === 'pickup_pier') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4681.80 : 4335.00;
+                    } else if (pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4811.40 : 4455.00;
+                    } else if (pickupDeliveryType === 'delivered_stockpile') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4941.00 : 4575.00;
+                    }
+                    break;
+                    
+                case 'G1 CURRIMAO':
+                    if (pickupDeliveryType === 'pickup_pier') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4082.40 : 3780.00;
+                    } else if (pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4212.00 : 3900.00;
+                    } else if (pickupDeliveryType === 'delivered_stockpile') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4341.60 : 4020.00;
+                    }
+                    break;
+                    
+                case 'G1 DAMORTIS':
+                    if (pickupDeliveryType === 'pickup_pier') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4336.20 : 4015.00;
+                    } else if (pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4465.80 : 4135.00;
+                    } else if (pickupDeliveryType === 'delivered_stockpile') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4595.40 : 4255.00;
+                    }
+                    break;
+                    
+                case '3/4 GRAVEL':
+                    if (pickupDeliveryType === 'pickup_pier') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4514.40 : 4180.00;
+                    } else if (pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4644.00 : 4300.00;
+                    } else if (pickupDeliveryType === 'delivered_stockpile') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4773.60 : 4420.00;
+                    }
+                    break;
+                    
+                case 'HOLLOWBLOCKS':
+                    if (hollowblockSize === '4_inch') {
+                        priceMultiplier = (vatType === 'with_vat') ? 73.92 : 66.00;
+                    } else if (hollowblockSize === '5_inch') {
+                        priceMultiplier = (vatType === 'with_vat') ? 80.08 : 71.00;
+                    } else if (hollowblockSize === '6_inch') {
+                        priceMultiplier = (vatType === 'with_vat') ? 86.24 : 77.00;
+                    }
+                    break;
+                    
+                default:
+                    priceMultiplier = 0;
+            }
+            
+            var calculatedAmount = outValue * priceMultiplier;
+            amountInput.value = calculatedAmount.toFixed(2);
         }
 
         // Functions for Create Customer modal
