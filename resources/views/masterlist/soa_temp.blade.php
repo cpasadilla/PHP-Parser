@@ -7,8 +7,7 @@
         $discountAmount = 0;
         $discountedTotal = 0;
 
-        // Generate SOA number
-        $soaNumber = App\Models\SoaNumber::generateSoaNumber($customer->id, $ship, $voyage);
+        // SOA number is now passed from controller (either existing or empty for manual entry)
     @endphp
     
     <x-slot name="header">
@@ -35,6 +34,9 @@
                     <span id="discountBtnText">Discount Activated</span>
                 </button>
                 @endif
+                <button id="calculatePenaltyBtn" class="btn btn-warning px-4 py-2" onclick="calculatePenalty()">
+                    Calculate 1% Penalty
+                </button>
                 <button class="btn btn-primary" onclick="printContent('printContainer')">PRINT</button>
             </div>
         </div>
@@ -61,7 +63,12 @@
                 </div>
                 <div style="width: 35%; text-align: left; line-height: 1;">
                     <p style="margin-bottom: 0; line-height: 1;"><strong>DATE:</strong> {{ date('F d, Y') }}</p>
-                    <p style="margin-bottom: 0; line-height: 1;"><strong>SOA NO.:</strong> {{ $soaNumber }}</p>
+                    <p style="margin-bottom: 0; line-height: 1;"><strong>SOA NO.:</strong> 
+                        <input type="text" id="soaNumberInput" style="border: 1px solid #ccc; padding: 2px 5px; width: 120px; font-family: Arial, sans-serif; font-size: 12px;" placeholder="Enter SOA No." value="{{ $soaNumber }}">
+                        <span id="soaNumberStatus" style="font-size: 10px; color: green; display: none; margin-left: 5px;">✓ Saved</span>
+                        <button type="button" onclick="saveSoaNumber()" style="margin-left: 5px; padding: 2px 5px; background: #007cba; color: white; border: none; border-radius: 3px; font-size: 10px; cursor: pointer;" title="Test Save">💾</button>
+                    </p>
+                    </p>
                 </div>
             </div>
             <div id="voyage-{{ $ship }}-{{ Str::slug($voyage) }}" class="accordion-content">
@@ -72,19 +79,23 @@
                                 <th style="width: 5%;" class="px-4 py-2">BL #</th>
                                 <th style="width: 12%;" class="px-4 py-2">CONSIGNEE</th>
                                 <th style="width: 12%;" class="px-4 py-2">SHIPPER</th>
-                                <th style="width: 43%;" class="px-4 py-2">DESCRIPTION</th>
-                                <th style="width: 10%;" class="px-4 py-2">FREIGHT</th>
-                                <th style="width: 12%;" class="px-4 py-2">VALUATION</th>
-                                <th style="width: 10%;" class="px-4 py-2">PADLOCK FEE</th>
-                                <th style="width: 10%;" class="px-4 py-2">TOTAL</th>
+                                <th style="width: 33%;" class="px-4 py-2">DESCRIPTION</th>
+                                <th style="width: 8%;" class="px-4 py-2">FREIGHT</th>
+                                <th style="width: 8%;" class="px-4 py-2">VALUATION</th>
+                                <th style="width: 8%;" class="px-4 py-2">WHARFAGE</th>
+                                <th style="width: 8%;" class="px-4 py-2">PADLOCK FEE</th>
+                                <th style="width: 8%;" class="px-4 py-2">PPA MANILA</th>
+                                <th style="width: 8%;" class="px-4 py-2">TOTAL</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200 dark:divide-gray-700">                            @php 
                                 $voyageTotal = 0;
                                 $voyageFreight = 0;
                                 $voyageValuation = 0;
+                                $voyageWharfage = 0;
                                 $voyageInterest = 0;
                                 $voyagePadlockFee = 0;
+                                $voyagePpaManila = 0;
                             @endphp
                             @foreach($orders as $order)
                                 @php
@@ -124,23 +135,33 @@
                                         @endphp
                                     </td>
                                     <td class="px-4 py-2 text-right" style="word-wrap: break-word;">{{ number_format($order->freight, 2) }}</td>
-                                    <td class="px-4 py-2 text-right" style="word-wrap: break-word;">{{ number_format($order->valuation, 2) }}</td>                                    <td class="px-4 py-2 text-right" style="word-wrap: break-word;">{{ number_format($order->padlock_fee ?? 0, 2) }}</td>
+                                    <td class="px-4 py-2 text-right" style="word-wrap: break-word;">{{ number_format($order->valuation, 2) }}</td>
+                                    <td class="px-4 py-2 text-right" style="word-wrap: break-word;">{{ number_format($order->wharfage ?? 0, 2) }}</td>
+                                    <td class="px-4 py-2 text-right" style="word-wrap: break-word;">{{ number_format($order->padlock_fee ?? 0, 2) }}</td>
+                                    <td class="px-4 py-2 text-right" style="word-wrap: break-word;">{{ number_format($order->ppa_manila ?? 0, 2) }}</td>
                                     <td class="px-4 py-2 text-right" style="word-wrap: break-word;">
-                                        {{ number_format($order->totalAmount, 2) }}
+                                        {{ number_format(($order->freight + $order->valuation + ($order->wharfage ?? 0) + ($order->padlock_fee ?? 0) + ($order->ppa_manila ?? 0)), 2) }}
                                         @if($interestAmount > 0)
                                             <div class="text-red-600 text-xs font-semibold">
                                                 +{{ number_format($interestAmount, 2) }} (interest)
                                             </div>
                                             <div class="font-bold">
-                                                {{ number_format($totalWithInterest, 2) }}
+                                                {{ number_format(($order->freight + $order->valuation + ($order->wharfage ?? 0) + ($order->padlock_fee ?? 0) + ($order->ppa_manila ?? 0)) + $interestAmount, 2) }}
                                             </div>
                                         @endif
                                     </td>
-                                </tr>                                @php                                    $voyageTotal += $order->totalAmount + $interestAmount;
+                                </tr>
+                                @php
+                                $voyageTotal += ($order->freight + $order->valuation + ($order->wharfage ?? 0) + ($order->padlock_fee ?? 0) + ($order->ppa_manila ?? 0)) + $interestAmount;
                                     $voyageFreight += $order->freight; 
                                     $voyageValuation += $order->valuation;
+                                    $voyageWharfage += ($order->wharfage ?? 0);
                                     $voyagePadlockFee += ($order->padlock_fee ?? 0);
-                                @endphp@endforeach                            @php                                // Calculate discounted values if customer is eligible AND voyageFreight is at least 50,000
+                                    $voyagePpaManila += ($order->ppa_manila ?? 0);
+                                    $voyageInterest += $interestAmount;
+                                @endphp@endforeach
+                                @php
+                                // Calculate discounted values if customer is eligible AND voyageFreight is at least 50,000
                                 if ($isEligible && $voyageFreight >= 50000) {
                                     $discountAmount = $voyageFreight * 0.05;
                                     $discountedFreight = $voyageFreight - $discountAmount;
@@ -163,16 +184,23 @@
                                 <td class="px-4 py-1 text-right"></td>
                                 <td class="px-4 py-1 text-right"></td>
                                 <td class="px-4 py-1 text-right"></td>
+                                <td class="px-4 py-1 text-right"></td>
+                                <td class="px-4 py-1 text-right"></td>
+                                <td class="px-4 py-1 text-right"></td>
                             </tr>
                             <tr class="font-semibold" style="line-height: 0.8; background-color:rgb(97, 175, 91); color: black;">                                <td colspan="4" class="px-4 py-1" style="text-align: center; font-weight: bold;">GRAND TOTAL:</td>
                                 <td class="px-4 py-1 text-right">{{ number_format($voyageFreight, 2) }}</td>
                                 <td class="px-4 py-1 text-right">{{ number_format($voyageValuation, 2) }}</td>
-                                <td class="px-4 py-1 text-right">{{ number_format($voyagePadlockFee ?? 0, 2) }}</td>
+                                <td class="px-4 py-1 text-right">{{ number_format($voyageWharfage, 2) }}</td>
+                                <td class="px-4 py-1 text-right">{{ number_format($voyagePadlockFee, 2) }}</td>
+                                <td class="px-4 py-1 text-right">{{ number_format($voyagePpaManila, 2) }}</td>
                                 <td class="px-4 py-1 text-right">{{ number_format($voyageTotal, 2) }}</td>
                             </tr>
                             @if($voyageInterest > 0)
                                 <tr class="bg-gray-50 dark:bg-gray-900 font-semibold text-red-600" style="line-height: 0.8;">
                                     <td colspan="4" class="px-4 py-1 text-right" style="word-wrap: break-word; white-space: normal;">Interest (1% per month after 30 days):</td>
+                                    <td class="px-4 py-1 text-right"></td>
+                                    <td class="px-4 py-1 text-right"></td>
                                     <td class="px-4 py-1 text-right"></td>
                                     <td class="px-4 py-1 text-right"></td>
                                     <td class="px-4 py-1 text-right"></td>
@@ -183,19 +211,26 @@
                                     <td class="px-4 py-1 text-right"></td>
                                     <td class="px-4 py-1 text-right"></td>
                                     <td class="px-4 py-1 text-right"></td>
+                                    <td class="px-4 py-1 text-right"></td>
+                                    <td class="px-4 py-1 text-right"></td>
                                     <td class="px-4 py-1 text-right ">{{ number_format($voyageTotal, 2) }}</td>
                                 </tr>
                             @endif
                             @if($isEligible)
                                 <tr class="font-semibold" style="line-height: 0; background-color:rgb(240, 240, 5); color: black;">
-                                    <td colspan="4" class="px-4 py-2" style="text-align: left;">5% Discount on total freight if paid within <span style="font-weight: bold;">15 days</span> upon receipt of SOA</td>                                    <td style="width: 100px; font-weight: bold;" class="px-4 py-2 text-right" >{{ number_format($discountedFreight, 2) }}</td>
+                                    <td colspan="4" class="px-4 py-2" style="text-align: left;">5% Discount on total freight if paid within <span style="font-weight: bold;">15 days</span> upon receipt of SOA</td>
+                                    <td style="width: 100px; font-weight: bold;" class="px-4 py-2 text-right" >{{ number_format($discountedFreight, 2) }}</td>
                                     <td style="width: 100px;" class="px-4 py-2 text-right">{{ number_format($voyageValuation, 2) }}</td>
-                                    <td style="width: 100px;" class="px-4 py-2 text-right">{{ number_format($voyagePadlockFee ?? 0, 2) }}</td>
+                                    <td style="width: 100px;" class="px-4 py-2 text-right">{{ number_format($voyageWharfage, 2) }}</td>
+                                    <td style="width: 100px;" class="px-4 py-2 text-right">{{ number_format($voyagePadlockFee, 2) }}</td>
+                                    <td style="width: 100px;" class="px-4 py-2 text-right">{{ number_format($voyagePpaManila, 2) }}</td>
                                     <td style="width: 100px; font-weight: bold;" class="px-4 py-2 text-right">{{ number_format($discountedTotal, 2) }}</td>
                                 </tr>
                             @endif
                             <tr class="font-semibold" style="line-height: 0.8; background-color:rgb(231, 15, 22); color: white;">
                                 <td colspan="4" class="px-4 py-1" style="text-align: left; word-wrap: break-word; white-space: normal; color: white;">a PENALTY rate of 1% PER MONTH will be applied to total bills if not paid every after 30days</td>
+                                <td class="px-4 py-1 text-right"></td>
+                                <td class="px-4 py-1 text-right"></td>
                                 <td class="px-4 py-1 text-right"></td>
                                 <td class="px-4 py-1 text-right"></td>
                                 <td class="px-4 py-1 text-right"></td>
@@ -320,17 +355,30 @@
                 return;
             }
 
-            // Fix input fields before printing to maintain font consistency
+            // Fix input fields before printing to maintain font consistency and preserve values
             var inputs = printContainer.querySelectorAll('input');
             inputs.forEach(function(input) {
                 input.style.fontFamily = "Arial, sans-serif";
                 if (!input.style.fontSize) {
                     input.style.fontSize = "12px";
                 }
+                // Ensure input value is preserved in the value attribute for printing
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             input.setAttribute('value', input.value);
             });
 
             // Clone the print container to measure ONLY the main content
             var tempContainer = printContainer.cloneNode(true);
+            
+            // Preserve input values in the cloned content
+            var originalInputs = printContainer.querySelectorAll('input');
+            var clonedInputs = tempContainer.querySelectorAll('input');
+            originalInputs.forEach(function(originalInput, index) {
+                if (clonedInputs[index]) {
+                    clonedInputs[index].value = originalInput.value;
+                    clonedInputs[index].setAttribute('value', originalInput.value);
+                }
+            });
+            
             tempContainer.style.position = 'absolute';
             tempContainer.style.visibility = 'hidden';
             tempContainer.style.width = '210mm'; // A4 width
@@ -356,8 +404,8 @@
             var totalContentHeight = tempContainer.offsetHeight;
 
             // Calculate if main content + signature fits on one page
-            // A4 height minus margins = ~277mm - 25.4mm = ~251mm ≈ 950px
-            var maxSinglePageHeight = 950;
+            // A4 landscape height minus margins = ~210mm - 25.4mm = ~185mm ≈ 700px
+            var maxSinglePageHeight = 700; // Reduced for landscape
             var needsPageBreak = totalContentHeight > maxSinglePageHeight;
 
             // Remove temp container
@@ -365,11 +413,48 @@
 
             console.log('Main content height:', mainContentHeight);
             console.log('Total content height:', totalContentHeight);
-            console.log('Max page height:', maxSinglePageHeight);
+            console.log('Max page height (landscape):', maxSinglePageHeight);
             console.log('Needs page break:', needsPageBreak);
 
-            // Get print content
-            var printContents = printContainer.innerHTML;
+            // Ensure all input values are set in the value attribute before getting innerHTML
+            var allInputs = printContainer.querySelectorAll('input');
+            allInputs.forEach(function(input) {
+                input.setAttribute('value', input.value);
+            });
+
+            // Create a clone of the print container for print content
+            var printClone = printContainer.cloneNode(true);
+            
+            // Replace the SOA number input with a span containing the current value for print
+            var soaInputInClone = printClone.querySelector('#soaNumberInput');
+            var originalSoaInput = printContainer.querySelector('#soaNumberInput');
+            if (soaInputInClone && originalSoaInput) {
+                var currentSoaValue = originalSoaInput.value;
+                var soaSpan = document.createElement('span');
+                soaSpan.textContent = currentSoaValue;
+                soaSpan.style.fontFamily = 'Arial, sans-serif';
+                soaSpan.style.fontSize = '12px';
+                soaSpan.style.fontWeight = 'normal';
+                soaSpan.style.color = 'black';
+                soaInputInClone.parentNode.replaceChild(soaSpan, soaInputInClone);
+                console.log('Replaced SOA input with span containing value:', currentSoaValue);
+            }
+            
+            // Remove the status span and test button from print content
+            var statusSpan = printClone.querySelector('#soaNumberStatus');
+            if (statusSpan) {
+                statusSpan.remove();
+            }
+            var testButton = printClone.querySelector('button[title="Test Save"]');
+            if (testButton) {
+                testButton.remove();
+            }
+
+            // Get print content from the modified clone
+            var printContents = printClone.innerHTML;
+            
+            // Log the SOA number for debugging
+            console.log('SOA number in print content:', originalSoaInput ? originalSoaInput.value : 'Not found');
 
             // Open new print window
             var printWindow = window.open("", "", "width=1000,height=800");
@@ -377,7 +462,7 @@
             printWindow.document.write("<style>");
             printWindow.document.write(`
                 @page {
-                    size: A4;
+                    size: A4 landscape;
                     margin: 0.5in;
                 }
                 @media print {
@@ -390,49 +475,84 @@
                     }
                     .print-container {
                         position: relative;
+                        width: 100%;
                         ${needsPageBreak ? '' : 'min-height: calc(100vh - 1in);'}
                     }
                     .main-content {
                         position: relative;
+                        width: 100%;
                     }
                     .signature-section {
                         display: none !important;
                     }
                     .print-signature {
                         display: block !important;
-                        ${needsPageBreak ? 
-                            'page-break-before: always; position: relative; margin-top: 20px;' : 
-                            'position: absolute; bottom: 0; left: 0; right: 0; margin-top: 20px;'
-                        }
+                        position: relative; 
+                        margin-top: 20px; 
+                        width: 100%;
+                        page-break-inside: avoid;
                     }
-                    img { display: block !important; margin: 0 auto; }
+                    img { 
+                        display: block !important; 
+                        margin: 0 auto; 
+                        max-width: 300px;
+                    }
                     table { 
                         border-collapse: collapse; 
                         width: 100%; 
                         font-family: Arial, sans-serif; 
                         table-layout: auto;
+                        page-break-inside: auto;
+                    }
+                    thead {
+                        display: table-header-group;
+                        background-color: #f2f2f2 !important;
+                    }
+                    tbody {
+                        display: table-row-group;
+                    }
+                    tbody tr {
+                        page-break-inside: avoid;
+                        break-inside: avoid;
+                    }
+                    /* Natural page breaks for long tables */
+                    .accordion-content {
+                        page-break-inside: auto;
+                        margin-bottom: 20px;
                     }
                     th, td { 
                         border: 1px solid #ddd; 
-                        padding: 4px 8px; 
+                        padding: 3px 6px; 
                         font-family: Arial, sans-serif; 
                         word-wrap: break-word; 
                         white-space: normal; 
                         line-height: 1.2; 
+                        font-size: 10px;
                     }
-                    thead { 
-                        background-color: #f2f2f2 !important;
-                    }
-                    tbody tr {
-                        page-break-inside: avoid;
-                    }
-                    .accordion-content {
-                        page-break-inside: auto;
-                        ${needsPageBreak ? '' : 'margin-bottom: 200px;'}
+                    th {
+                        font-size: 10px;
+                        font-weight: bold;
                     }
                     button { display: none; }
                     .non-printable { display: none; }
-                    input { font-family: Arial, sans-serif; font-size: 12px; }
+                    input { 
+                        font-family: Arial, sans-serif; 
+                        font-size: 12px; 
+                        border: none !important; 
+                        background: transparent !important; 
+                        outline: none !important;
+                        color: black !important;
+                        -webkit-appearance: none !important;
+                        -moz-appearance: none !important;
+                        appearance: none !important;
+                    }
+                    span {
+                        font-family: Arial, sans-serif;
+                        font-size: 12px;
+                        color: black !important;
+                    }
+                    #soaNumberStatus { display: none !important; }
+                    button[title="Test Save"] { display: none !important; }
                     .description-cell { word-wrap: break-word; white-space: normal; }
                 }
                 @media screen {
@@ -480,5 +600,179 @@
                 discountActive = true;
             }
         }
+
+        // Penalty functionality
+        let penaltyActive = false;
+        let currentPenaltyAmount = 0;
+
+        function calculatePenalty() {
+            document.getElementById('penaltyModal').classList.remove('hidden');
+            updatePenaltyCalculation();
+        }
+
+        function closePenaltyModal() {
+            document.getElementById('penaltyModal').classList.add('hidden');
+        }
+
+        function updatePenaltyCalculation() {
+            const months = parseInt(document.getElementById('penaltyMonths').value) || 1;
+            const baseTotal = discountActive ? {{ $discountedTotal }} : {{ $voyageTotal }};
+            const penaltyAmount = baseTotal * 0.01 * months;
+            const totalWithPenalty = baseTotal + penaltyAmount;
+            
+            document.getElementById('penaltyAmount').textContent = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(penaltyAmount);
+            document.getElementById('totalWithPenalty').textContent = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(totalWithPenalty);
+        }
+
+        function applyPenalty() {
+            const months = parseInt(document.getElementById('penaltyMonths').value) || 1;
+            const baseTotal = discountActive ? {{ $discountedTotal }} : {{ $voyageTotal }};
+            currentPenaltyAmount = baseTotal * 0.01 * months;
+            penaltyActive = true;
+            
+            updateFinalAmount();
+            closePenaltyModal();
+            
+            // Update button text to show penalty is applied
+            const penaltyBtn = document.getElementById('calculatePenaltyBtn');
+            penaltyBtn.innerHTML = 'Remove 1% Penalty';
+            penaltyBtn.onclick = removePenalty;
+            penaltyBtn.className = 'btn btn-danger px-4 py-2';
+        }
+
+        function removePenalty() {
+            penaltyActive = false;
+            currentPenaltyAmount = 0;
+            
+            updateFinalAmount();
+            
+            // Reset button
+            const penaltyBtn = document.getElementById('calculatePenaltyBtn');
+            penaltyBtn.innerHTML = 'Calculate 1% Penalty';
+            penaltyBtn.onclick = calculatePenalty;
+            penaltyBtn.className = 'btn btn-warning px-4 py-2';
+        }
+
+        function updateFinalAmount() {
+            const finalAmountElement = document.getElementById('finalAmount');
+            let baseTotal = discountActive ? {{ $discountedTotal }} : {{ $voyageTotal }};
+            let finalTotal = baseTotal;
+            
+            if (penaltyActive) {
+                finalTotal += currentPenaltyAmount;
+            }
+            
+            finalAmountElement.textContent = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(finalTotal);
+        }
+
+        // Event listener for penalty months input
+        document.getElementById('penaltyMonths').addEventListener('input', updatePenaltyCalculation);
+
+        // SOA Number auto-save functionality
+        let soaNumberTimeout;
+        
+        function saveSoaNumber() {
+            const soaInputElement = document.getElementById('soaNumberInput');
+            const soaNumber = soaInputElement.value;
+            const statusElement = document.getElementById('soaNumberStatus');
+            
+            console.log('Attempting to save SOA number:', soaNumber);
+            
+            // Show saving status
+            statusElement.textContent = '💾 Saving...';
+            statusElement.style.color = 'orange';
+            statusElement.style.display = 'inline';
+            
+            fetch('{{ route("update-soa-number") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    customer_id: {{ $customer->id }},
+                    ship: '{{ $ship }}',
+                    voyage: '{{ $voyage }}',
+                    soa_number: soaNumber
+                })
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Response data:', data);
+                if (data.success) {
+                    // Update the input field value to ensure it's saved and visible for print
+                    soaInputElement.value = soaNumber;
+                    soaInputElement.setAttribute('value', soaNumber);
+                    
+                    // Also update the defaultValue property to ensure consistency
+                    soaInputElement.defaultValue = soaNumber;
+                    
+                    statusElement.textContent = '✓ Saved';
+                    statusElement.style.color = 'green';
+                    
+                    // Log for debugging
+                    console.log('SOA number saved successfully and input updated for print:', soaNumber);
+                    console.log('Input value after save:', soaInputElement.value);
+                    console.log('Input value attribute after save:', soaInputElement.getAttribute('value'));
+                    
+                    setTimeout(() => {
+                        statusElement.style.display = 'none';
+                    }, 2000);
+                } else {
+                    statusElement.textContent = '✗ Error';
+                    statusElement.style.color = 'red';
+                    console.error('Error saving SOA number:', data.message);
+                }
+            })
+            .catch(error => {
+                statusElement.textContent = '✗ Error';
+                statusElement.style.color = 'red';
+                console.error('Error saving SOA number:', error);
+            });
+        }
+        
+        // Add event listener for SOA number input
+        document.addEventListener('DOMContentLoaded', function() {
+            const soaInput = document.getElementById('soaNumberInput');
+            if (soaInput) {
+                console.log('SOA input element found, attaching event listener');
+                soaInput.addEventListener('input', function() {
+                    console.log('Input event triggered, value:', this.value);
+                    // Clear existing timeout
+                    clearTimeout(soaNumberTimeout);
+                    
+                    // Set new timeout to save after 1 second of no typing
+                    soaNumberTimeout = setTimeout(saveSoaNumber, 1000);
+                });
+            } else {
+                console.error('SOA number input element not found');
+            }
+        });
     </script>
+
+    <!-- Penalty Calculation Modal -->
+    <div id="penaltyModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden z-50">
+        <div class="bg-white dark:bg-gray-800 rounded-lg p-6 w-96 mx-4">
+            <h3 class="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">1% Monthly Penalty Calculation</h3>
+            
+            <div class="mb-4">
+                <label for="penaltyMonths" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Number of months overdue:</label>
+                <input type="number" id="penaltyMonths" min="1" max="12" value="1" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            
+            <div class="mb-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-md">
+                <p class="text-sm text-gray-600 dark:text-gray-400">Base Amount: <span class="font-semibold">{{ number_format($voyageTotal, 2) }}</span></p>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Penalty Amount: <span id="penaltyAmount" class="font-semibold">0.00</span></p>
+                <p class="text-sm text-gray-900 dark:text-gray-100 font-semibold">Total with Penalty: <span id="totalWithPenalty" class="text-red-600">{{ number_format($voyageTotal, 2) }}</span></p>
+            </div>
+            
+            <div class="flex justify-end gap-2">
+                <button onclick="closePenaltyModal()" class="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300">Cancel</button>
+                <button onclick="applyPenalty()" class="px-4 py-2 text-white bg-red-500 rounded-md hover:bg-red-600">Apply Penalty</button>
+            </div>
+        </div>
+    </div>
 </x-app-layout>

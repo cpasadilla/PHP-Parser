@@ -52,6 +52,7 @@ class order extends Model
         'freight',
         'valuation',
         'padlock_fee',
+        'ppa_manila',
         'shipperId',
         'recId',
         'value',

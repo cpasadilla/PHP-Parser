@@ -18,6 +18,7 @@ use App\Models\parcel as Parcel; // Import the parcel model with alias
 use App\Models\OrderUpdateLog; // Add this at the top
 use App\Models\OrderDeleteLog; // Add this for delete logging
 use App\Models\ContainerReservation; // Import the ContainerReservation model
+use App\Models\SoaNumber; // Import the SoaNumber model
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\OrdersExport;
 
@@ -1158,12 +1159,12 @@ class MasterListController extends Controller
         // Different validation rules based on field type
         if ($field === 'containerNum' || $field === 'OR' || $field === 'AR' || $field === 'remark' || $field === 'checkName' || $field === 'cargoType') {
             $request->validate([
-                'field' => 'required|string|in:OR,AR,image,containerNum,bir,freight,value,valuation,discount,other,wharfage,originalFreight,padlock_fee,remark,checkName,cargoType',
+                'field' => 'required|string|in:OR,AR,image,containerNum,bir,freight,value,valuation,discount,other,wharfage,originalFreight,padlock_fee,ppa_manila,remark,checkName,cargoType',
                 'value' => 'nullable|string|max:255',
             ]);
         } else {
             $request->validate([
-                'field' => 'required|string|in:OR,AR,image,containerNum,bir,freight,value,valuation,discount,other,wharfage,originalFreight,padlock_fee,remark,checkName,cargoType',
+                'field' => 'required|string|in:OR,AR,image,containerNum,bir,freight,value,valuation,discount,other,wharfage,originalFreight,padlock_fee,ppa_manila,remark,checkName,cargoType',
                 'value' => 'nullable|numeric',
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:9999',
                 'date' => 'nullable|date',
@@ -1569,7 +1570,7 @@ class MasterListController extends Controller
                 'wharfage' => $order->wharfage,
                 'message' => 'Freight updated, wharfage recalculated, and total recalculated.'
             ]);
-        } elseif (in_array($field, ['value', 'valuation', 'other', 'padlock_fee'])) {
+        } elseif (in_array($field, ['value', 'valuation', 'other', 'padlock_fee', 'ppa_manila'])) {
             $oldValue = $order->$field;
             $oldCalculatedValuation = $order->valuation;
             $oldTotalAmount = $order->totalAmount;
@@ -1580,9 +1581,10 @@ class MasterListController extends Controller
             $other = $field === 'other' ? $request->value : ($order->other ?? 0);
             $wharfage = $order->wharfage ?? 0;
             $padlock_fee = $field === 'padlock_fee' ? $request->value : ($order->padlock_fee ?? 0);
+            $ppa_manila = $field === 'ppa_manila' ? $request->value : ($order->ppa_manila ?? 0);
             $valuation = ($freight + $value) * 0.0075;
             $order->valuation = $valuation;
-            $total = $freight + $valuation + $other + $wharfage + $padlock_fee;
+            $total = $freight + $valuation + $other + $wharfage + $padlock_fee + $ppa_manila;
             $order->totalAmount = $total;
 
             // Log the primary field change
@@ -1746,6 +1748,70 @@ class MasterListController extends Controller
         Log::info('Order After Update:', $order->toArray());
 
         return response()->json(['success' => true, 'message' => 'Order field updated successfully!']);
+    }
+
+    /**
+     * Update SOA number for a specific customer, ship, and voyage combination
+     */
+    public function updateSoaNumber(Request $request)
+    {
+        try {
+            $request->validate([
+                'customer_id' => 'required|integer',
+                'ship' => 'required|string',
+                'voyage' => 'required|string',
+                'soa_number' => 'required|string|max:50'
+            ]);
+
+            $customerId = $request->customer_id;
+            $ship = $request->ship;
+            $voyage = urldecode($request->voyage);
+            $soaNumber = $request->soa_number;
+
+            // Check if an SOA number record already exists for this combination
+            $soaRecord = SoaNumber::where('customer_id', $customerId)
+                ->where('ship', $ship)
+                ->where('voyage', $voyage)
+                ->first();
+
+            if ($soaRecord) {
+                // Update existing record
+                $soaRecord->update(['soa_number' => $soaNumber]);
+            } else {
+                // Create new record
+                SoaNumber::create([
+                    'customer_id' => $customerId,
+                    'ship' => $ship,
+                    'voyage' => $voyage,
+                    'soa_number' => $soaNumber,
+                    'year' => date('Y'),
+                    'sequence' => 0 // Set to 0 for manually entered SOA numbers
+                ]);
+            }
+
+            \Log::info('SOA Number Updated', [
+                'customer_id' => $customerId,
+                'ship' => $ship,
+                'voyage' => $voyage,
+                'soa_number' => $soaNumber
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'SOA number updated successfully!'
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('SOA Number Update Error', [
+                'error' => $e->getMessage(),
+                'request_data' => $request->all()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update SOA number: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function updateBlStatus(Request $request, $orderId) {
@@ -2508,7 +2574,92 @@ class MasterListController extends Controller
         $origin = $orders->first() ? $orders->first()->origin : '';
         $destination = $orders->first() ? $orders->first()->destination : '';
         
+        // Get existing SOA number if it exists
+        $existingSoaNumber = SoaNumber::where('customer_id', $customerId)
+            ->where('ship', $ship)
+            ->where('voyage', $decodedVoyageNum)
+            ->first();
+            
+        $soaNumber = $existingSoaNumber ? $existingSoaNumber->soa_number : '';
+        
         return view('masterlist.soa_temp', [
+            'orders' => $orders,
+            'customer' => $customer,
+            'ship' => $ship,
+            'voyage' => $voyage,
+            'origin' => $origin,
+            'destination' => $destination,
+            'soaNumber' => $soaNumber
+        ]);
+    }
+
+    public function soa_custom(Request $request, $ship, $voyage, $customerId)
+    {
+        // Get the customer
+        $customer = Customer::with('subAccounts')->find($customerId);
+        
+        if (!$customer) {
+            return redirect()->route('masterlist.soa')->with('error', 'Customer not found.');
+        }
+        
+        // Get sub-account IDs
+        $subAccountIds = $customer->subAccounts->pluck('sub_account_number')->toArray();
+        
+        // Decode the voyage number to handle 'IN' and 'OUT' properly
+        $decodedVoyageNum = urldecode($voyage);
+        
+        // Log for debugging purposes
+        \Log::info('SOA Custom Request', [
+            'Original Voyage Num' => $voyage,
+            'Decoded Voyage Num' => $decodedVoyageNum,
+            'Ship' => $ship,
+            'Customer ID' => $customerId
+        ]);
+        
+        try {
+            // Get all orders for this ship/voyage that belong to the customer or their sub-accounts
+            // Use a raw where clause to ensure exact matching regardless of special characters
+            $orders = Order::where('shipNum', $ship)
+                ->whereRaw('voyageNum = ?', [$decodedVoyageNum])
+                ->where(function($query) use ($customerId, $subAccountIds) {
+                $query->where(function($q) use ($customerId, $subAccountIds) {
+                    // Orders where they are consignee and origin is Manila
+                    $q->where('origin', 'Manila')
+                      ->where(function($sq) use ($customerId, $subAccountIds) {
+                          $sq->where('recId', $customerId)
+                             ->orWhereIn('recId', $subAccountIds);
+                      });
+                })->orWhere(function($q) use ($customerId, $subAccountIds) {
+                    // Orders where they are shipper and origin is Batanes
+                    $q->where('origin', 'Batanes')
+                      ->where(function($sq) use ($customerId, $subAccountIds) {
+                          $sq->where('shipperId', $customerId)
+                             ->orWhereIn('shipperId', $subAccountIds);
+                      });
+                });
+            })
+            ->with('parcels') // Include parcels relationship
+            ->get();
+            
+            \Log::info('SOA Custom Orders Found', [
+                'Count' => $orders->count(), 
+                'Orders' => $orders->pluck('id', 'orderId')->toArray()
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('SOA Custom Error', [
+                'Error' => $e->getMessage(),
+                'Trace' => $e->getTraceAsString()
+            ]);
+            
+            return redirect()->back()->with('error', 'Error loading Custom Statement of Account: ' . $e->getMessage());
+        }
+        
+        // Get the origin and destination from the first order
+        $origin = $orders->first() ? $orders->first()->origin : '';
+        $destination = $orders->first() ? $orders->first()->destination : '';
+        
+        return view('masterlist.soa_custom', [
             'orders' => $orders,
             'customer' => $customer,
             'ship' => $ship,

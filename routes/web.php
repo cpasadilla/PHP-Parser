@@ -227,6 +227,11 @@ Route::middleware('auth')->group(function () {
                 ->where('voyage', '.*') // Allow any character in voyage parameter
                 ->name('masterlist.soa_temp');
                 
+            // Custom SOA temp route - for custom frontend design
+            Route::get('/masterlist/soa_custom/{ship}/{voyage}/{customerId}', [MasterListController::class, 'soa_custom'])
+                ->where('voyage', '.*') // Allow any character in voyage parameter
+                ->name('masterlist.soa_custom');
+                
             // New route for voyage-based SOA report
             Route::get('/masterlist/soa_voy_temp/{ship}/{voyage}', [MasterListController::class, 'soa_voy_temp'])
                 ->where('voyage', '.*') // Allow any character in voyage parameter
@@ -259,6 +264,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/update-bl-status/{orderId}', [MasterListController::class, 'updateBlStatus']);
         Route::post('/update-order-field/{orderId}', [MasterListController::class, 'updateOrderField']);
         Route::post('/masterlist/update-order-field/{orderId}', [MasterListController::class, 'updateOrderField'])->name('masterlist.update-order-field');
+        Route::post('/update-soa-number', [MasterListController::class, 'updateSoaNumber'])->name('update-soa-number');
         Route::post('/update-note-field/{orderId}', [MasterListController::class, 'updateNoteField']);
         Route::post('/remove-order-image/{orderId}', [MasterListController::class, 'removeImage'])->name('order.remove-image');
         Route::post('/remove-image/{orderId}', [MasterListController::class, 'removeImage'])->name('remove.image');

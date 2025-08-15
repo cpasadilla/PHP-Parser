@@ -56,6 +56,17 @@
                                                     Print Statement of Account
                                                 </a>
                                                 
+                                                <!-- Custom SOA Button -->
+                                                <a href="{{ route('masterlist.soa_custom', [
+                                                    'ship' => $ship, 
+                                                    'voyage' => urlencode($voyage),
+                                                    'customerId' => request('customer_id')
+                                                ]) }}" 
+                                                class="px-3 py-1 text-white bg-blue-500 rounded hover:bg-blue-700"
+                                                onclick="event.preventDefault(); openSOACustom('{{ $ship }}', '{{ urlencode($voyage) }}', '{{ request('customer_id') }}')">
+                                                    Custom SOA Template
+                                                </a>
+                                                
                                                 <!-- Interest Calculation Button -->
                                                 <button id="interest-btn-{{ $ship }}-{{ Str::slug($voyage) }}"
                                                     class="px-3 py-1 text-white bg-red-500 rounded hover:bg-red-700"
@@ -87,7 +98,9 @@
                                                         <th class="px-4 py-2">Description</th>
                                                         <th class="px-4 py-2">Freight</th>
                                                         <th class="px-4 py-2">Valuation</th>
+                                                        <th class="px-4 py-2">Wharfage</th>
                                                         <th class="px-4 py-2">Padlock Fee</th>
+                                                        <th class="px-4 py-2">PPA Manila</th>
                                                         <th class="px-4 py-2">Total Amount</th>
                                                     </tr>
                                                 </thead>
@@ -96,7 +109,9 @@
                                                         $voyageTotal = 0;
                                                         $voyageFreight = 0;
                                                         $voyageValuation = 0;
+                                                        $voyageWharfage = 0;
                                                         $voyagePadlockFee = 0;
+                                                        $voyagePpaManila = 0;
                                                     @endphp
                                                     @foreach($orders as $order)
                                                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
@@ -110,28 +125,45 @@
                                                             </td>
                                                             <td class="px-4 py-2 text-right">{{ number_format($order->freight, 2) }}</td>
                                                             <td class="px-4 py-2 text-right">{{ number_format($order->valuation, 2) }}</td>
+                                                            <td class="px-4 py-2 text-right">{{ number_format($order->wharfage ?? 0, 2) }}</td>
                                                             <td class="px-4 py-2 text-right">
-                                                                <input style="width: 100px; border: none; outline: none; text-align:center;" 
+                                                                <input type="number" 
+                                                                    step="0.01" 
+                                                                    min="0"
+                                                                    style="width: 100px; border: none; outline: none; text-align:center;" 
                                                                     class="padlock-fee-input p-2 border rounded bg-white text-black dark:bg-gray-700 dark:text-white"
                                                                     data-order-id="{{ $order->id }}"
-                                                                    value="{{ number_format($order->padlock_fee ?? 0, 2) }}"
+                                                                    value="{{ $order->padlock_fee ?? 0 }}"
                                                                     placeholder="Enter Padlock Fee"/>
                                                             </td>
-                                                            <td class="px-4 py-2 text-right">{{ number_format($order->totalAmount, 2) }}</td>
+                                                            <td class="px-4 py-2 text-right">
+                                                                <input type="number" 
+                                                                    step="0.01" 
+                                                                    min="0"
+                                                                    style="width: 100px; border: none; outline: none; text-align:center;" 
+                                                                    class="ppa-manila-input p-2 border rounded bg-white text-black dark:bg-gray-700 dark:text-white"
+                                                                    data-order-id="{{ $order->id }}"
+                                                                    value="{{ $order->ppa_manila ?? 0 }}"
+                                                                    placeholder="Enter PPA Manila"/>
+                                                            </td>
+                                                            <td class="px-4 py-2 text-right">{{ number_format(($order->freight + $order->valuation + ($order->wharfage ?? 0) + ($order->padlock_fee ?? 0) + ($order->ppa_manila ?? 0)), 2) }}</td>
                                                         </tr>
-                                                        @php $voyageTotal += $order->totalAmount;
+                                                        @php $voyageTotal += ($order->freight + $order->valuation + ($order->wharfage ?? 0) + ($order->padlock_fee ?? 0) + ($order->ppa_manila ?? 0));
                                                              $voyageFreight += $order->freight; 
                                                              $voyageValuation += $order->valuation;
+                                                             $voyageWharfage += ($order->wharfage ?? 0);
                                                              $voyagePadlockFee += ($order->padlock_fee ?? 0);
+                                                             $voyagePpaManila += ($order->ppa_manila ?? 0);
                                                         @endphp
                                                     @endforeach
                                                     <tr class="bg-gray-50 dark:bg-gray-900 font-semibold">
                                                         <td colspan="4" class="px-4 py-2 text-right">Grand Total:</td>
                                                         <td class="px-4 py-2 text-right">{{ number_format($voyageFreight, 2) }}</td>
                                                         <td class="px-4 py-2 text-right">{{ number_format($voyageValuation, 2) }}</td>
-                                                        <td class="px-4 py-2 text-right">{{ number_format($voyagePadlockFee ?? 0, 2) }}</td>
+                                                        <td class="px-4 py-2 text-right">{{ number_format($voyageWharfage, 2) }}</td>
+                                                        <td class="px-4 py-2 text-right">{{ number_format($voyagePadlockFee, 2) }}</td>
+                                                        <td class="px-4 py-2 text-right">{{ number_format($voyagePpaManila, 2) }}</td>
                                                         <td class="px-4 py-2 text-right">{{ number_format($voyageTotal, 2) }}</td>
-                                                        <td></td>
                                                     </tr>
                                                 </tbody>
                                             </table>
@@ -180,6 +212,16 @@
         function openSOATemp(ship, voyage, customerId) {
             // Create the URL with properly encoded parameters
             const baseUrl = "{{ url('/masterlist/soa_temp') }}";
+            const url = `${baseUrl}/${ship}/${voyage}/${customerId}`;
+            
+            // Open in a new tab/window
+            window.open(url, '_blank');
+        }
+
+        // Function to safely open the Custom SOA page with special characters in voyage numbers
+        function openSOACustom(ship, voyage, customerId) {
+            // Create the URL with properly encoded parameters
+            const baseUrl = "{{ url('/masterlist/soa_custom') }}";
             const url = `${baseUrl}/${ship}/${voyage}/${customerId}`;
             
             // Open in a new tab/window
@@ -449,6 +491,7 @@
         // For handling padlock fee inputs
         document.addEventListener('DOMContentLoaded', function () {
             const padlockFeeInputs = document.querySelectorAll('.padlock-fee-input');
+            const ppaManilaInputs = document.querySelectorAll('.ppa-manila-input');
 
             padlockFeeInputs.forEach(input => {
                 input.addEventListener('input', function () {
@@ -471,16 +514,7 @@
                     .then(data => {
                         if (data.success) {
                             console.log('Padlock fee updated successfully');
-                            
-                            // Update the total amount in the row
-                            const row = this.closest('tr');
-                            const totalCell = row.querySelector('td:last-child');
-                            if (totalCell) {
-                                totalCell.textContent = new Intl.NumberFormat('en-US', { 
-                                    minimumFractionDigits: 2, 
-                                    maximumFractionDigits: 2 
-                                }).format(data.newTotal);
-                            }
+                            updateRowTotal(orderId);
                         } else {
                             console.error('Failed to update padlock fee:', data.message);
                         }
@@ -488,6 +522,52 @@
                     .catch(error => console.error('Error:', error));
                 });
             });
+
+            ppaManilaInputs.forEach(input => {
+                input.addEventListener('input', function () {
+                    const orderId = this.getAttribute('data-order-id');
+                    const value = parseFloat(this.value) || 0;
+                    
+                    // Update the order field via AJAX
+                    fetch(`/update-order-field/${orderId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({
+                            field: 'ppa_manila',
+                            value: value
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            console.log('PPA Manila updated successfully');
+                            updateRowTotal(orderId);
+                        } else {
+                            console.error('Failed to update PPA Manila:', data.message);
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+                });
+            });
+
+            function updateRowTotal(orderId) {
+                const row = document.querySelector(`[data-order-id="${orderId}"]`).closest('tr');
+                const freight = parseFloat(row.cells[4].textContent.replace(/,/g, '')) || 0;
+                const valuation = parseFloat(row.cells[5].textContent.replace(/,/g, '')) || 0;
+                const wharfage = parseFloat(row.cells[6].textContent.replace(/,/g, '')) || 0;
+                const padlockFee = parseFloat(row.querySelector('.padlock-fee-input').value) || 0;
+                const ppaManila = parseFloat(row.querySelector('.ppa-manila-input').value) || 0;
+                
+                const newTotal = freight + valuation + wharfage + padlockFee + ppaManila;
+                const totalCell = row.cells[9]; // Updated to the new position
+                totalCell.textContent = new Intl.NumberFormat('en-US', { 
+                    minimumFractionDigits: 2, 
+                    maximumFractionDigits: 2 
+                }).format(newTotal);
+            }
         });
     </script>
 
