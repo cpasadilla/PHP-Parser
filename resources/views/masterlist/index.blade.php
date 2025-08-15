@@ -94,6 +94,7 @@
                                     <option value="CREATE BL" {{ $ship->status == 'CREATE BL' ? 'selected' : '' }}>CREATE BL</option>
                                     <option value="STOP BL" {{ $ship->status == 'STOP BL' ? 'selected' : '' }}>STOP BL</option>
                                     <option value="NEW VOYAGE" {{ $ship->status == 'NEW VOYAGE' ? 'selected' : '' }}>NEW VOYAGE</option>
+                                    <option value="DUAL VOYAGE" {{ $ship->status == 'DUAL VOYAGE' ? 'selected' : '' }}>DUAL VOYAGE</option>
                                     <option value="DRY DOCK" {{ $ship->status == 'DRY DOCK' ? 'selected' : '' }}>DRY DOCK</option>
                                     <option value="NEW DOCK" {{ $ship->status == 'NEW DOCK' ? 'selected' : '' }}>NEW DOCK</option>
                                 </select>
@@ -104,6 +105,7 @@
                                 @elseif($ship->status == 'CREATE BL') text-blue-600
                                 @elseif($ship->status == 'STOP BL') text-red-600
                                 @elseif($ship->status == 'NEW VOYAGE') text-green-600
+                                @elseif($ship->status == 'DUAL VOYAGE') text-orange-600
                                 @elseif($ship->status == 'DRY DOCK') text-yellow-500
                                 @elseif($ship->status == 'NEW DOCK') text-purple-600
                                 @endif">
@@ -136,6 +138,7 @@
             <li><span class="font-bold text-blue-600">CREATE BL:</span> You can create a BL.</li>
             <li><span class="font-bold text-red-600">STOP BL:</span> You cannot create a BL.</li>
             <li><span class="font-bold text-green-600">NEW VOYAGE:</span> A new voyage number will be generated.</li>
+            <li><span class="font-bold text-orange-600">DUAL VOYAGE:</span> Two voyages are open simultaneously for the same ship.</li>
             <li><span class="font-bold" style="color: #facc15;">DRY DOCK:</span> Ship is unavailable for new orders but can edit existing ones.</li>
             <li><span class="font-bold text-purple-600">NEW DOCK:</span> Creates new voyage starting from 1 and separates from old dock.</li>
         </ul>

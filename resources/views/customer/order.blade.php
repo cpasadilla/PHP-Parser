@@ -184,11 +184,16 @@
                             <x-slot name="icon">
                                 <i class="fas fa-anchor absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"></i>
                             </x-slot>
+                            <input type="hidden" id="selected_voyage_group" name="selected_voyage_group" value="" />
                             <input id="voyage_no" name="voyage_no"
                                 class="block w-full pl-10 p-2 border rounded-md shadow-sm focus:ring focus:ring-indigo-300 dark:bg-gray-800 dark:text-white dark:border-gray-600"
                                 type="text" required autofocus
                                 placeholder="{{ __('Voyage Number') }}"
                             />
+                            <select id="voyage_select_order" name="voyage_select_order" style="display: none;"
+                                class="block w-full pl-10 p-2 border rounded-md shadow-sm focus:ring focus:ring-indigo-300 dark:bg-gray-800 dark:text-white dark:border-gray-600">
+                                <option value="">Select Voyage</option>
+                            </select>
                         </x-form.input-with-icon-wrapper>
 
                         <!-- Buttons (Only for Ship I or II) -->
@@ -808,29 +813,171 @@
         document.addEventListener('DOMContentLoaded', function () {
             const shipNoSelect = document.getElementById('ship_no');
             const voyageNoInput = document.getElementById('voyage_no');
+            const voyageSelectOrder = document.getElementById('voyage_select_order');
+            const selectedVoyageGroupInput = document.getElementById('selected_voyage_group');
             const voyageButtons = document.getElementById('voyageButtons');
+            const originSelect = document.getElementById('origin');
+            const destinationSelect = document.getElementById('destination');
 
-            shipNoSelect.addEventListener('change', function () {
+            // Function to fetch and update voyages
+            function updateVoyageOptions() {
                 const selectedShip = shipNoSelect.value;
+                const selectedOrigin = originSelect ? originSelect.value : '';
+                const selectedDestination = destinationSelect ? destinationSelect.value : '';
 
+                if (selectedShip) {
+                    let apiUrl = `/api/available-voyages/${selectedShip}`;
+                    let params = new URLSearchParams();
+                    
+                    if (selectedOrigin) params.append('origin', selectedOrigin);
+                    if (selectedDestination) params.append('destination', selectedDestination);
+                    
+                    if (params.toString()) {
+                        apiUrl += '?' + params.toString();
+                    }
+
+                    // Fetch available voyages for the selected ship
+                    fetch(apiUrl)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                const voyages = data.voyages;
+                                
+                                if (voyages.length === 1) {
+                                    // Single voyage - use existing behavior
+                                    const voyage = voyages[0];
+                                    
+                                    if (voyageNoInput) {
+                                        voyageNoInput.value = voyage.voyage_number;
+                                        voyageNoInput.style.display = 'block';
+                                    }
+                                    
+                                    if (voyageSelectOrder) {
+                                        voyageSelectOrder.style.display = 'none';
+                                    }
+                                    
+                                    if (selectedVoyageGroupInput) {
+                                        selectedVoyageGroupInput.value = voyage.voyage_group || '';
+                                    }
+                                } else if (voyages.length > 1) {
+                                    // Multiple voyages - show dropdown
+                                    if (voyageNoInput) {
+                                        voyageNoInput.style.display = 'none';
+                                    }
+                                    
+                                    if (voyageSelectOrder) {
+                                        // Clear existing options
+                                        voyageSelectOrder.innerHTML = '<option value="">Select Voyage</option>';
+                                        
+                                        // Add voyage options
+                                        voyages.forEach(voyage => {
+                                            const option = document.createElement('option');
+                                            option.value = voyage.voyage_number;
+                                            option.textContent = voyage.label;
+                                            option.setAttribute('data-voyage-group', voyage.voyage_group || '');
+                                            
+                                            // Highlight matching route voyages
+                                            if (voyage.matches_route) {
+                                                option.style.fontWeight = 'bold';
+                                                option.style.color = '#059669'; // Green color for matching routes
+                                            }
+                                            
+                                            voyageSelectOrder.appendChild(option);
+                                        });
+                                        
+                                        voyageSelectOrder.style.display = 'block';
+                                        
+                                        // Auto-select the first matching route if available
+                                        const matchingVoyage = voyages.find(v => v.matches_route);
+                                        if (matchingVoyage && selectedOrigin && selectedDestination) {
+                                            voyageSelectOrder.value = matchingVoyage.voyage_number;
+                                            
+                                            // Trigger change event to update hidden fields
+                                            voyageSelectOrder.dispatchEvent(new Event('change'));
+                                        }
+                                    }
+                                } else {
+                                    // No voyages available
+                                    if (voyageNoInput) {
+                                        voyageNoInput.value = 'No voyages available';
+                                        voyageNoInput.style.display = 'block';
+                                    }
+                                    
+                                    if (voyageSelectOrder) {
+                                        voyageSelectOrder.style.display = 'none';
+                                    }
+                                }
+                            } else {
+                                console.error('Error fetching voyages:', data.message);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error fetching voyages:', error);
+                        });
+                }
+
+                // Handle IN/OUT buttons for Ships I and II
                 if (selectedShip === 'I' || selectedShip === 'II') {
                     // Show buttons for IN and OUT
                     voyageButtons.classList.remove('hidden');
-
-
                 } else {
                     // Hide buttons for other ships
                     voyageButtons.classList.add('hidden');
-
                     // Remove the suffix logic
                     voyageNoInput.removeEventListener('input', () => {});
                 }
-            });
+            }
+
+            // Event listeners
+            shipNoSelect.addEventListener('change', updateVoyageOptions);
+            
+            if (originSelect) {
+                originSelect.addEventListener('change', updateVoyageOptions);
+            }
+            
+            if (destinationSelect) {
+                destinationSelect.addEventListener('change', updateVoyageOptions);
+            }
+
+            // Handle voyage selection change for dropdown
+            if (voyageSelectOrder) {
+                voyageSelectOrder.addEventListener('change', function() {
+                    const selectedVoyage = this.value;
+                    const selectedOption = this.options[this.selectedIndex];
+                    const voyageGroup = selectedOption.getAttribute('data-voyage-group') || '';
+                    
+                    if (selectedVoyage) {
+                        if (voyageNoInput) {
+                            voyageNoInput.value = selectedVoyage;
+                        }
+                        
+                        if (selectedVoyageGroupInput) {
+                            selectedVoyageGroupInput.value = voyageGroup;
+                        }
+                    }
+                });
+            }
 
             // Function to set the voyage suffix
             window.setVoyageSuffix = function (suffix) {
-                const voyageValue = voyageNoInput.value.trim().replace(/ - (IN|OUT)$/, '');
-                voyageNoInput.value = voyageValue + ' - ' + suffix;
+                const currentVoyage = voyageSelectOrder && voyageSelectOrder.style.display !== 'none' 
+                    ? voyageSelectOrder.value 
+                    : voyageNoInput.value.trim();
+                    
+                const voyageValue = currentVoyage.replace(/ - (IN|OUT)$/, '');
+                const newVoyageValue = voyageValue + ' - ' + suffix;
+                
+                if (voyageSelectOrder && voyageSelectOrder.style.display !== 'none') {
+                    // Update the selected option in dropdown
+                    const selectedOption = voyageSelectOrder.options[voyageSelectOrder.selectedIndex];
+                    if (selectedOption) {
+                        selectedOption.value = newVoyageValue;
+                        selectedOption.textContent = selectedOption.textContent.replace(/ - (IN|OUT)$/, '') + ' - ' + suffix;
+                        voyageSelectOrder.value = newVoyageValue;
+                    }
+                }
+                
+                voyageNoInput.value = newVoyageValue;
             };
         });
     </script>

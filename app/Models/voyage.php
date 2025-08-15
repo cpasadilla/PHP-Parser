@@ -15,5 +15,7 @@ class voyage extends Model
         'inOut',
         'dock_period',
         'dock_number',
+        'is_primary',
+        'voyage_group',
     ];
 }

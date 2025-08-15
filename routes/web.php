@@ -114,6 +114,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/customers/info/{id}', [CustomerController::class, 'details'])->name('customer.info');
         Route::get('/customer/{customerId}/subaccounts', [CustomerController::class, 'getSubAccounts']);
         Route::get('/search-customers', [CustomerController::class, 'searchCustomers']);
+        Route::get('/api/available-voyages/{shipNum}', [CustomerController::class, 'getAvailableVoyagesApi'])->name('api.available-voyages');
 
         // Order viewing
         Route::get('/order', [CustomerController::class, 'order'])->name('order');

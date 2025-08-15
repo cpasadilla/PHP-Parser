@@ -64,6 +64,16 @@
                             <td class="p-2 text-center">
                                 <a href="{{ route('masterlist.voyage-orders-by-id', ['voyageId' => $voyage->id]) }}" class="text-blue-500 hover:underline">
                                     {{ $key }}
+                                    @if($voyage->voyage_group)
+                                        <span class="ml-2 px-2 py-1 text-xs rounded-full 
+                                            @if($voyage->is_primary) 
+                                                bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100
+                                            @else 
+                                                bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200
+                                            @endif">
+                                            {{ $voyage->is_primary ? 'Primary' : 'Secondary' }}
+                                        </span>
+                                    @endif
                                 </a>
                             </td>
                             <td class="p-2 text-center" hidden>{{ $voyage->ship }}</td>

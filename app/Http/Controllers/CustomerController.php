@@ -493,15 +493,24 @@ class CustomerController extends Controller {
         $ship = $data['ship_no'];
         $shipStatus = Ship::where('ship_number', $ship)->first();
         $origin = $data['origin'];
+        $destination = $data['destination'] ?? null;
+        $selectedVoyageGroup = $data['selected_voyage_group'] ?? null; // Get selected voyage group if provided
+        $selectedVoyageNumber = $data['voyage_no'] ?? null; // Get the specific voyage number selected
         
         // Initialize variables that might not be set in all code paths
         $containerInReservationList = null;
         $existingOrder = null;
 
-        if ($ship == "I" || $ship == "II") {
-            $voyageNum = $this->shipOne($shipStatus, $ship, $origin);
+        // Use the specific voyage number if provided, otherwise fall back to automatic selection
+        if ($selectedVoyageNumber) {
+            $voyageNum = $selectedVoyageNumber;
         } else {
-            $voyageNum = $this->shipThree($shipStatus, $ship);
+            // Fall back to automatic selection based on ship type
+            if ($ship == "I" || $ship == "II") {
+                $voyageNum = $this->shipOne($shipStatus, $ship, $origin, $selectedVoyageGroup);
+            } else {
+                $voyageNum = $this->shipThree($shipStatus, $ship, $selectedVoyageGroup);
+            }
         }
 
         $orderId = $this->orderId($voyageNum, $ship);
@@ -813,7 +822,7 @@ class CustomerController extends Controller {
         return response()->json($results);
     }
 
-    public function shipOne($shipStatus, $ship, $origin) {
+    public function shipOne($shipStatus, $ship, $origin, $selectedVoyageGroup = null) {
         if ($origin == 'MANILA'){
             $suffix = 'OUT'; // Going OUT from Manila
             $oppositeSuffix = 'IN';
@@ -822,17 +831,47 @@ class CustomerController extends Controller {
             $oppositeSuffix = 'OUT';
         }
 
-        // First check for voyages with READY status in the current direction
-        $readyVoyage = voyage::where('ship', $ship)
+        // If a specific voyage group is selected, use that voyage
+        if ($selectedVoyageGroup) {
+            $selectedVoyage = voyage::where('ship', $ship)
+                                  ->where('inOut', $suffix)
+                                  ->where('voyage_group', $selectedVoyageGroup)
+                                  ->where('lastStatus', 'READY')
+                                  ->first();
+            
+            if ($selectedVoyage) {
+                $selectedVoyage->update([
+                    'lastUpdated' => now(),
+                ]);
+                
+                $voyageNum = $selectedVoyage->v_num . '-' . $suffix;
+                return $voyageNum;
+            }
+        }
+
+        // Check for multiple READY voyages in the current direction (dual voyage scenario)
+        $readyVoyages = voyage::where('ship', $ship)
                             ->where('inOut', $suffix)
                             ->where('lastStatus', 'READY')
-                            ->orderBy('v_num', 'desc') // Use highest voyage number that's READY
-                            ->first();
+                            ->where(function($query) {
+                                $query->whereNull('dock_period')
+                                ->orWhere('dock_period', 'like', 'post_dock_%');
+                            })
+                            ->orderBy('v_num', 'desc')
+                            ->orderBy('is_primary', 'desc') // Primary voyages first
+                            ->get();
 
-        if ($readyVoyage) {
-            // Use the existing READY voyage
-            $voyage = $readyVoyage;
-            $voyageNum = $readyVoyage->v_num;
+        if ($readyVoyages->count() > 1) {
+            // Multiple voyages available - use primary by default if no selection made
+            $voyage = $readyVoyages->where('is_primary', true)->first() ?? $readyVoyages->first();
+        } else {
+            // Single voyage or no voyages - use existing logic
+            $voyage = $readyVoyages->first();
+        }
+
+        if ($voyage) {
+            // Use the selected/primary voyage
+            $voyageNum = $voyage->v_num;
             
             // Keep it in READY status
             $voyage->update([
@@ -928,16 +967,48 @@ class CustomerController extends Controller {
         return $voyageNum;
     }
 
-    public function shipThree($shipStatus,$ship) {
-        // First check for post-dock voyages with READY status
-        $readyVoyage = voyage::where('ship', $ship)
+    public function shipThree($shipStatus,$ship, $selectedVoyageGroup = null) {
+        // If a specific voyage group is selected, use that voyage
+        if ($selectedVoyageGroup) {
+            $selectedVoyage = voyage::where('ship', $ship)
+                                  ->where('voyage_group', $selectedVoyageGroup)
+                                  ->where('lastStatus', 'READY')
+                                  ->first();
+            
+            if ($selectedVoyage) {
+                $selectedVoyage->update([
+                    'lastUpdated' => now(),
+                ]);
+                
+                return $selectedVoyage->v_num;
+            }
+        }
+
+        // Check for multiple READY voyages (dual voyage scenario)
+        $readyVoyages = voyage::where('ship', $ship)
                            ->where('lastStatus', 'READY')
                            ->where(function($query) {
                                $query->whereNull('dock_period')
                                ->orWhere('dock_period', 'like', 'post_dock_%');
                            })
-                           ->orderBy('v_num', 'desc') // Use highest voyage number that's READY
-                           ->first();
+                           ->orderBy('v_num', 'desc')
+                           ->orderBy('is_primary', 'desc') // Primary voyages first
+                           ->get();
+
+        if ($readyVoyages->count() > 1) {
+            // Multiple voyages available - use primary by default if no selection made
+            $voyage = $readyVoyages->where('is_primary', true)->first() ?? $readyVoyages->first();
+            $voyageNum = $voyage->v_num;
+            
+            $voyage->update([
+                'lastUpdated' => now(),
+            ]);
+            
+            return $voyageNum;
+        }
+
+        // Single voyage or no voyages - use existing logic
+        $readyVoyage = $readyVoyages->first();
 
         if ($readyVoyage) {
             // Use the existing READY voyage
@@ -1113,5 +1184,224 @@ class CustomerController extends Controller {
         
         // Ship is not available if it's in DRY DOCK status
         return $ship->status !== 'DRY DOCK';
+    }
+
+    /**
+     * Get available voyages for a ship, considering dual voyage functionality
+     * 
+     * @param string $shipNumber
+     * @param string $origin
+     * @return array
+     */
+    public function getAvailableVoyages($shipNumber, $origin = null) {
+        $voyages = [];
+        
+        if ($shipNumber == 'I' || $shipNumber == 'II') {
+            // For ships I and II, we need to consider direction
+            $suffix = ($origin == 'MANILA') ? 'OUT' : 'IN';
+            
+            $readyVoyages = voyage::where('ship', $shipNumber)
+                                ->where('inOut', $suffix)
+                                ->where('lastStatus', 'READY')
+                                ->orderBy('v_num', 'desc')
+                                ->orderBy('is_primary', 'desc')
+                                ->get();
+        } else {
+            // For other ships
+            $readyVoyages = voyage::where('ship', $shipNumber)
+                                ->where('lastStatus', 'READY')
+                                ->where(function($query) {
+                                    $query->whereNull('dock_period')
+                                    ->orWhere('dock_period', 'like', 'post_dock_%');
+                                })
+                                ->orderBy('v_num', 'desc')
+                                ->orderBy('is_primary', 'desc')
+                                ->get();
+        }
+        
+        foreach ($readyVoyages as $voyage) {
+            $label = 'Voyage ' . $voyage->v_num;
+            if ($voyage->inOut) {
+                $label .= '-' . $voyage->inOut;
+            }
+            
+            // Add primary/secondary indicator if there are multiple voyages
+            if ($readyVoyages->count() > 1) {
+                $label .= ' (' . ($voyage->is_primary ? 'Primary' : 'Secondary') . ')';
+            }
+            
+            $voyages[] = [
+                'voyage_group' => $voyage->voyage_group,
+                'v_num' => $voyage->v_num,
+                'inOut' => $voyage->inOut,
+                'is_primary' => $voyage->is_primary,
+                'label' => $label,
+                'display_name' => $voyage->v_num . ($voyage->inOut ? '-' . $voyage->inOut : '')
+            ];
+        }
+        
+        return $voyages;
+    }
+
+    /**
+     * API endpoint to get available voyages for a ship
+     * 
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getAvailableVoyagesApi(Request $request) {
+        $shipNumber = $request->route('shipNum');
+        $origin = $request->input('origin');
+        $destination = $request->input('destination');
+        
+        if (!$shipNumber) {
+            return response()->json(['success' => false, 'message' => 'Ship number is required'], 400);
+        }
+        
+        $voyages = $this->getAvailableVoyagesWithRoute($shipNumber, $origin, $destination);
+        
+        return response()->json([
+            'success' => true,
+            'voyages' => $voyages,
+            'message' => count($voyages) > 0 ? 'Voyages found' : 'No voyages available'
+        ]);
+    }
+    
+    /**
+     * Get available voyages for a ship with route matching
+     * 
+     * @param string $shipNumber
+     * @param string|null $origin
+     * @param string|null $destination
+     * @return array
+     */
+    public function getAvailableVoyagesWithRoute($shipNumber, $origin = null, $destination = null) {
+        $voyages = [];
+        
+        // Get all READY voyages for this ship
+        if ($shipNumber == 'I' || $shipNumber == 'II') {
+            $readyVoyages = voyage::where('ship', $shipNumber)
+                                ->where('lastStatus', 'READY')
+                                ->where(function($query) {
+                                    $query->whereNull('dock_period')
+                                    ->orWhere('dock_period', 'like', 'post_dock_%');
+                                })
+                                ->orderBy('v_num', 'desc')
+                                ->orderBy('is_primary', 'desc')
+                                ->get();
+        } else {
+            $readyVoyages = voyage::where('ship', $shipNumber)
+                                ->where('lastStatus', 'READY')
+                                ->where(function($query) {
+                                    $query->whereNull('dock_period')
+                                    ->orWhere('dock_period', 'like', 'post_dock_%');
+                                })
+                                ->orderBy('v_num', 'desc')
+                                ->orderBy('is_primary', 'desc')
+                                ->get();
+        }
+        
+        foreach ($readyVoyages as $voyage) {
+            // Determine if this voyage matches the origin-destination route
+            $matchesRoute = $this->doesVoyageMatchRoute($voyage, $origin, $destination, $shipNumber);
+            
+            $voyageNumber = $voyage->v_num;
+            $label = 'Voyage ' . $voyage->v_num;
+            
+            // For Ships I and II, include direction and route info
+            if ($voyage->inOut) {
+                $voyageNumber .= '-' . $voyage->inOut;
+                $label .= '-' . $voyage->inOut;
+                
+                // Add route description
+                if ($voyage->inOut == 'IN') {
+                    $routeDesc = ' (TO MANILA)';
+                } else {
+                    $routeDesc = ' (FROM MANILA)';
+                }
+                $label .= $routeDesc;
+            }
+            
+            // Add primary/secondary indicator for dual voyages
+            $sameDirectionVoyages = $readyVoyages->where('inOut', $voyage->inOut);
+            if ($sameDirectionVoyages->count() > 1) {
+                $label .= ' - ' . ($voyage->is_primary ? 'Primary' : 'Secondary');
+            }
+            
+            // Add route match indicator for debugging
+            if ($origin && $destination && !$matchesRoute) {
+                $label .= ' [Different Route]';
+            }
+            
+            $voyages[] = [
+                'voyage_number' => $voyageNumber,
+                'voyage_group' => $voyage->voyage_group,
+                'v_num' => $voyage->v_num,
+                'inOut' => $voyage->inOut,
+                'is_primary' => $voyage->is_primary,
+                'label' => $label,
+                'matches_route' => $matchesRoute,
+                'route_priority' => $matchesRoute ? 1 : 2 // Matching routes get higher priority
+            ];
+        }
+        
+        // Sort by route match first, then by priority
+        usort($voyages, function($a, $b) {
+            if ($a['route_priority'] != $b['route_priority']) {
+                return $a['route_priority'] - $b['route_priority'];
+            }
+            return $b['is_primary'] - $a['is_primary']; // Primary first
+        });
+        
+        return $voyages;
+    }
+    
+    /**
+     * Check if a voyage matches the origin-destination route
+     * 
+     * @param object $voyage
+     * @param string|null $origin
+     * @param string|null $destination
+     * @param string $shipNumber
+     * @return bool
+     */
+    private function doesVoyageMatchRoute($voyage, $origin, $destination, $shipNumber) {
+        // If no origin/destination provided, can't match
+        if (!$origin || !$destination) {
+            return true; // Show all voyages if route not specified
+        }
+        
+        // For Ships I and II with directional voyages
+        if (($shipNumber == 'I' || $shipNumber == 'II') && $voyage->inOut) {
+            // Manila is the hub - determine direction based on origin/destination
+            $isFromManila = (strtoupper($origin) == 'MANILA');
+            $isToManila = (strtoupper($destination) == 'MANILA');
+            
+            // Debug logging
+            \Log::info("Route matching debug:", [
+                'voyage' => $voyage->v_num . '-' . $voyage->inOut,
+                'origin' => $origin,
+                'destination' => $destination,
+                'isFromManila' => $isFromManila,
+                'isToManila' => $isToManila,
+                'voyage_direction' => $voyage->inOut
+            ]);
+            
+            if ($isFromManila && $voyage->inOut == 'OUT') {
+                \Log::info("Match found: FROM MANILA (OUT voyage)");
+                return true; // Going OUT from Manila
+            }
+            
+            if ($isToManila && $voyage->inOut == 'IN') {
+                \Log::info("Match found: TO MANILA (IN voyage)");
+                return true; // Coming IN to Manila
+            }
+            
+            \Log::info("No route match for this voyage");
+            return false;
+        }
+        
+        // For Ships III, IV, V - all voyages match (no directional constraint)
+        return true;
     }
 }

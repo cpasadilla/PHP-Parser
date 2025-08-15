@@ -561,6 +561,86 @@ class MasterListController extends Controller
                 ]);
             }
         }
+        else if ($data == 'DUAL VOYAGE') {
+            // Handle DUAL VOYAGE status - create a second voyage with the same number but different group
+            if ($id == '1' || $id == '2') {
+                // For ships I and II - handle both IN and OUT directions
+                $directions = ['IN', 'OUT'];
+                
+                foreach ($directions as $direction) {
+                    // Get the latest voyage for this direction
+                    $latestVoyage = voyage::where('ship', $ship->ship_number)
+                        ->where('inOut', $direction)
+                        ->where('lastStatus', 'READY')
+                        ->orderBy('v_num', 'desc')
+                        ->first();
+                    
+                    if ($latestVoyage) {
+                        // Check if there's already a secondary voyage for this number and direction
+                        $existingSecondary = voyage::where('ship', $ship->ship_number)
+                            ->where('inOut', $direction)
+                            ->where('v_num', $latestVoyage->v_num)
+                            ->where('is_primary', false)
+                            ->first();
+                        
+                        if (!$existingSecondary) {
+                            // Mark the existing voyage as primary
+                            $latestVoyage->update([
+                                'is_primary' => true,
+                                'voyage_group' => 'primary_' . $latestVoyage->v_num . '_' . $direction
+                            ]);
+                            
+                            // Create a secondary voyage with the same number
+                            voyage::create([
+                                'ship' => $ship->ship_number,
+                                'v_num' => $latestVoyage->v_num,
+                                'lastStatus' => 'READY',
+                                'lastUpdated' => now(),
+                                'inOut' => $direction,
+                                'is_primary' => false,
+                                'voyage_group' => 'secondary_' . $latestVoyage->v_num . '_' . $direction
+                            ]);
+                        }
+                    }
+                }
+            } else {
+                // For other ships (III, IV, V)
+                $latestVoyage = voyage::where('ship', $ship->ship_number)
+                    ->where('lastStatus', 'READY')
+                    ->orderBy('v_num', 'desc')
+                    ->first();
+                
+                if ($latestVoyage) {
+                    // Check if there's already a secondary voyage for this number
+                    $existingSecondary = voyage::where('ship', $ship->ship_number)
+                        ->where('v_num', $latestVoyage->v_num)
+                        ->where('is_primary', false)
+                        ->first();
+                    
+                    if (!$existingSecondary) {
+                        // Mark the existing voyage as primary
+                        $latestVoyage->update([
+                            'is_primary' => true,
+                            'voyage_group' => 'primary_' . $latestVoyage->v_num
+                        ]);
+                        
+                        // Create a secondary voyage with the same number
+                        voyage::create([
+                            'ship' => $ship->ship_number,
+                            'v_num' => $latestVoyage->v_num,
+                            'lastStatus' => 'READY',
+                            'lastUpdated' => now(),
+                            'inOut' => '',
+                            'is_primary' => false,
+                            'voyage_group' => 'secondary_' . $latestVoyage->v_num
+                        ]);
+                    }
+                }
+            }
+            
+            // Automatically change status to CREATE BL after creating dual voyages
+            $data = 'CREATE BL';
+        }
 
         $ship->status = $data;
         $ship->save();

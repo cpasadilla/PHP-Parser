@@ -210,7 +210,11 @@
                                 <td style="font-family: Arial; font-size: 11px; text-align: right; width: 68px; padding: 1px; border: none;"><strong>VOYAGE NO.</strong></td>
                                 <td style="font-family: Arial; font-size: 12px; border: none; width: 55px; border-bottom: 1px solid black; text-align: center; text-transform: uppercase;">
                                     <input type="hidden" id="voyage_no" name="voyage_no" value="" />
-                                    <span id="voyage_display"></span>
+                                    <input type="hidden" id="selected_voyage_group" name="selected_voyage_group" value="" />
+                                    <span id="voyage_display" style="display: inline;"></span>
+                                    <select id="voyage_select" name="voyage_select" style="display: none; width: 100%; height: 15px; border: none; background: transparent; text-align: center; font-family: Arial; font-size: 11px; text-transform: uppercase; padding: 0px; line-height: 1; cursor: pointer;">
+                                        <option value="">Select Voyage</option>
+                                    </select>
                                 </td>
                                 <td style="font-family: Arial; font-size: 11px; text-align: right; width: 80px; padding: 2px; border: none;"><strong>CONTAINER NO.</strong></td>
                                 <td style="font-family: Arial; font-size: 10px; border: none; width: 200px; border-bottom: 1px solid black; text-align: center; padding: 0px; min-height: 15px;">
@@ -2250,33 +2254,177 @@ document.addEventListener('DOMContentLoaded', function() {
         const shipSelect = document.getElementById('ship_no');
         const voyageInput = document.getElementById('voyage_no');
         const voyageDisplay = document.getElementById('voyage_display');
+        const voyageSelect = document.getElementById('voyage_select');
+        const selectedVoyageGroupInput = document.getElementById('selected_voyage_group');
+        const originSelect = document.getElementById('origin');
+        const destinationSelect = document.getElementById('destination');
         
-        if (shipSelect) {
-            shipSelect.addEventListener('change', function() {
-                const selectedShip = this.value;
-                if (selectedShip) {
-                    // You might need to fetch the current voyage for this ship from the server
-                    // For now, we'll use a default value or fetch it from a data attribute
-                    @if(isset($voyages) && count($voyages) > 0)
-                        // Get the latest voyage for the selected ship
-                        const voyagesByShip = @json($voyages->groupBy('ship_number'));
-                        if (voyagesByShip[selectedShip] && voyagesByShip[selectedShip].length > 0) {
-                            // Sort by voyage number to get the latest
-                            const latestVoyage = voyagesByShip[selectedShip][0].voyage_number;
-                            window.currentVoyage = latestVoyage;
+        // Function to fetch and update voyages
+        function updateVoyageOptions() {
+            const selectedShip = shipSelect.value;
+            const selectedOrigin = originSelect.value;
+            const selectedDestination = destinationSelect.value;
+            
+            if (selectedShip) {
+                let apiUrl = `/api/available-voyages/${selectedShip}`;
+                let params = new URLSearchParams();
+                
+                if (selectedOrigin) params.append('origin', selectedOrigin);
+                if (selectedDestination) params.append('destination', selectedDestination);
+                
+                if (params.toString()) {
+                    apiUrl += '?' + params.toString();
+                }
+                
+                // Fetch available voyages for the selected ship with route info
+                fetch(apiUrl)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const voyages = data.voyages;
                             
-                            if (voyageInput) {
-                                voyageInput.value = latestVoyage;
+                            if (voyages.length === 1) {
+                                // Single voyage - use existing behavior
+                                const voyage = voyages[0];
+                                window.currentVoyage = voyage.voyage_number;
+                                
+                                if (voyageInput) {
+                                    voyageInput.value = voyage.voyage_number;
+                                }
+                                
+                                if (voyageDisplay) {
+                                    voyageDisplay.textContent = voyage.voyage_number;
+                                    voyageDisplay.style.display = 'inline';
+                                }
+                                
+                                if (voyageSelect) {
+                                    voyageSelect.style.display = 'none';
+                                }
+                                
+                                if (selectedVoyageGroupInput) {
+                                    selectedVoyageGroupInput.value = voyage.voyage_group || '';
+                                }
+                                
+                                // Trigger container usage check for wharfage calculation
+                                document.dispatchEvent(new CustomEvent('voyageUpdated', { detail: voyage.voyage_number }));
+                            } else if (voyages.length > 1) {
+                                // Multiple voyages - show dropdown
+                                if (voyageDisplay) {
+                                    voyageDisplay.style.display = 'none';
+                                }
+                                
+                                if (voyageSelect) {
+                                    // Clear existing options
+                                    voyageSelect.innerHTML = '<option value="">Select Voyage</option>';
+                                    
+                                    // Add voyage options
+                                    voyages.forEach(voyage => {
+                                        const option = document.createElement('option');
+                                        option.value = voyage.voyage_number;
+                                        option.textContent = voyage.label;
+                                        option.setAttribute('data-voyage-group', voyage.voyage_group || '');
+                                        
+                                        // Highlight matching route voyages
+                                        if (voyage.matches_route) {
+                                            option.style.fontWeight = 'bold';
+                                            option.style.color = '#059669'; // Green color for matching routes
+                                        }
+                                        
+                                        voyageSelect.appendChild(option);
+                                    });
+                                    
+                                    voyageSelect.style.display = 'inline';
+                                    
+                                    // Auto-select the first matching route if available
+                                    const matchingVoyage = voyages.find(v => v.matches_route);
+                                    if (matchingVoyage && selectedOrigin && selectedDestination) {
+                                        voyageSelect.value = matchingVoyage.voyage_number;
+                                        
+                                        // Trigger change event to update hidden fields
+                                        voyageSelect.dispatchEvent(new Event('change'));
+                                    }
+                                }
+                            } else {
+                                // No voyages available
+                                if (voyageDisplay) {
+                                    voyageDisplay.textContent = 'No voyages available';
+                                    voyageDisplay.style.display = 'inline';
+                                }
+                                
+                                if (voyageSelect) {
+                                    voyageSelect.style.display = 'none';
+                                }
                             }
-                            
-                            if (voyageDisplay) {
-                                voyageDisplay.textContent = latestVoyage;
-                            }
-                            
-                            // Trigger container usage check for wharfage calculation
-                            document.dispatchEvent(new CustomEvent('voyageUpdated', { detail: latestVoyage }));
+                        } else {
+                            console.error('Error fetching voyages:', data.message);
                         }
-                    @endif
+                    })
+                    .catch(error => {
+                        console.error('Error fetching voyages:', error);
+                        
+                        // Fallback to existing behavior
+                        @if(isset($voyages) && count($voyages) > 0)
+                            // Get the latest voyage for the selected ship
+                            const voyagesByShip = @json($voyages->groupBy('ship_number'));
+                            if (voyagesByShip[selectedShip] && voyagesByShip[selectedShip].length > 0) {
+                                // Sort by voyage number to get the latest
+                                const latestVoyage = voyagesByShip[selectedShip][0].voyage_number;
+                                window.currentVoyage = latestVoyage;
+                                
+                                if (voyageInput) {
+                                    voyageInput.value = latestVoyage;
+                                }
+                                
+                                if (voyageDisplay) {
+                                    voyageDisplay.textContent = latestVoyage;
+                                    voyageDisplay.style.display = 'inline';
+                                }
+                                
+                                if (voyageSelect) {
+                                    voyageSelect.style.display = 'none';
+                                }
+                                
+                                // Trigger container usage check for wharfage calculation
+                                document.dispatchEvent(new CustomEvent('voyageUpdated', { detail: latestVoyage }));
+                            }
+                        @endif
+                    });
+            }
+        }
+        
+        // Event listeners
+        if (shipSelect) {
+            shipSelect.addEventListener('change', updateVoyageOptions);
+        }
+        
+        if (originSelect) {
+            originSelect.addEventListener('change', updateVoyageOptions);
+        }
+        
+        if (destinationSelect) {
+            destinationSelect.addEventListener('change', updateVoyageOptions);
+        }
+        
+        // Handle voyage selection change
+        if (voyageSelect) {
+            voyageSelect.addEventListener('change', function() {
+                const selectedVoyage = this.value;
+                const selectedOption = this.options[this.selectedIndex];
+                const voyageGroup = selectedOption.getAttribute('data-voyage-group') || '';
+                
+                if (selectedVoyage) {
+                    window.currentVoyage = selectedVoyage;
+                    
+                    if (voyageInput) {
+                        voyageInput.value = selectedVoyage;
+                    }
+                    
+                    if (selectedVoyageGroupInput) {
+                        selectedVoyageGroupInput.value = voyageGroup;
+                    }
+                    
+                    // Trigger container usage check for wharfage calculation
+                    document.dispatchEvent(new CustomEvent('voyageUpdated', { detail: selectedVoyage }));
                 }
             });
         }
