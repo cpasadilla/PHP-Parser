@@ -42,6 +42,7 @@ class UserPermissionController extends Controller
                     ]
                 ],
                 'customer' => ['access', 'create', 'edit', 'delete'],
+                'inventory' => ['access', 'create', 'edit', 'delete'],
                 'masterlist' => [
                     'operations' => ['access', 'create', 'edit', 'delete'],
                     'pages' => [

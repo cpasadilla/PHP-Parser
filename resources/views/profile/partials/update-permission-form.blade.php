@@ -73,6 +73,10 @@
                 'name' => 'Price List',
                 'operations' => ['access', 'create', 'edit', 'delete']
             ],
+            'inventory' => [
+                'name' => 'Inventory',
+                'operations' => ['access', 'create', 'edit', 'delete']
+            ],
             'masterlist' => [
                 'name' => 'Master List',
                 'operations' => ['access'],

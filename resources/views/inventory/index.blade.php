@@ -32,21 +32,26 @@
                             
                             <!-- Action Group -->
                             <div class="flex gap-2">
+                                @if(Auth::user()->hasPermission('inventory','create'))
                                 <button onclick="document.getElementById('startingBalanceModal').classList.remove('hidden')" class="flex items-center gap-2 px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 dark:bg-yellow-600 dark:hover:bg-yellow-700 transition-colors duration-200 shadow-sm dark:shadow-gray-900/25 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
                                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/>
                                     </svg>
                                     Set Balance
                                 </button>
+                                @endif
+                                @if(Auth::user()->hasPermission('inventory','create'))
                                 <button onclick="document.getElementById('inventoryModal').classList.remove('hidden')" class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 transition-colors duration-200 shadow-sm dark:shadow-gray-900/25">
                                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
                                     </svg>
                                     Add Entry
                                 </button>
+                                @endif
                             </div>
                             
                             <!-- Customer Group -->
+                            @if(Auth::user()->hasPagePermission('customer') && Auth::user()->hasPermission('customer','create'))
                             <div x-data="{ openModal: false, isSubAccount: false }">
                                 <button @click="openModal = true; isSubAccount = false" class="flex items-center gap-2 px-4 py-2 text-white bg-indigo-600 rounded-md hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 transition-colors duration-200 shadow-sm focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 dark:focus:ring-offset-gray-800">
                                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -167,6 +172,7 @@
                                     </div>
                                 </div>
                             </div>
+                            @endif
                         </div>
                     </div>
                     <!-- Tabs -->
@@ -263,8 +269,12 @@
                                         <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">0</td>
                                         <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center">
                                             <div class="flex gap-1 justify-center">
+                                                @if(Auth::user()->hasPermission('inventory','edit'))
                                                 <button type="button" onclick="openEditModal({{ $entry->id }})" class="px-2 py-1 bg-yellow-500 text-white rounded text-xs hover:bg-yellow-600 dark:bg-yellow-600 dark:hover:bg-yellow-700 transition-colors duration-200">EDIT</button>
+                                                @endif
+                                                @if(Auth::user()->hasPermission('inventory','delete'))
                                                 <button type="button" onclick="confirmDelete({{ $entry->id }})" class="px-2 py-1 bg-red-500 text-white rounded text-xs hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 transition-colors duration-200">DELETE</button>
+                                                @endif
                                             </div>
                                         </td>
                                     </tr>
@@ -279,6 +289,7 @@
     </div>
 
     <!-- Modal for Add Entry -->
+    @if(Auth::user()->hasPermission('inventory','create'))
     <div id="inventoryModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-lg">
             <h3 class="text-lg font-bold mb-4 text-gray-900 dark:text-gray-100">Add Inventory Entry</h3>
@@ -380,8 +391,10 @@
             </form>
         </div>
     </div>
+    @endif
 
     <!-- Edit Modal -->
+    @if(Auth::user()->hasPermission('inventory','edit'))
     <div id="editInventoryModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-lg">
             <h3 class="text-lg font-bold mb-4 text-gray-900 dark:text-gray-100">Edit Inventory Entry</h3>
@@ -396,8 +409,10 @@
             </form>
         </div>
     </div>
+    @endif
 
     <!-- Starting Balance Modal -->
+    @if(Auth::user()->hasPermission('inventory','create'))
     <div id="startingBalanceModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-lg">
             <h3 class="text-lg font-bold mb-4 text-gray-900 dark:text-gray-100">Set Starting Balance</h3>
@@ -442,6 +457,7 @@
             </form>
         </div>
     </div>
+    @endif
 
     <script>
         function showInventoryTab(contentId, tabId) {
