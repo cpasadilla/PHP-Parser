@@ -134,7 +134,6 @@
     </x-sidebar.link>
     @endif
 
-    @if(Auth::user()->hasPagePermission('inventory'))
     <x-sidebar.link
         title="Inventory"
         href="{{ route('inventory') }}"
@@ -144,7 +143,7 @@
                 <x-heroicon-o-cube class="flex-shrink-0 w-6 h-6" aria-hidden="true" />
             </x-slot>
     </x-sidebar.link>
-    @endif
+    
     
     @if(Auth::user()->roles && in_array(strtoupper(trim(Auth::user()->roles->roles)), ['ADMIN', 'ADMINISTRATOR']))
     <div

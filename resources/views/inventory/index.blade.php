@@ -48,14 +48,12 @@
                             
                             <!-- Customer Group -->
                             <div x-data="{ openModal: false, isSubAccount: false }">
-                                @if(auth()->user()->hasPermission('customer', 'create'))
                                 <button @click="openModal = true; isSubAccount = false" class="flex items-center gap-2 px-4 py-2 text-white bg-purple-500 rounded-md hover:bg-purple-600 dark:bg-purple-600 dark:hover:bg-purple-700 transition-colors duration-200 shadow-sm dark:shadow-gray-900/25 focus:ring-2 focus:ring-purple-500 focus:ring-offset-1 dark:focus:ring-offset-gray-800">
                                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                         <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z"/>
                                     </svg>
                                     Create Customer
                                 </button>
-                                @endif
 
                                 <!-- Modal -->
                                 <div x-show="openModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-4 z-50" x-transition>

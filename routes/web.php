@@ -76,14 +76,12 @@ Route::middleware('auth')->group(function () {
         Route::get('/accounting', [AccountingController::class, 'index'])->name('accounting');
     });
 
-    // Inventory routes
-    Route::middleware('page.permission:inventory')->group(function () {
-        Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory');
-        Route::post('/inventory/store', [InventoryController::class, 'store'])->name('inventory.store');
-        Route::post('/inventory/set-starting-balance', [InventoryController::class, 'setStartingBalance'])->name('inventory.set-starting-balance');
-        Route::put('/inventory/{id}', [InventoryController::class, 'update'])->name('inventory.update');
-        Route::delete('/inventory/{id}', [InventoryController::class, 'destroy'])->name('inventory.destroy');
-    });
+    // Inventory routes (accessible to all authenticated users)
+    Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory');
+    Route::post('/inventory/store', [InventoryController::class, 'store'])->name('inventory.store');
+    Route::post('/inventory/set-starting-balance', [InventoryController::class, 'setStartingBalance'])->name('inventory.set-starting-balance');
+    Route::put('/inventory/{id}', [InventoryController::class, 'update'])->name('inventory.update');
+    Route::delete('/inventory/{id}', [InventoryController::class, 'destroy'])->name('inventory.destroy');
 
     // Price List routes
     Route::middleware('page.permission:pricelist,access')->group(function () {
