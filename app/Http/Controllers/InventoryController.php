@@ -266,4 +266,19 @@ class InventoryController extends Controller
         
         return $outValue * $priceMultiplier;
     }
+
+    /**
+     * Delete an inventory entry.
+     */
+    public function destroy($id)
+    {
+        try {
+            $entry = \App\Models\InventoryEntry::findOrFail($id);
+            $entry->delete();
+            
+            return redirect()->route('inventory')->with('success', 'Inventory entry deleted successfully!');
+        } catch (\Exception $e) {
+            return redirect()->route('inventory')->with('error', 'Failed to delete inventory entry.');
+        }
+    }
 }

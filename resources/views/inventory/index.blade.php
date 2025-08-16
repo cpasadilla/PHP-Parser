@@ -264,7 +264,10 @@
                                         <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 font-semibold text-gray-900 dark:text-gray-100">{{ number_format($entry->onsite_balance, 2) }}</td>
                                         <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">0</td>
                                         <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center">
-                                            <button type="button" onclick="openEditModal({{ $entry->id }})" class="px-2 py-1 bg-yellow-500 text-white rounded text-xs hover:bg-yellow-600 dark:bg-yellow-600 dark:hover:bg-yellow-700 transition-colors duration-200">EDIT</button>
+                                            <div class="flex gap-1 justify-center">
+                                                <button type="button" onclick="openEditModal({{ $entry->id }})" class="px-2 py-1 bg-yellow-500 text-white rounded text-xs hover:bg-yellow-600 dark:bg-yellow-600 dark:hover:bg-yellow-700 transition-colors duration-200">EDIT</button>
+                                                <button type="button" onclick="confirmDelete({{ $entry->id }})" class="px-2 py-1 bg-red-500 text-white rounded text-xs hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 transition-colors duration-200">DELETE</button>
+                                            </div>
                                         </td>
                                     </tr>
                                     @endforeach
@@ -865,6 +868,33 @@
             
             var calculatedAmount = outValue * priceMultiplier;
             amountInput.value = calculatedAmount.toFixed(2);
+        }
+
+        // Delete confirmation function
+        function confirmDelete(entryId) {
+            if (confirm('Are you sure you want to delete this inventory entry? This action cannot be undone.')) {
+                // Create and submit delete form
+                var form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/inventory/' + entryId;
+                
+                // Add CSRF token
+                var csrfToken = document.createElement('input');
+                csrfToken.type = 'hidden';
+                csrfToken.name = '_token';
+                csrfToken.value = '{{ csrf_token() }}';
+                form.appendChild(csrfToken);
+                
+                // Add method override for DELETE
+                var methodInput = document.createElement('input');
+                methodInput.type = 'hidden';
+                methodInput.name = '_method';
+                methodInput.value = 'DELETE';
+                form.appendChild(methodInput);
+                
+                document.body.appendChild(form);
+                form.submit();
+            }
         }
 
         // Functions for Create Customer modal

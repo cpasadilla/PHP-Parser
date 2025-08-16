@@ -82,6 +82,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/inventory/store', [InventoryController::class, 'store'])->name('inventory.store');
         Route::post('/inventory/set-starting-balance', [InventoryController::class, 'setStartingBalance'])->name('inventory.set-starting-balance');
         Route::put('/inventory/{id}', [InventoryController::class, 'update'])->name('inventory.update');
+        Route::delete('/inventory/{id}', [InventoryController::class, 'destroy'])->name('inventory.destroy');
     });
 
     // Price List routes
