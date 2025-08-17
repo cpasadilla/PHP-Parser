@@ -191,6 +191,16 @@
                     @foreach(['G1 DAMORTIS','G1 CURRIMAO','3/4 GRAVEL','VIBRO SAND','SAND S1 DAMORTIS','SAND S1 M','HOLLOWBLOCKS'] as $idx => $item)
                         <div id="tabContent{{ $idx }}" class="tab-content p-4 bg-white rounded-md shadow-md dark:bg-gray-800 dark:shadow-gray-900/25" style="display: {{ $idx === 0 ? 'block' : 'none' }}; overflow-x: auto; white-space: nowrap;">
                             <h3 class="font-semibold mb-2 text-gray-900 dark:text-gray-100">{{ $item }}</h3>
+                            <div class="flex flex-wrap items-end gap-3 mb-3">
+                                <div>
+                                    <label for="monthPicker{{ $idx }}" class="block text-xs text-gray-600 dark:text-gray-300">Select month</label>
+                                    <input type="month" id="monthPicker{{ $idx }}" class="border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100" />
+                                </div>
+                                <button id="exportPdfMonth{{ $idx }}" data-tab-index="{{ $idx }}" class="inline-flex items-center gap-2 px-3 py-1 text-sm text-white bg-red-600 rounded-md hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700 transition-colors duration-200 shadow-sm">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/></svg>
+                                    Export PDF (Month)
+                                </button>
+                            </div>
                             <table class="w-full border-collapse mb-4 bg-white dark:bg-gray-800">
                             <thead>
                                 <tr class="bg-gray-100 dark:bg-gray-700">
@@ -381,8 +391,14 @@
                 </div>
                 
                 <div class="mb-2">
-                    <label id="amountLabel" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">AMOUNT (Auto-calculated)</label>
-                    <input type="number" step="0.01" name="amount" id="amountInput" class="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-gray-100" min="0" max="999999.99" readonly />
+                    <div class="flex items-center justify-between">
+                        <label id="amountLabel" class="block text-sm font-medium text-gray-700 dark:text-gray-300">AMOUNT (Auto-calculated)</label>
+                        <label class="inline-flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
+                            <input type="checkbox" id="amountManualToggle" name="is_amount_manual" value="1" onchange="handleAmountManualToggle()" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                            Manual amount
+                        </label>
+                    </div>
+                    <input type="number" step="0.01" name="amount" id="amountInput" class="w-full mt-1 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-gray-100" min="0" max="999999.99" readonly />
                 </div>
                 <div class="flex justify-end gap-2 mt-4">
                     <button type="button" onclick="document.getElementById('inventoryModal').classList.add('hidden')" class="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded hover:bg-gray-400 dark:hover:bg-gray-700 transition-colors duration-200">Cancel</button>
@@ -483,6 +499,46 @@
             });
         });
 
+        function handleAmountManualToggle() {
+            const manualToggle = document.getElementById('amountManualToggle');
+            const amountInput = document.getElementById('amountInput');
+            const label = document.getElementById('amountLabel');
+            if (manualToggle && amountInput) {
+                if (manualToggle.checked) {
+                    amountInput.readOnly = false;
+                    amountInput.classList.remove('bg-gray-100', 'dark:bg-gray-600');
+                    amountInput.classList.add('bg-white', 'dark:bg-gray-700');
+                    if (label) label.textContent = 'AMOUNT (Manual Entry)';
+                } else {
+                    amountInput.readOnly = true;
+                    amountInput.classList.remove('bg-white', 'dark:bg-gray-700');
+                    amountInput.classList.add('bg-gray-100', 'dark:bg-gray-600');
+                    if (label) label.textContent = 'AMOUNT (Auto-calculated)';
+                    updateAmountCalculation();
+                }
+            }
+        }
+
+        function handleEditAmountManualToggle() {
+            const manualToggle = document.getElementById('editAmountManualToggle');
+            const amountInput = document.getElementById('editAmountInput');
+            const label = document.getElementById('editAmountLabel');
+            if (manualToggle && amountInput) {
+                if (manualToggle.checked) {
+                    amountInput.readOnly = false;
+                    amountInput.classList.remove('bg-gray-100', 'dark:bg-gray-600');
+                    amountInput.classList.add('bg-white', 'dark:bg-gray-700');
+                    if (label) label.textContent = 'AMOUNT (Manual Entry)';
+                } else {
+                    amountInput.readOnly = true;
+                    amountInput.classList.remove('bg-white', 'dark:bg-gray-700');
+                    amountInput.classList.add('bg-gray-100', 'dark:bg-gray-600');
+                    if (label) label.textContent = 'AMOUNT (Auto-calculated)';
+                    updateEditAmountCalculation();
+                }
+            }
+        }
+
         // Global variables to store current balances
         var currentBalances = @json($entries->groupBy('item')->map(function($items) {
             $latest = $items->sortByDesc('date')->sortByDesc('created_at')->first();
@@ -546,7 +602,7 @@
             }
         }
 
-        function updateAmountCalculation() {
+    function updateAmountCalculation() {
             var itemSelect = document.querySelector('#inventoryModal select[name="item"]');
             var outInput = document.querySelector('#inventoryModal input[name="out"]');
             var pickupDeliverySelect = document.querySelector('#inventoryModal select[name="pickup_delivery_type"]');
@@ -554,6 +610,7 @@
             var hollowblockSizeSelect = document.querySelector('#inventoryModal select[name="hollowblock_size"]');
             var amountInput = document.querySelector('#inventoryModal input[name="amount"]');
             var amountLabel = document.getElementById('amountLabel');
+        var manualToggle = document.getElementById('amountManualToggle');
             
             if (!itemSelect || !outInput || !amountInput) return;
             
@@ -563,14 +620,14 @@
             var vatType = vatSelect ? vatSelect.value : '';
             var hollowblockSize = hollowblockSizeSelect ? hollowblockSizeSelect.value : '';
             
-            // Check if per bag option is selected
-            if (pickupDeliveryType === 'per_bag') {
+        // Manual amount if toggle is on OR per_bag type
+        if ((manualToggle && manualToggle.checked) || pickupDeliveryType === 'per_bag') {
                 // Make amount field editable for manual entry
                 amountInput.readOnly = false;
                 amountInput.classList.remove('bg-gray-100', 'dark:bg-gray-600');
                 amountInput.classList.add('bg-white', 'dark:bg-gray-700');
                 if (amountLabel) {
-                    amountLabel.textContent = 'AMOUNT (Manual Entry)';
+            amountLabel.textContent = 'AMOUNT (Manual Entry)';
                 }
                 return;
             } else {
@@ -659,7 +716,7 @@
             amountInput.value = calculatedAmount.toFixed(2);
         }
 
-        function openEditModal(id) {
+    function openEditModal(id) {
             var entry = @json($entries);
             var customers = @json($customers);
             var isAdmin = @json(auth()->user()->roles && in_array(strtoupper(trim(auth()->user()->roles->roles)), ['ADMIN', 'ADMINISTRATOR']));
@@ -717,9 +774,16 @@
                 </div>
             </div>`;
             
+            const editManualChecked = (found.pickup_delivery_type === 'per_bag');
             fields += `<div class='mb-2'>
-                <label id='editAmountLabel' class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>AMOUNT (Auto-calculated)</label>
-                <input type='number' step='0.01' name='amount' id='editAmountInput' value='${found.amount ?? ''}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-gray-100' min='0' max='999999.99' readonly />
+                <div class='flex items-center justify-between'>
+                    <label id='editAmountLabel' class='block text-sm font-medium text-gray-700 dark:text-gray-300'>AMOUNT (Auto-calculated)</label>
+                    <label class='inline-flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300'>
+                        <input type='checkbox' id='editAmountManualToggle' name='is_amount_manual' value='1' ${editManualChecked ? 'checked' : ''} onchange='handleEditAmountManualToggle()' class='rounded border-gray-300 text-blue-600 focus:ring-blue-500' />
+                        Manual amount
+                    </label>
+                </div>
+                <input type='number' step='0.01' name='amount' id='editAmountInput' value='${found.amount ?? ''}' class='w-full mt-1 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 ${editManualChecked ? 'bg-white dark:bg-gray-700' : 'bg-gray-100 dark:bg-gray-600'} text-gray-900 dark:text-gray-100' min='0' max='999999.99' ${editManualChecked ? '' : 'readonly'} />
             </div>`;
             fields += `<div class='mb-2 grid grid-cols-2 gap-2'>
                 <div>
@@ -769,6 +833,8 @@
             </div>`;
             document.getElementById('editInventoryFields').innerHTML = fields;
             document.getElementById('editInventoryModal').classList.remove('hidden');
+            // Initialize edit amount state based on pickup_delivery_type or existing manual toggle
+            updateEditAmountCalculation();
         }
 
         function updateEditAmountCalculation() {
@@ -779,6 +845,7 @@
             var hollowblockSizeSelect = document.querySelector('#editInventoryModal select[name="hollowblock_size"]');
             var amountInput = document.querySelector('#editInventoryModal input[name="amount"]');
             var amountLabel = document.getElementById('editAmountLabel');
+            var manualToggle = document.getElementById('editAmountManualToggle');
             
             if (!itemInput || !outInput || !amountInput) return;
             
@@ -788,8 +855,8 @@
             var vatType = vatSelect ? vatSelect.value : '';
             var hollowblockSize = hollowblockSizeSelect ? hollowblockSizeSelect.value : '';
             
-            // Check if per bag option is selected
-            if (pickupDeliveryType === 'per_bag') {
+            // Manual amount if toggle is on OR per_bag type
+            if ((manualToggle && manualToggle.checked) || pickupDeliveryType === 'per_bag') {
                 // Make amount field editable for manual entry
                 amountInput.readOnly = false;
                 amountInput.classList.remove('bg-gray-100', 'dark:bg-gray-600');
@@ -1157,6 +1224,97 @@
                 
                 // Save the PDF
                 doc.save(fileName);
+            });
+            // Per-month PDF export per tab
+            const { jsPDF } = window.jspdf;
+            const monthButtons = document.querySelectorAll('[id^="exportPdfMonth"]');
+            monthButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const idx = this.getAttribute('data-tab-index');
+                    const monthPicker = document.getElementById('monthPicker' + idx);
+                    const monthValue = monthPicker && monthPicker.value ? monthPicker.value : '';
+                    if (!monthValue) {
+                        alert('Please select a month to export.');
+                        return;
+                    }
+
+                    // monthValue is in format YYYY-MM; build a filter like 'MM-YYYY' or 'Month YYYY'
+                    const [year, month] = monthValue.split('-');
+                    // We'll detect month rows by their label (e.g., 'MARCH 2025') in the first cell spanning 16 cols
+                    const monthNames = ["JANUARY","FEBRUARY","MARCH","APRIL","MAY","JUNE","JULY","AUGUST","SEPTEMBER","OCTOBER","NOVEMBER","DECEMBER"];
+                    const monthLabel = monthNames[parseInt(month, 10) - 1] + ' ' + year;
+
+                    const tab = document.getElementById('tabContent' + idx);
+                    const table = tab ? tab.querySelector('table') : null;
+                    if (!table) return;
+
+                    // Build a filtered dataset for the selected month: include headers, and rows between the target month header and the next month header only
+                    // Collect headers
+                    const headerRows = table.querySelectorAll('thead tr');
+                    const headers = [];
+                    if (headerRows.length > 1) {
+                        const headerCells = headerRows[1].querySelectorAll('th');
+                        headerCells.forEach((cell, index) => {
+                            if (index < headerCells.length - 1) {
+                                headers.push(cell.textContent.trim());
+                            }
+                        });
+                    }
+
+                    // Traverse tbody rows and capture only the block under our month header
+                    const dataRows = table.querySelectorAll('tbody tr');
+                    const tableData = [];
+                    let inTargetMonth = false;
+                    dataRows.forEach(row => {
+                        // Month header rows have class 'bg-gray-50' and a single td with colspan
+                        if (row.classList.contains('bg-gray-50')) {
+                            const td = row.querySelector('td');
+                            const label = td ? (td.textContent || '').trim().toUpperCase() : '';
+                            inTargetMonth = (label === monthLabel);
+                            return; // skip the month header row itself
+                        }
+                        if (!inTargetMonth) return;
+
+                        const cells = row.querySelectorAll('td');
+                        const rowData = [];
+                        cells.forEach((cell, index) => {
+                            if (index < cells.length - 1) {
+                                rowData.push(cell.textContent.trim());
+                            }
+                        });
+                        if (rowData.length > 0) tableData.push(rowData);
+                    });
+
+                    if (headers.length === 0 || tableData.length === 0) {
+                        alert('No entries found for ' + monthLabel + ' in this item.');
+                        return;
+                    }
+
+                    const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+                    let startY = 40;
+
+                    // Title with item name and month
+                    const itemName = tab.querySelector('h3')?.textContent?.trim() || 'Inventory';
+                    doc.setFontSize(14);
+                    doc.text(itemName + ' — ' + monthLabel, 40, startY);
+                    startY += 20;
+
+                    doc.autoTable({
+                        head: [headers],
+                        body: tableData,
+                        startY: startY,
+                        margin: { top: 20, left: 20, right: 20, bottom: 20 },
+                        styles: { fontSize: 8, textColor: [0, 0, 0], cellPadding: 2 },
+                        headStyles: { fillColor: [100, 100, 100], textColor: [255, 255, 255], fontSize: 9 },
+                        theme: 'grid',
+                        columnStyles: {
+                            0: { cellWidth: 60 }, 1: { cellWidth: 80 }, 2: { cellWidth: 40 }, 3: { cellWidth: 50 }, 4: { cellWidth: 40 }, 5: { cellWidth: 40 }, 6: { cellWidth: 50 }, 7: { cellWidth: 50 }, 8: { cellWidth: 50 }, 9: { cellWidth: 40 }, 10: { cellWidth: 60 }, 11: { cellWidth: 40 }, 12: { cellWidth: 50 }, 13: { cellWidth: 50 }, 14: { cellWidth: 30 }
+                        },
+                    });
+
+                    const fileName = `${itemName.replace(/\s+/g,'_')}_${year}-${month}.pdf`;
+                    doc.save(fileName);
+                });
             });
         });
     </script>

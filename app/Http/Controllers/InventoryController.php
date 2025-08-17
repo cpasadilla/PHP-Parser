@@ -33,6 +33,7 @@ class InventoryController extends Controller
             'date' => 'required|date',
             'customer_id' => 'required',
             'amount' => 'nullable|numeric',
+            'is_amount_manual' => 'nullable|boolean',
             'in' => 'nullable|numeric',
             'out' => 'nullable|numeric',
             'balance' => 'nullable|numeric',
@@ -70,8 +71,13 @@ class InventoryController extends Controller
             $data['onsite_balance'] = $previousOnsiteBalance + $inValue - $outValue;
         }
         
-        // Calculate amount based on item type and conditions
-        $data['amount'] = $this->calculateAmount($data);
+        // Respect manual amount toggle; otherwise calculate
+        $isManual = $request->boolean('is_amount_manual') || (($data['pickup_delivery_type'] ?? '') === 'per_bag');
+        if ($isManual) {
+            $data['amount'] = isset($data['amount']) ? floatval($data['amount']) : 0;
+        } else {
+            $data['amount'] = $this->calculateAmount($data);
+        }
         
         // Set automatic onsite_date to current date for new entries
         $data['onsite_date'] = now()->format('Y-m-d');
@@ -145,6 +151,7 @@ class InventoryController extends Controller
             'out' => 'nullable|numeric',
             'balance' => 'nullable|numeric',
             'amount' => 'nullable|numeric',
+            'is_amount_manual' => 'nullable|boolean',
             'or_ar' => 'nullable|string',
             'dr_number' => 'nullable|string',
             'onsite_in' => 'nullable|numeric',
@@ -165,8 +172,13 @@ class InventoryController extends Controller
             $data['customer_id'] = str_replace('sub-', '', $data['customer_id']);
         }
 
-        // Calculate amount based on item type and conditions
-        $data['amount'] = $this->calculateAmount($data);
+        // Respect manual amount toggle; otherwise calculate
+        $isManual = $request->boolean('is_amount_manual') || (($data['pickup_delivery_type'] ?? '') === 'per_bag');
+        if ($isManual) {
+            $data['amount'] = isset($data['amount']) ? floatval($data['amount']) : ($entry->amount ?? 0);
+        } else {
+            $data['amount'] = $this->calculateAmount($data);
+        }
 
         // Check if user is admin for onsite_date editing
         $user = auth()->user();
