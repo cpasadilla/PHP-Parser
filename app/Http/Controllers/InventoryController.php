@@ -64,8 +64,12 @@ class InventoryController extends Controller
         }
         
         // Calculate new onsite balance automatically if not provided
-        // Leave onsite_balance as null for new entries - user will set it manually in edit modal
-        $data['onsite_balance'] = null;
+        if (!isset($data['onsite_balance']) || $data['onsite_balance'] === null) {
+            $previousOnsiteBalance = $currentBalances['onsite_balance'];
+            $inValue = floatval($data['in'] ?? 0);
+            $outValue = floatval($data['out'] ?? 0);
+            $data['onsite_balance'] = $previousOnsiteBalance + $inValue - $outValue;
+        }
         
         // Respect manual amount toggle; otherwise calculate
         $isManual = $request->boolean('is_amount_manual') || (($data['pickup_delivery_type'] ?? '') === 'per_bag');
