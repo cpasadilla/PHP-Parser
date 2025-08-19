@@ -2659,13 +2659,25 @@ class MasterListController extends Controller
         $origin = $orders->first() ? $orders->first()->origin : '';
         $destination = $orders->first() ? $orders->first()->destination : '';
         
+        // Get existing SOA number for this customer, ship, and voyage combination
+        $soaNumber = '';
+        $soaRecord = SoaNumber::where('customer_id', $customerId)
+            ->where('ship', $ship)
+            ->where('voyage', $decodedVoyageNum)
+            ->first();
+        
+        if ($soaRecord) {
+            $soaNumber = $soaRecord->soa_number;
+        }
+        
         return view('masterlist.soa_custom', [
             'orders' => $orders,
             'customer' => $customer,
             'ship' => $ship,
             'voyage' => $voyage,
             'origin' => $origin,
-            'destination' => $destination
+            'destination' => $destination,
+            'soaNumber' => $soaNumber
         ]);
     }
 
