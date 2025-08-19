@@ -801,8 +801,8 @@
                     <input type='number' step='0.0001' name='in' value='${found.in ?? ''}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' />
                 </div>
                 <div>
-                    <label class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>OUT ${isAdmin ? '' : '(Read-only)'}</label>
-                    <input type='number' step='0.0001' name='out' value='${found.out ?? ''}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 ${isAdmin ? 'bg-white dark:bg-gray-700' : 'bg-gray-100 dark:bg-gray-600'} text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' ${isAdmin ? 'oninput="updateEditAmountCalculation()"' : 'readonly'} />
+                    <label class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>OUT</label>
+                    <input type='number' step='0.0001' name='out' value='${found.out ?? ''}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' oninput="updateEditAmountCalculation()" />
                 </div>
                 <div>
                     <label class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>BALANCE</label>
@@ -823,13 +823,11 @@
                     <input type='number' step='0.0001' name='onsite_balance' value='${found.onsite_balance ?? ''}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' />
                 </div>
             </div>`;
-            // Add Onsite Date field with permission check
-            var onsiteDateReadonly = isAdmin ? '' : 'readonly';
-            var onsiteDateBg = isAdmin ? 'bg-white dark:bg-gray-700' : 'bg-gray-100 dark:bg-gray-600';
+            // Add Onsite Date field - accessible to everyone
             var currentDate = found.onsite_date || new Date().toISOString().split('T')[0];
             fields += `<div class='mb-2'>
-                <label class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>Onsite Date ${isAdmin ? '' : '(Auto-generated)'}</label>
-                <input type='date' name='onsite_date' value='${currentDate}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 ${onsiteDateBg} text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' ${onsiteDateReadonly} />
+                <label class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>Onsite Date</label>
+                <input type='date' name='onsite_date' value='${currentDate}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' />
             </div>`;
             document.getElementById('editInventoryFields').innerHTML = fields;
             document.getElementById('editInventoryModal').classList.remove('hidden');
