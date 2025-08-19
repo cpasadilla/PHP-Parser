@@ -275,8 +275,16 @@
                                         </td>
                                         <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">{{ $entry->onsite_in ? number_format($entry->onsite_in, 2) : '' }}</td>
                                         <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">{{ $entry->actual_out ? number_format($entry->actual_out, 3) : '' }}</td>
-                                        <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 font-semibold text-gray-900 dark:text-gray-100">{{ number_format($entry->onsite_balance, 2) }}</td>
-                                        <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">0</td>
+                                        <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 font-semibold text-gray-900 dark:text-gray-100">{{ $entry->onsite_balance !== null ? number_format($entry->onsite_balance, 2) : '' }}</td>
+                                        <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">
+                                            @if($entry->out && $entry->actual_out)
+                                                {{ number_format($entry->out - $entry->actual_out, 3) }}
+                                            @elseif($entry->out && !$entry->actual_out)
+                                                {{ number_format($entry->out, 3) }}
+                                            @else
+                                                
+                                            @endif
+                                        </td>
                                         <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center">
                                             <div class="flex gap-1 justify-center">
                                                 @if(Auth::user()->hasPermission('inventory','edit'))
@@ -352,10 +360,6 @@
                 <div class="mb-2">
                     <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">BALANCE</label>
                     <input type="number" step="0.01" name="balance" class="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-gray-100" min="0" max="999999.99" readonly />
-                </div>
-                <div class="mb-2">
-                    <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">ONSITE BALANCE</label>
-                    <input type="number" step="0.01" name="onsite_balance" class="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-gray-100" min="0" max="999999.99" readonly />
                 </div>
                 
                 <!-- Amount Calculation Fields -->
@@ -564,7 +568,6 @@
             var inInput = document.querySelector('#inventoryModal input[name="in"]');
             var outInput = document.querySelector('#inventoryModal input[name="out"]');
             var balanceInput = document.querySelector('#inventoryModal input[name="balance"]');
-            var onsiteBalanceInput = document.querySelector('#inventoryModal input[name="onsite_balance"]');
             
             if (!itemSelect || !balanceInput) return;
             
@@ -572,17 +575,10 @@
             var inValue = parseFloat(inInput.value) || 0;
             var outValue = parseFloat(outInput.value) || 0;
             var currentBalance = currentBalances[item] ? currentBalances[item].balance : 0;
-            var currentOnsiteBalance = currentBalances[item] ? currentBalances[item].onsite_balance : 0;
             
             // Calculate main balance: current balance + IN - OUT
             var newBalance = currentBalance + inValue - outValue;
             balanceInput.value = newBalance.toFixed(2);
-            
-            // Calculate onsite balance: current onsite balance + IN - OUT (OUT goes to actual_out)
-            var newOnsiteBalance = currentOnsiteBalance + inValue - outValue;
-            if (onsiteBalanceInput) {
-                onsiteBalanceInput.value = newOnsiteBalance.toFixed(2);
-            }
             
             // Update hollowblock size field visibility and calculate amount
             updateHollowblockSizeField();
