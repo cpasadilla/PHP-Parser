@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\OrderUpdateLog;
 use App\Models\OrderDeleteLog;
+use App\Models\InventoryLog;
 use App\Models\Order;
 use Illuminate\Pagination\Paginator;
 use App\Models\User; // Add this import
@@ -20,6 +21,9 @@ class HistoryController extends Controller
         $restoreStatusFilter = $request->input('restore_status');
         $fieldNameFilter = $request->input('field_name');
         $actionTypeFilter = $request->input('action_type');
+        $inventoryUpdatedByFilter = $request->input('inventory_updated_by');
+        $inventoryActionTypeFilter = $request->input('inventory_action_type');
+        $inventoryFieldNameFilter = $request->input('inventory_field_name');
 
         // Fetch user activity logs from the sessions table with pagination and filtering
         $userActivities = DB::table('sessions')
@@ -70,6 +74,21 @@ class HistoryController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(10, ['*'], 'orderDeleteLogsPage');
 
+        // Fetch inventory logs with pagination and filtering
+        $inventoryLogs = InventoryLog::query()
+            ->with(['inventoryEntry'])
+            ->when($inventoryUpdatedByFilter, function ($query, $inventoryUpdatedByFilter) {
+                return $query->where('updated_by', 'like', "%$inventoryUpdatedByFilter%");
+            })
+            ->when($inventoryActionTypeFilter, function ($query, $inventoryActionTypeFilter) {
+                return $query->where('action_type', $inventoryActionTypeFilter);
+            })
+            ->when($inventoryFieldNameFilter, function ($query, $inventoryFieldNameFilter) {
+                return $query->where('field_name', $inventoryFieldNameFilter);
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate(10, ['*'], 'inventoryLogsPage');
+
         // Fetch all users for the filter dropdown
         $allUsers = User::select(DB::raw("CONCAT(fName, ' ', lName) as name"))->get();
 
@@ -77,6 +96,7 @@ class HistoryController extends Controller
             'userActivities' => $userActivities,
             'orderUpdateLogs' => $orderUpdateLogs,
             'orderDeleteLogs' => $orderDeleteLogs,
+            'inventoryLogs' => $inventoryLogs,
             'allUsers' => $allUsers, // Pass all users to the view
         ]);
     }

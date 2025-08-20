@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\InventoryLog;
 
 class InventoryController extends Controller
 {
@@ -88,7 +89,11 @@ class InventoryController extends Controller
         $data['onsite_in'] = $data['in']; // Copy IN to onsite_in
         $data['actual_out'] = $data['out']; // Copy OUT to actual_out
         
-        \App\Models\InventoryEntry::create($data);
+        $entry = \App\Models\InventoryEntry::create($data);
+        
+        // Log the creation
+        $this->logInventoryAction($entry->id, 'create', null, null, null, $data);
+        
         return redirect()->route('inventory')->with('success', 'Inventory entry saved!');
     }
     
@@ -116,7 +121,11 @@ class InventoryController extends Controller
         $data['customer_type'] = null;
         $data['is_starting_balance'] = true;
         
-        \App\Models\InventoryEntry::create($data);
+        $entry = \App\Models\InventoryEntry::create($data);
+        
+        // Log the creation
+        $this->logInventoryAction($entry->id, 'create', null, null, null, $data);
+        
         return redirect()->route('inventory')->with('success', 'Starting balance set successfully!');
     }
     
@@ -189,7 +198,25 @@ class InventoryController extends Controller
             $data['onsite_date'] = $entry->onsite_date ?: now()->format('Y-m-d');
         }
 
+        // Track changes for logging
+        $originalData = $entry->toArray();
         $entry->update($data);
+        
+        // Log field changes
+        $updatedData = $entry->fresh()->toArray();
+        foreach ($data as $field => $newValue) {
+            $oldValue = $originalData[$field] ?? null;
+            if ($oldValue != $newValue) {
+                $this->logInventoryAction(
+                    $entry->id, 
+                    'update', 
+                    $field, 
+                    $oldValue, 
+                    $newValue
+                );
+            }
+        }
+        
         return redirect()->route('inventory')->with('success', 'Inventory entry updated!');
     }
 
@@ -286,11 +313,34 @@ class InventoryController extends Controller
     {
         try {
             $entry = \App\Models\InventoryEntry::findOrFail($id);
+            
+            // Log the deletion before deleting
+            $this->logInventoryAction($entry->id, 'delete', null, null, null, $entry->toArray());
+            
             $entry->delete();
             
             return redirect()->route('inventory')->with('success', 'Inventory entry deleted successfully!');
         } catch (\Exception $e) {
             return redirect()->route('inventory')->with('error', 'Failed to delete inventory entry.');
         }
+    }
+    
+    /**
+     * Log inventory actions for audit trail
+     */
+    private function logInventoryAction($entryId, $action, $fieldName = null, $oldValue = null, $newValue = null, $entryData = null)
+    {
+        $user = auth()->user();
+        $userName = $user ? $user->fName . ' ' . $user->lName : 'System';
+        
+        InventoryLog::create([
+            'inventory_entry_id' => $entryId,
+            'action_type' => $action,
+            'field_name' => $fieldName,
+            'old_value' => $oldValue,
+            'new_value' => $newValue,
+            'updated_by' => $userName,
+            'entry_data' => $entryData
+        ]);
     }
 }

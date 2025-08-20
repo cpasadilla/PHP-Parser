@@ -21,6 +21,9 @@
             <li class="mr-1">
                 <a class="tab-link bg-white inline-block py-2 px-4 text-blue-500 hover:text-blue-800 font-semibold dark:bg-gray-800 dark:text-blue-300 dark:hover:text-blue-500" href="#order-delete-logs" onclick="showTab('order-delete-logs')">Delete BL History</a>
             </li>
+            <li class="mr-1">
+                <a class="tab-link bg-white inline-block py-2 px-4 text-blue-500 hover:text-blue-800 font-semibold dark:bg-gray-800 dark:text-blue-300 dark:hover:text-blue-500" href="#inventory-logs" onclick="showTab('inventory-logs')">Inventory History</a>
+            </li>
         </ul>
 
         <div id="user-activity" class="tab-content mt-4">
@@ -266,6 +269,98 @@
             </div>
             <div class="mt-4">
                 {{ $orderDeleteLogs->appends(['tab' => 'order-delete-logs', 'deleted_by' => request('deleted_by'), 'restore_status' => request('restore_status')])->links() }}
+            </div>
+        </div>
+
+        <div id="inventory-logs" class="tab-content mt-4 hidden">
+            <h3 class="text-lg font-semibold mb-4 dark:text-gray-200">Inventory History</h3>
+            <form method="GET" action="{{ route('history') }}" class="flex flex-wrap gap-4 mb-4">
+                <input type="hidden" name="tab" value="inventory-logs">
+                <select name="inventory_updated_by" class="border rounded px-4 py-2 flex-grow dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300">
+                    <option value="">All Users</option>
+                    @foreach ($allUsers as $user)
+                        <option value="{{ $user->name }}" {{ request('inventory_updated_by') == $user->name ? 'selected' : '' }}>{{ $user->name }}</option>
+                    @endforeach
+                </select>
+                <select name="inventory_action_type" class="border rounded px-4 py-2 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300">
+                    <option value="">All Actions</option>
+                    <option value="create" {{ request('inventory_action_type') == 'create' ? 'selected' : '' }}>Create</option>
+                    <option value="update" {{ request('inventory_action_type') == 'update' ? 'selected' : '' }}>Update</option>
+                    <option value="delete" {{ request('inventory_action_type') == 'delete' ? 'selected' : '' }}>Delete</option>
+                </select>
+                <select name="inventory_field_name" class="border rounded px-4 py-2 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300">
+                    <option value="">All Fields</option>
+                    <option value="item" {{ request('inventory_field_name') == 'item' ? 'selected' : '' }}>Item</option>
+                    <option value="date" {{ request('inventory_field_name') == 'date' ? 'selected' : '' }}>Date</option>
+                    <option value="customer_id" {{ request('inventory_field_name') == 'customer_id' ? 'selected' : '' }}>Customer</option>
+                    <option value="in" {{ request('inventory_field_name') == 'in' ? 'selected' : '' }}>IN</option>
+                    <option value="out" {{ request('inventory_field_name') == 'out' ? 'selected' : '' }}>OUT</option>
+                    <option value="balance" {{ request('inventory_field_name') == 'balance' ? 'selected' : '' }}>Balance</option>
+                    <option value="onsite_balance" {{ request('inventory_field_name') == 'onsite_balance' ? 'selected' : '' }}>Onsite Balance</option>
+                    <option value="amount" {{ request('inventory_field_name') == 'amount' ? 'selected' : '' }}>Amount</option>
+                    <option value="or_ar" {{ request('inventory_field_name') == 'or_ar' ? 'selected' : '' }}>OR/AR</option>
+                    <option value="dr_number" {{ request('inventory_field_name') == 'dr_number' ? 'selected' : '' }}>DR Number</option>
+                    <option value="actual_out" {{ request('inventory_field_name') == 'actual_out' ? 'selected' : '' }}>Actual OUT</option>
+                    <option value="onsite_date" {{ request('inventory_field_name') == 'onsite_date' ? 'selected' : '' }}>Onsite Date</option>
+                </select>
+                <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700">Filter</button>
+            </form>
+            <div class="overflow-x-auto">
+                <table class="table-auto w-full mt-4 border-collapse border border-gray-200 dark:border-gray-700">
+                    <thead>
+                        <tr class="bg-gray-100 dark:bg-gray-800">
+                            <th class="px-4 py-2 border dark:border-gray-700">Entry ID</th>
+                            <th class="px-4 py-2 border dark:border-gray-700">Item</th>
+                            <th class="px-4 py-2 border dark:border-gray-700">Action</th>
+                            <th class="px-4 py-2 border dark:border-gray-700">Field Changed</th>
+                            <th class="px-4 py-2 border dark:border-gray-700">Old Value</th>
+                            <th class="px-4 py-2 border dark:border-gray-700">New Value</th>
+                            <th class="px-4 py-2 border dark:border-gray-700">Updated By</th>
+                            <th class="px-4 py-2 border dark:border-gray-700">Updated At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($inventoryLogs as $log)
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <td class="border px-4 py-2 dark:border-gray-700 text-center">{{ $log->inventory_entry_id }}</td>
+                                <td class="border px-4 py-2 dark:border-gray-700 text-center">
+                                    @if($log->inventoryEntry)
+                                        {{ $log->inventoryEntry->item }}
+                                    @elseif($log->entry_data && isset($log->entry_data['item']))
+                                        {{ $log->entry_data['item'] }}
+                                    @else
+                                        N/A
+                                    @endif
+                                </td>
+                                <td class="border px-4 py-2 dark:border-gray-700 text-center">
+                                    @if($log->action_type === 'create')
+                                        <span class="px-2 py-1 text-xs font-semibold rounded bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">Create</span>
+                                    @elseif($log->action_type === 'update')
+                                        <span class="px-2 py-1 text-xs font-semibold rounded bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">Update</span>
+                                    @elseif($log->action_type === 'delete')
+                                        <span class="px-2 py-1 text-xs font-semibold rounded bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">Delete</span>
+                                    @else
+                                        <span class="px-2 py-1 text-xs font-semibold rounded bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200">{{ ucfirst($log->action_type) }}</span>
+                                    @endif
+                                </td>
+                                <td class="border px-4 py-2 dark:border-gray-700 text-center">{{ $log->field_name ?? 'N/A' }}</td>
+                                <td class="border px-4 py-2 dark:border-gray-700 text-center max-w-xs truncate">{{ $log->old_value ?? 'N/A' }}</td>
+                                <td class="border px-4 py-2 dark:border-gray-700 text-center max-w-xs truncate">{{ $log->new_value ?? 'N/A' }}</td>
+                                <td class="border px-4 py-2 dark:border-gray-700 text-center">{{ $log->updated_by }}</td>
+                                <td class="border px-4 py-2 dark:border-gray-700 text-center">{{ $log->created_at->format('Y-m-d H:i:s') }}</td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="8" class="border px-4 py-8 dark:border-gray-700 text-center text-gray-500 dark:text-gray-400">
+                                    No inventory history found.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+            <div class="mt-4">
+                {{ $inventoryLogs->appends(['tab' => 'inventory-logs', 'inventory_updated_by' => request('inventory_updated_by'), 'inventory_action_type' => request('inventory_action_type'), 'inventory_field_name' => request('inventory_field_name')])->links() }}
             </div>
         </div>
     </div>
