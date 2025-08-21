@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\InventoryLog;
 
 class InventoryController extends Controller
 {
@@ -64,13 +63,8 @@ class InventoryController extends Controller
             $data['balance'] = $previousBalance + $inValue - $outValue;
         }
         
-        // Calculate new onsite balance automatically if not provided
-        if (!isset($data['onsite_balance']) || $data['onsite_balance'] === null) {
-            $previousOnsiteBalance = $currentBalances['onsite_balance'];
-            $inValue = floatval($data['in'] ?? 0);
-            $outValue = floatval($data['out'] ?? 0);
-            $data['onsite_balance'] = $previousOnsiteBalance + $inValue - $outValue;
-        }
+    // On create via Add Inventory Entry, keep onsite fields blank so user/admin can set later
+    $data['onsite_balance'] = null; // explicitly blank
         
         // Respect manual amount toggle; otherwise calculate
         $isManual = $request->boolean('is_amount_manual') || (($data['pickup_delivery_type'] ?? '') === 'per_bag');
@@ -80,20 +74,16 @@ class InventoryController extends Controller
             $data['amount'] = $this->calculateAmount($data);
         }
         
-        // Set automatic onsite_date to current date for new entries
-        $data['onsite_date'] = now()->format('Y-m-d');
+    // Do NOT auto-set onsite_date on create; leave it blank until explicitly set
+    $data['onsite_date'] = null;
         
         // Initialize other fields, set actual_out to same value as out initially
-        $data['or_ar'] = null;
-        $data['dr_number'] = null;
-        $data['onsite_in'] = $data['in']; // Copy IN to onsite_in
-        $data['actual_out'] = $data['out']; // Copy OUT to actual_out
+    $data['or_ar'] = null;
+    $data['dr_number'] = null;
+    $data['onsite_in'] = $data['in']; // keep as provided or null
+    $data['actual_out'] = null; // keep blank on create
         
-        $entry = \App\Models\InventoryEntry::create($data);
-        
-        // Log the creation
-        $this->logInventoryAction($entry->id, 'create', null, null, null, $data);
-        
+        \App\Models\InventoryEntry::create($data);
         return redirect()->route('inventory')->with('success', 'Inventory entry saved!');
     }
     
@@ -116,16 +106,14 @@ class InventoryController extends Controller
         $data['in'] = $data['balance'];
         $data['onsite_in'] = $data['onsite_balance'];
         
-        // Don't set customer_id and customer_type for starting balance
-        $data['customer_id'] = null;
-        $data['customer_type'] = null;
+    // For starting balance, avoid FK/user coupling: use safe defaults to prevent DB NOT NULL errors
+    // customer_id column may be non-nullable in some deployments. Use 0 as a sentinel value.
+    $data['customer_id'] = 0;
+    // customer_type column may be non-nullable; use empty string instead of null
+    $data['customer_type'] = '';
         $data['is_starting_balance'] = true;
         
-        $entry = \App\Models\InventoryEntry::create($data);
-        
-        // Log the creation
-        $this->logInventoryAction($entry->id, 'create', null, null, null, $data);
-        
+        \App\Models\InventoryEntry::create($data);
         return redirect()->route('inventory')->with('success', 'Starting balance set successfully!');
     }
     
@@ -198,25 +186,7 @@ class InventoryController extends Controller
             $data['onsite_date'] = $entry->onsite_date ?: now()->format('Y-m-d');
         }
 
-        // Track changes for logging
-        $originalData = $entry->toArray();
         $entry->update($data);
-        
-        // Log field changes
-        $updatedData = $entry->fresh()->toArray();
-        foreach ($data as $field => $newValue) {
-            $oldValue = $originalData[$field] ?? null;
-            if ($oldValue != $newValue) {
-                $this->logInventoryAction(
-                    $entry->id, 
-                    'update', 
-                    $field, 
-                    $oldValue, 
-                    $newValue
-                );
-            }
-        }
-        
         return redirect()->route('inventory')->with('success', 'Inventory entry updated!');
     }
 
@@ -313,34 +283,11 @@ class InventoryController extends Controller
     {
         try {
             $entry = \App\Models\InventoryEntry::findOrFail($id);
-            
-            // Log the deletion before deleting
-            $this->logInventoryAction($entry->id, 'delete', null, null, null, $entry->toArray());
-            
             $entry->delete();
             
             return redirect()->route('inventory')->with('success', 'Inventory entry deleted successfully!');
         } catch (\Exception $e) {
             return redirect()->route('inventory')->with('error', 'Failed to delete inventory entry.');
         }
-    }
-    
-    /**
-     * Log inventory actions for audit trail
-     */
-    private function logInventoryAction($entryId, $action, $fieldName = null, $oldValue = null, $newValue = null, $entryData = null)
-    {
-        $user = auth()->user();
-        $userName = $user ? $user->fName . ' ' . $user->lName : 'System';
-        
-        InventoryLog::create([
-            'inventory_entry_id' => $entryId,
-            'action_type' => $action,
-            'field_name' => $fieldName,
-            'old_value' => $oldValue,
-            'new_value' => $newValue,
-            'updated_by' => $userName,
-            'entry_data' => $entryData
-        ]);
     }
 }
