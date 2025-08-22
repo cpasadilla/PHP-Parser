@@ -74,7 +74,7 @@
             <div id="voyage-{{ $ship }}-{{ Str::slug($voyage) }}" class="accordion-content">
                 <div class="overflow-x-auto mt-4">
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700" style="font-family: Arial, sans-serif; font-size: 11px; table-layout: fixed; width: 100%;">
-                        <thead class="bg-gray-100 dark:bg-gray-800">
+            <thead class="bg-gray-100 dark:bg-gray-800">
                             <tr>
                                 <th style="width: 5%;" class="px-4 py-2">BL #</th>
                                 <th style="width: 12%;" class="px-4 py-2">CONSIGNEE</th>
@@ -85,10 +85,11 @@
                                 <th style="width: 8%;" class="px-4 py-2">WHARFAGE</th>
                                 <th style="width: 8%;" class="px-4 py-2">PADLOCK FEE</th>
                                 <th style="width: 8%;" class="px-4 py-2">PPA MANILA</th>
-                                <th style="width: 8%;" class="px-4 py-2">TOTAL</th>
+                <th style="width: 8%;" class="px-4 py-2">TOTAL</th>
+                <th style="width: 4%;" class="px-2 py-2">&nbsp;</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">                            @php 
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">                            @php 
                                 $voyageTotal = 0;
                                 $voyageFreight = 0;
                                 $voyageValuation = 0;
@@ -121,7 +122,7 @@
                                     $totalWithInterest = $order->totalAmount + $interestAmount;
                                     $voyageInterest += $interestAmount;
                                 @endphp
-                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700" style="font-family: Arial, sans-serif; font-size: 10px; line-height: 1.2;">
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 soa-order-row" style="font-family: Arial, sans-serif; font-size: 10px; line-height: 1.2;" data-freight="{{ $order->freight }}" data-valuation="{{ $order->valuation }}" data-wharfage="{{ $order->wharfage ?? 0 }}" data-padlock="{{ $order->padlock_fee ?? 0 }}" data-ppa="{{ $order->ppa_manila ?? 0 }}" data-interest="{{ $interestAmount }}">
                                     <td class="px-4 py-2 text-center" style="word-wrap: break-word; text-align: center;">{{ $order->orderId }}</td>
                                     <td class="px-4 py-2 text-center" style="word-wrap: break-word;">{{ $order->recName }}</td>
                                     <td class="px-4 py-2 text-center" style="word-wrap: break-word;">{{ $order->shipperName }}</td>
@@ -150,6 +151,9 @@
                                             </div>
                                         @endif
                                     </td>
+                                    <td class="px-2 py-2 text-center">
+                                        <button type="button" class="text-xs bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded delete-row-btn" title="Remove from SOA" onclick="removeSoaRow(this)">X</button>
+                                    </td>
                                 </tr>
                                 @php
                                 $voyageTotal += ($order->freight + $order->valuation + ($order->wharfage ?? 0) + ($order->padlock_fee ?? 0) + ($order->ppa_manila ?? 0)) + $interestAmount;
@@ -177,47 +181,32 @@
                                 // The padlock fee is already included in $voyageTotal and $discountedTotal
                             @endphp
                             <tr class="bg-gray-50 dark:bg-gray-900 font-semibold" style="line-height: 0.8;">
-                                <td class="px-4 py-1 text-right"></td>
-                                <td class="px-4 py-1 text-right"></td>
-                                <td class="px-4 py-1 text-right"></td>
-                                <td class="px-4 py-1 text-right"></td>
-                                <td class="px-4 py-1 text-right"></td>
-                                <td class="px-4 py-1 text-right"></td>
-                                <td class="px-4 py-1 text-right"></td>
-                                <td class="px-4 py-1 text-right"></td>
-                                <td class="px-4 py-1 text-right"></td>
-                                <td class="px-4 py-1 text-right"></td>
+                                <td colspan="11" class="px-4 py-1 text-right"></td>
                             </tr>
-                            <tr class="font-semibold" style="line-height: 0.8; background-color:rgb(97, 175, 91); color: black;">                                <td colspan="4" class="px-4 py-1" style="text-align: center; font-weight: bold;">GRAND TOTAL:</td>
-                                <td class="px-4 py-1 text-right">{{ number_format($voyageFreight, 2) }}</td>
-                                <td class="px-4 py-1 text-right">{{ number_format($voyageValuation, 2) }}</td>
-                                <td class="px-4 py-1 text-right">{{ number_format($voyageWharfage, 2) }}</td>
-                                <td class="px-4 py-1 text-right">{{ number_format($voyagePadlockFee, 2) }}</td>
-                                <td class="px-4 py-1 text-right">{{ number_format($voyagePpaManila, 2) }}</td>
-                                <td class="px-4 py-1 text-right">{{ number_format($voyageTotal, 2) }}</td>
+                            <tr id="grandTotalRow" class="font-semibold" style="line-height: 0.8; background-color:rgb(97, 175, 91); color: black;">
+                                <td colspan="4" class="px-4 py-1" style="text-align: center; font-weight: bold;">GRAND TOTAL:</td>
+                                <td id="totalFreight" class="px-4 py-1 text-right">{{ number_format($voyageFreight, 2) }}</td>
+                                <td id="totalValuation" class="px-4 py-1 text-right">{{ number_format($voyageValuation, 2) }}</td>
+                                <td id="totalWharfage" class="px-4 py-1 text-right">{{ number_format($voyageWharfage, 2) }}</td>
+                                <td id="totalPadlock" class="px-4 py-1 text-right">{{ number_format($voyagePadlockFee, 2) }}</td>
+                                <td id="totalPpa" class="px-4 py-1 text-right">{{ number_format($voyagePpaManila, 2) }}</td>
+                                <td id="totalOverall" class="px-4 py-1 text-right">{{ number_format($voyageTotal, 2) }}</td>
+                                <td class="px-2 py-1"></td>
                             </tr>
                             @if($voyageInterest > 0)
-                                <tr class="bg-gray-50 dark:bg-gray-900 font-semibold text-red-600" style="line-height: 0.8;">
-                                    <td colspan="4" class="px-4 py-1 text-right" style="word-wrap: break-word; white-space: normal;">Interest (1% per month after 30 days):</td>
-                                    <td class="px-4 py-1 text-right"></td>
-                                    <td class="px-4 py-1 text-right"></td>
-                                    <td class="px-4 py-1 text-right"></td>
-                                    <td class="px-4 py-1 text-right"></td>
-                                    <td class="px-4 py-1 text-right"></td>
-                                    <td class="px-4 py-1 text-right">{{ number_format($voyageInterest, 2) }}</td>
+                                <tr id="interestRow" class="bg-gray-50 dark:bg-gray-900 font-semibold text-red-600" style="line-height: 0.8;">
+                                    <td colspan="9" class="px-4 py-1 text-right" style="word-wrap: break-word; white-space: normal;">Interest (1% per month after 30 days):</td>
+                                    <td id="interestAmountCell" class="px-4 py-1 text-right">{{ number_format($voyageInterest, 2) }}</td>
+                                    <td></td>
                                 </tr>
-                                <tr class="bg-gray-50 dark:bg-gray-900 font-semibold font-bold" style="line-height: 0.8; color: green;">
-                                    <td colspan="4" class="px-4 py-1 text-right" style="word-wrap: break-word; white-space: normal;">Total Amount Due:</td>
-                                    <td class="px-4 py-1 text-right"></td>
-                                    <td class="px-4 py-1 text-right"></td>
-                                    <td class="px-4 py-1 text-right"></td>
-                                    <td class="px-4 py-1 text-right"></td>
-                                    <td class="px-4 py-1 text-right"></td>
-                                    <td class="px-4 py-1 text-right ">{{ number_format($voyageTotal, 2) }}</td>
+                                <tr id="totalAmountDueRow" class="bg-gray-50 dark:bg-gray-900 font-semibold font-bold" style="line-height: 0.8; color: green;">
+                                    <td colspan="9" class="px-4 py-1 text-right" style="word-wrap: break-word; white-space: normal;">Total Amount Due:</td>
+                                    <td id="totalAmountDueValue" class="px-4 py-1 text-right ">{{ number_format($voyageTotal, 2) }}</td>
+                                    <td></td>
                                 </tr>
                             @endif
                             @if($isEligible)
-                                <tr class="font-semibold" style="line-height: 0; background-color:rgb(240, 240, 5); color: black;">
+                                <tr id="discountRow" class="font-semibold" style="line-height: 0; background-color:rgb(240, 240, 5); color: black;">
                                     <td colspan="4" class="px-4 py-2" style="text-align: left;">5% Discount on total freight if paid within <span style="font-weight: bold;">15 days</span> upon receipt of SOA</td>
                                     <td style="width: 100px; font-weight: bold;" class="px-4 py-2 text-right" >{{ number_format($discountedFreight, 2) }}</td>
                                     <td style="width: 100px;" class="px-4 py-2 text-right">{{ number_format($voyageValuation, 2) }}</td>
@@ -225,9 +214,10 @@
                                     <td style="width: 100px;" class="px-4 py-2 text-right">{{ number_format($voyagePadlockFee, 2) }}</td>
                                     <td style="width: 100px;" class="px-4 py-2 text-right">{{ number_format($voyagePpaManila, 2) }}</td>
                                     <td style="width: 100px; font-weight: bold;" class="px-4 py-2 text-right">{{ number_format($discountedTotal, 2) }}</td>
+                                    <td></td>
                                 </tr>
                             @endif
-                            <tr class="font-semibold" style="line-height: 0.8; background-color:rgb(231, 15, 22); color: white;">
+                            <tr id="penaltyInfoRow" class="font-semibold" style="line-height: 0.8; background-color:rgb(231, 15, 22); color: white;">
                                 <td colspan="4" class="px-4 py-1" style="text-align: left; word-wrap: break-word; white-space: normal; color: white;">a PENALTY rate of 1% PER MONTH will be applied to total bills if not paid every after 30days</td>
                                 <td class="px-4 py-1 text-right"></td>
                                 <td class="px-4 py-1 text-right"></td>
@@ -235,18 +225,19 @@
                                 <td class="px-4 py-1 text-right"></td>
                                 <td class="px-4 py-1 text-right"></td>
                                 <td class="px-4 py-1 text-right" style="color: white;">
-                                    @if($voyageInterest > 0)
-                                    <span class="font-bold" style="color: white;">1% Interest: {{ number_format($voyageInterest, 2) }}</span>
-                                    @else
-                                    <span id="finalAmount">
-                                        @if($isEligible)
-                                        {{ number_format($discountedTotal, 2) }}
+                                    <span id="finalAmount" class="font-bold" style="color: white;">
+                                        @if($voyageInterest > 0)
+                                            {{ number_format($voyageTotal, 2) }}
                                         @else
-                                        {{ number_format($voyageTotal, 2) }}
+                                            @if($isEligible)
+                                                {{ number_format($discountedTotal, 2) }}
+                                            @else
+                                                {{ number_format($voyageTotal, 2) }}
+                                            @endif
                                         @endif
                                     </span>
-                                    @endif
                                 </td>
+                                <td></td>
                             </tr>
                         </tbody>
                     </table>
@@ -750,7 +741,93 @@
             } else {
                 console.error('SOA number input element not found');
             }
+            // Initialize recalculation after DOM load to ensure JS totals align
+            recalcTotals();
         });
+
+        // Remove a row from the SOA (front-end only) and recalculate totals
+        function removeSoaRow(btn) {
+            const row = btn.closest('tr.soa-order-row');
+            if(!row) return;
+            row.parentNode.removeChild(row);
+            recalcTotals();
+        }
+
+        function formatNumber(val, digits=2) {
+            return new Intl.NumberFormat('en-US', {minimumFractionDigits: digits, maximumFractionDigits: digits}).format(val);
+        }
+
+        function recalcTotals() {
+            const rows = document.querySelectorAll('tr.soa-order-row');
+            let freight=0, valuation=0, wharfage=0, padlock=0, ppa=0, interest=0;
+            rows.forEach(r=>{
+                freight += parseFloat(r.dataset.freight)||0;
+                valuation += parseFloat(r.dataset.valuation)||0;
+                wharfage += parseFloat(r.dataset.wharfage)||0;
+                padlock += parseFloat(r.dataset.padlock)||0;
+                ppa += parseFloat(r.dataset.ppa)||0;
+                interest += parseFloat(r.dataset.interest)||0;
+            });
+            const total = freight + valuation + wharfage + padlock + ppa + interest;
+
+            // Update grand total row
+            const setText = (id,val)=>{ const el=document.getElementById(id); if(el) el.textContent = formatNumber(val); };
+            setText('totalFreight', freight);
+            setText('totalValuation', valuation);
+            setText('totalWharfage', wharfage);
+            setText('totalPadlock', padlock);
+            setText('totalPpa', ppa);
+            setText('totalOverall', total);
+
+            // Discount logic: must meet original eligibility list & freight >= 50000
+            const discountRow = document.getElementById('discountRow');
+            const eligibleCustomerIds = @json($eligibleCustomerIds);
+            const customerEligible = eligibleCustomerIds.includes({{ $customer->id }});
+            let discountAmountLocal = 0;
+            let discountedFreightLocal = freight;
+            let discountedTotalLocal = total;
+            if(customerEligible && freight >= 50000) {
+                discountAmountLocal = freight * 0.05;
+                discountedFreightLocal = freight - discountAmountLocal;
+                discountedTotalLocal = total - discountAmountLocal; // interest already in total; discount only on freight
+                if(discountRow) {
+                    discountRow.style.display='';
+                    const cells = discountRow.querySelectorAll('td');
+                    if(cells.length >= 10) {
+                        cells[4].textContent = formatNumber(discountedFreightLocal); // discounted freight
+                        cells[5].textContent = formatNumber(valuation);
+                        cells[6].textContent = formatNumber(wharfage);
+                        cells[7].textContent = formatNumber(padlock);
+                        cells[8].textContent = formatNumber(ppa);
+                        cells[9].textContent = formatNumber(discountedTotalLocal);
+                    }
+                }
+            } else {
+                if(discountRow) discountRow.style.display='none';
+                discountedTotalLocal = total; // no discount
+            }
+
+            // Interest rows
+            const interestRow = document.getElementById('interestRow');
+            const interestAmountCell = document.getElementById('interestAmountCell');
+            const totalAmountDueRow = document.getElementById('totalAmountDueRow');
+            const totalAmountDueValue = document.getElementById('totalAmountDueValue');
+            if(interest > 0) {
+                if(interestRow) interestRow.style.display='';
+                if(interestAmountCell) interestAmountCell.textContent = formatNumber(interest);
+                if(totalAmountDueRow) totalAmountDueRow.style.display='';
+                if(totalAmountDueValue) totalAmountDueValue.textContent = formatNumber(total);
+            } else {
+                if(interestRow) interestRow.style.display='none';
+                if(totalAmountDueRow) totalAmountDueRow.style.display='none';
+            }
+
+            // Final amount (penalty row)
+            const finalAmountEl = document.getElementById('finalAmount');
+            if(finalAmountEl) {
+                finalAmountEl.textContent = formatNumber(discountRow && discountRow.style.display !== 'none' ? discountedTotalLocal : total);
+            }
+        }
     </script>
 
     <!-- Penalty Calculation Modal -->
