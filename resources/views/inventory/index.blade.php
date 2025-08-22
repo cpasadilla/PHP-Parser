@@ -297,6 +297,37 @@
                                         </td>
                                     </tr>
                                     @endforeach
+                                    @if($itemEntries->count())
+                                        @php $finalEntry = $itemEntries->last(); @endphp
+                                        <tr class="bg-blue-50 dark:bg-gray-700 font-semibold">
+                                            <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100"></td> <!-- DATE -->
+                                            <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100"></td> <!-- CUSTOMER -->
+                                            <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100"></td> <!-- SHIP# -->
+                                            <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100"></td> <!-- VOYAGE# -->
+                                            <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100"></td> <!-- IN -->
+                                            <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100"></td> <!-- OUT -->
+                                            <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 font-bold text-gray-900 dark:text-gray-100">{{ number_format($finalEntry->balance, 2) }}</td> <!-- BALANCE -->
+                                            <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100"></td> <!-- AMOUNT -->
+                                            <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100"></td> <!-- OR/AR -->
+                                            <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100"></td> <!-- DR# -->
+                                            <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100"></td> <!-- ONSITE DATE -->
+                                            <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100"></td> <!-- ONSITE IN -->
+                                            <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100"></td> <!-- ACTUAL OUT -->
+                                            @php
+                                                // Find the latest (chronologically last in current ordering) entry that has a non-null onsite_balance
+                                                $latestWithOnsite = $itemEntries->filter(function($e){ return $e->onsite_balance !== null; })->last();
+                                                if($latestWithOnsite) {
+                                                    $displayOnsiteBalance = number_format($latestWithOnsite->onsite_balance, 2);
+                                                } else {
+                                                    $firstEntry = $itemEntries->first();
+                                                    $displayOnsiteBalance = $firstEntry ? number_format($firstEntry->balance, 2) : '';
+                                                }
+                                            @endphp
+                                            <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 font-bold text-gray-900 dark:text-gray-100">{{ $displayOnsiteBalance }}</td> <!-- ONSITE BALANCE (latest non-null or first entry balance) -->
+                                            <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100"></td> <!-- DIFF -->
+                                            <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-gray-900 dark:text-gray-100"></td> <!-- UPDATE -->
+                                        </tr>
+                                    @endif
                                 </tbody>
                             </table>
                         </div>
