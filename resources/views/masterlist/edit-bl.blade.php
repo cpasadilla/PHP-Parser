@@ -854,11 +854,42 @@
     
     let totalPrice = @json($total) || 0;
     
-    // Function to recalculate total price from cart items
+    // Function to recalculate total price from cart items.
+    // When items have measurements, compute the item's total as the sum of per-measurement freight
+    // to avoid any accidental legacy multiplication (price * quantity) overwriting an aggregated freight.
     function recalculateTotalPrice() {
+        // helper to parse numeric strings and remove thousands separators
+        const num = v => {
+            if (v === undefined || v === null) return 0;
+            const s = String(v).replace(/,/g, '').trim();
+            return isNaN(parseFloat(s)) ? 0 : parseFloat(s);
+        };
+
         totalPrice = 0;
         cart.forEach(item => {
-            totalPrice += parseFloat(item.total) || 0;
+            if (item.measurements && item.measurements.length) {
+                // Recompute item total from measurements to be authoritative
+                let itemTotal = 0;
+                item.measurements.forEach(ms => {
+                    const l = num(ms.length);
+                    const w = num(ms.width);
+                    const h = num(ms.height);
+                    const mult = num(ms.multiplier || item.multiplier || 0);
+                    const qty = num(ms.qty ?? ms.quantity ?? 1) || 1;
+
+                    const computedRate = (l > 0 && w > 0 && h > 0 && mult > 0) ? (l * w * h * mult) : 0;
+                    const computedFreight = computedRate * qty;
+
+                    const storedTotal = num(ms.total);
+                    const rateFallback = num(ms.itemPrice) || num(item.price) || 0;
+
+                    const freight = (computedRate > 0) ? computedFreight : (storedTotal > 0 ? storedTotal : (rateFallback * qty));
+                    itemTotal += freight;
+                });
+                totalPrice += itemTotal;
+            } else {
+                totalPrice += parseFloat(item.total) || 0;
+            }
         });
         return totalPrice;
     }
@@ -953,8 +984,8 @@
                 }
             });
             if (aggregateFreight > 0) {
-                price = aggregateRate; // show sum of rates in price column
-                total = aggregateFreight; // total is sum of freight
+                price = aggregateRate; // show sum of rates in price column (numeric)
+                total = aggregateFreight; // total is sum of freight (numeric)
             } else {
                 // Fallback to manual price * global quantity if no valid measurements
                 total = price * quantity;
@@ -981,10 +1012,10 @@
             height: h,
             multiplier: m,
             measurements: measurements,
-            price: price.toFixed(2), // Ensure price is formatted to two decimal places
+            price: Number(Number(price).toFixed(2)), // store numeric price rounded to 2 decimals
             description: description,
             quantity: quantity,
-            total: total.toFixed(2) // Ensure total is formatted to two decimal places
+            total: Number(Number(total).toFixed(2)) // store numeric total rounded to 2 decimals
         };
         
         console.log('Adding item to cart:', item);
@@ -1059,10 +1090,11 @@
             if (item.measurements && item.measurements.length) {
                 const parts = item.measurements.map(ms => {
                     if(ms.length||ms.width||ms.height) {
+                        const qty = ms.qty || ms.quantity || 1;
                         if(ms.multiplier && ms.multiplier !== 'N/A' && ms.multiplier !== '') {
-                            return `${ms.length} × ${ms.width} × ${ms.height} × ${Number(ms.multiplier).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+                            return `${ms.length} × ${ms.width} × ${ms.height} × ${Number(ms.multiplier).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})} (qty: ${qty})`;
                         }
-                        return `${ms.length} × ${ms.width} × ${ms.height}`;
+                        return `${ms.length} × ${ms.width} × ${ms.height} (qty: ${qty})`;
                     }
                     return '';
                 }).filter(Boolean);
@@ -1076,24 +1108,63 @@
                 }
             }
 
-            // Rate column: show per-measurement rates (one per line) if stored
+            // Rate & Freight columns: compute per-measurement rate and freight from measurement fields
             let rateCellHtml = '';
-            if (item.measurements && item.measurements.some(ms=>ms.rate>0)) {
-                rateCellHtml = item.measurements.filter(ms=>ms.rate>0).map(ms=>`${Number(ms.rate).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}`).join('<br>');
-            } else {
-                rateCellHtml = Number(item.price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            }
-            // Freight column: per-measurement freight lines; if multiple lines append total bold last
             let freightCellHtml = '';
-            if (item.measurements && item.measurements.some(ms=>ms.freight>0)) {
-                const freightLines = item.measurements.filter(ms=>ms.freight>0).map(ms=>`${Number(ms.freight).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}`);
-                if (freightLines.length>1) {
-                    const sumFreight = freightLines.reduce((acc,val)=>acc+parseFloat(val.replace(/,/g,'')),0);
-                    freightLines.push(`<strong>${sumFreight.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</strong>`);
+            if (item.measurements && item.measurements.length) {
+                const rateLines = [];
+                const freightLines = [];
+
+                // helper to parse numeric strings and remove thousands separators
+                const num = v => {
+                    if (v === undefined || v === null) return 0;
+                    const s = String(v).replace(/,/g, '').trim();
+                    return isNaN(parseFloat(s)) ? 0 : parseFloat(s);
+                };
+
+                item.measurements.forEach(ms => {
+                    // Parse numbers robustly (strip commas)
+                    const l = num(ms.length);
+                    const w = num(ms.width);
+                    const h = num(ms.height);
+                    // Prefer measurement multiplier, fall back to item.multiplier
+                    const mult = num(ms.multiplier || item.multiplier || 0);
+                    const qty = num(ms.qty ?? ms.quantity ?? 1) || 1;
+
+
+                    // Compute rate from measurement fields whenever possible
+                    const computedRate = (l > 0 && w > 0 && h > 0 && mult > 0) ? (l * w * h * mult) : 0;
+                    const computedFreight = computedRate * qty;
+
+                    // Use computedRate when available; otherwise fall back to stored itemPrice
+                    const rate = computedRate > 0 ? computedRate : ((ms.itemPrice !== undefined && ms.itemPrice !== null && !isNaN(num(ms.itemPrice))) ? num(ms.itemPrice) : 0);
+
+                    // Prefer computed freight when measurements are available and computedRate > 0.
+                    // Only use stored ms.total when we couldn't compute freight.
+                    const storedTotal = num(ms.total);
+                    const freight = (computedRate > 0) ? computedFreight : (storedTotal > 0 ? storedTotal : (rate * qty));
+
+                    // Debug info to console for diagnosis
+                    console.debug('Measurement compute', { itemCode: item.itemCode, l, w, h, mult, qty, computedRate, computedFreight, storedItemPrice: ms.itemPrice, storedTotal, rate, freight });
+
+                    rateLines.push(rate);
+                    freightLines.push(freight);
+                });
+
+                // Format rate lines
+                rateCellHtml = rateLines.map(r => Number(r).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).join('<br>');
+
+                // Format freight lines and add grouped total if there are multiple measurements
+                const formattedFreightLines = freightLines.map(f => Number(f).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+                if (freightLines.length > 1) {
+                    const sumFreight = freightLines.reduce((acc, v) => acc + v, 0);
+                    formattedFreightLines.push(`<strong>${Number(sumFreight).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>`);
                 }
-                freightCellHtml = freightLines.join('<br>');
+                freightCellHtml = formattedFreightLines.join('<br>');
             } else {
-                freightCellHtml = Number(item.total).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                // No per-measurement data: fallback to price/total fields
+                rateCellHtml = Number(item.price || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                freightCellHtml = Number(item.total || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             }
             row.innerHTML += `
                 <td class="p-2 text-center" style="line-height:1.1">${rateCellHtml}</td>
@@ -1257,11 +1328,11 @@
                     width: w,
                     height: h,
                     multiplier: m,
-                    price: price,
+                    price: Number(Number(price).toFixed(2)),
                     measurements: measurements,
                     description: document.getElementById('description').value,
                     quantity: quantity,
-                    total: total
+                    total: Number(Number(total).toFixed(2))
                 };
                 
                 console.log('Updated item in cart:', cart[currentEditIndex]);

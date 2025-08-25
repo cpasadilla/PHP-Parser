@@ -100,10 +100,10 @@
                         </thead>
                         <tbody>
                             @php
-                                // Group parcels by itemId or itemName
+                                // Group parcels by itemId, itemName and unit so same name but different unit become separate rows
                                 $grouped = [];
                                 foreach ($parcels as $p) {
-                                    $key = $p->itemId ?? $p->itemName;
+                                    $key = ($p->itemId ?? '') . '|' . ($p->itemName ?? '') . '|' . ($p->unit ?? '');
                                     if (!isset($grouped[$key])) {
                                         $grouped[$key] = [
                                             'itemName' => $p->itemName,
