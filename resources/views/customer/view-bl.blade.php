@@ -76,7 +76,8 @@
                 </table>
 
                 <!-- Main Table -->
-                <table class="w-full border-collapse text-sm main-table" style="padding: 0 5px; margin-top: 20px;">
+                <div class="main-table-container">
+                    <table class="w-full border-collapse text-sm main-table" style="padding: 0 5px; margin-top: 20px;">
                     <thead class="text-white border border-gray" style="background-color: #78BF65;">
                         <tr class="border border-gray">
                             <th class="p-2" style="font-family: Arial; font-size: 13px;">QTY</th>
@@ -84,7 +85,7 @@
                             <th class="p-2" style="font-family: Arial; font-size: 13px;">DESCRIPTION</th>
                             <th class="p-2" style="font-family: Arial; font-size: 13px;">VALUE</th>
                             <th class="p-2" style="font-family: Arial; font-size: 13px;">WEIGHT</th>
-                            <th class="p-2" style="font-family: Arial; font-size: 13px;">MEASUREMENT</th>
+                            <th class="p-2" style="font-family: Arial; font-size: 13px; width: 140px;">MEASUREMENT (cm)</th>
                             <th class="p-2" style="font-family: Arial; font-size: 13px;">RATE</th>
                             <th class="p-2" style="font-family: Arial; font-size: 13px;">FREIGHT</th>
                         </tr>
@@ -103,22 +104,68 @@
                                     {{$parcel->weight}}
                                 @endif
                             </td>
-                            <td class="p-2" style="font-family: Arial; font-size: 13px;">
-                                @if (!empty($parcel->length) && !empty($parcel->width) && !empty($parcel->height) && 
-                                    $parcel->length != '0' && $parcel->length != '0.00' && 
-                                    $parcel->width != '0' && $parcel->width != '0.00' && 
-                                    $parcel->height != '0' && $parcel->height != '0.00')
-                                    {{$parcel->length}} × {{$parcel->width}} × {{$parcel->height}}
+                            <td class="p-2" style="font-family: Arial; font-size: 13px; width: 140px;">
+                                @php
+                                    $measurements = null;
+                                    if (!empty($parcel->measurements)) {
+                                        $measurements = is_string($parcel->measurements) ? json_decode($parcel->measurements, true) : $parcel->measurements;
+                                    }
+                                    $measurementStrings = [];
+                                    if ($measurements && is_array($measurements)) {
+                                        foreach ($measurements as $measurement) {
+                                            if (!empty($measurement['length']) && !empty($measurement['width']) && !empty($measurement['height']) && 
+                                                $measurement['length'] != '0' && $measurement['length'] != '0.00' && 
+                                                $measurement['width'] != '0' && $measurement['width'] != '0.00' && 
+                                                $measurement['height'] != '0' && $measurement['height'] != '0.00') {
+                                                $length = rtrim(rtrim($measurement['length'], '0'), '.');
+                                                $width = rtrim(rtrim($measurement['width'], '0'), '.');
+                                                $height = rtrim(rtrim($measurement['height'], '0'), '.');
+                                                if (strpos($length, '.') === 0) $length = '0' . $length;
+                                                if (strpos($width, '.') === 0) $width = '0' . $width;
+                                                if (strpos($height, '.') === 0) $height = '0' . $height;
+                                                $qty = $measurement['quantity'] ?? $measurement['qty'] ?? 1;
+                                                $measurementStrings[] = "$length × $width × $height ($qty)";
+                                            }
+                                        }
+                                        echo implode('<br>', $measurementStrings);
+                                    } else {
+                                        if (!empty($parcel->length) && !empty($parcel->width) && !empty($parcel->height) && 
+                                            $parcel->length != '0' && $parcel->length != '0.00' && 
+                                            $parcel->width != '0' && $parcel->width != '0.00' && 
+                                            $parcel->height != '0' && $parcel->height != '0.00') {
+                                            echo $parcel->length . ' × ' . $parcel->width . ' × ' . $parcel->height . ' (' . $parcel->quantity . ')';
+                                        }
+                                    }
+                                @endphp
+                            </td>
+                            <td class="p-2" style="font-family: Arial; font-size: 13px; text-align: right;">
+                                @if (strtoupper($order->origin) !== 'MANILA')
+                                    @if ($measurements && is_array($measurements))
+                                        @php $rateStrings = []; @endphp
+                                        @foreach ($measurements as $measurement)
+                                            @if (!empty($measurement['rate']) && $measurement['rate'] > 0)
+                                                @php $rateStrings[] = number_format($measurement['rate'], 2); @endphp
+                                            @endif
+                                        @endforeach
+                                        {!! implode('<br>', $rateStrings) !!}
+                                    @else
+                                        {{ number_format($parcel->itemPrice, 2) }}
+                                    @endif
                                 @endif
                             </td>
                             <td class="p-2" style="font-family: Arial; font-size: 13px; text-align: right;">
                                 @if (strtoupper($order->origin) !== 'MANILA')
-                                    {{ number_format($parcel->itemPrice, 2) }}
-                                @endif
-                            </td>
-                            <td class="p-2" style="font-family: Arial; font-size: 13px; text-align: right;">
-                                @if (strtoupper($order->origin) !== 'MANILA')
-                                    {{ number_format($parcel->total, 2) }}
+                                    @if ($measurements && is_array($measurements))
+                                        @php $freightStrings = []; @endphp
+                                        @foreach ($measurements as $measurement)
+                                            @if (!empty($measurement['freight']) && $measurement['freight'] > 0)
+                                                @php $freightStrings[] = number_format($measurement['freight'], 2); @endphp
+                                            @endif
+                                        @endforeach
+                                        {!! implode('<br>', $freightStrings) !!}
+                                    @else
+                                        {{ number_format($parcel->total, 2) }}
+                                    @endif
                                 @endif
                             </td>
                         </tr>
@@ -139,6 +186,7 @@
                         </tr>
                     </tbody>
                 </table>               
+                </div>
             @endforeach
             </div>
             <footer style="margin-top: auto;">
@@ -297,19 +345,65 @@
         printWindow.document.write("<html><head><title>Print</title>");
         printWindow.document.write("<style>");
         printWindow.document.write(`
+            @page {
+                margin: 0.5in;
+                size: auto;
+            }
+            
             @media print {
-                body { -webkit-print-color-adjust: exact; print-color-adjust: exact; margin: 0; }
-                #printContainer { position: relative; width: 100%; min-height: 11in; }
+                body { 
+                    -webkit-print-color-adjust: exact; 
+                    print-color-adjust: exact; 
+                    margin: 0; 
+                    padding: 0;
+                }
+                #printContainer { 
+                    position: relative; 
+                    width: 100%; 
+                    margin: 0;
+                    padding: 0;
+                    padding-bottom: 200px; /* Space for footer */
+                }
                 img { display: block !important; margin: 0 auto; }
-                footer { position: absolute; bottom: 0; left: 0; width: 100%; }
+                
+                /* Footer positioning */
+                footer { 
+                    position: fixed; 
+                    bottom: 0; 
+                    left: 0; 
+                    right: 0; 
+                    width: 100%; 
+                    background: white;
+                    padding: 10px 0.5in;
+                    box-sizing: border-box;
+                    z-index: 999;
+                }
+                
+                /* Main table flexibility */
+                .main-table { 
+                    border-collapse: collapse; 
+                    width: 100%;
+                    page-break-inside: auto;
+                }
+                
+                .main-table thead {
+                    background-color: #78BF65 !important; 
+                    color: white !important;
+                    page-break-after: avoid;
+                }
+                
+                .main-table tbody tr {
+                    page-break-inside: avoid;
+                    page-break-after: auto;
+                }
+                
+                .main-table tbody tr:last-child {
+                    page-break-after: avoid;
+                }
+                
                 table { border-collapse: collapse; width: 100%; }
                 thead { background-color: #78BF65 !important; color: white !important; }
                 button { display: none; }
-                
-                /* Main table styles for print */
-                .main-table {
-                    border-collapse: collapse !important;
-                }
                 
                 .main-table tr {
                     border-bottom: 1px solid #cccccc !important;
@@ -328,6 +422,11 @@
                 /* Remove border from VALUE row specifically */
                 .border-gray[style*="border-bottom: none"] {
                     border-bottom: none !important;
+                }
+                
+                /* Ensure content doesn't overlap with footer */
+                .main-table-container {
+                    margin-bottom: 200px;
                 }
             }
         `);

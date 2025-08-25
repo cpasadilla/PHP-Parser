@@ -99,30 +99,63 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($parcels as $parcel)
-                            <tr class="border-gray" style="border-bottom: 1px solid #cccccc;">
-                                <td class="p-2 text-center" style="font-family: Arial; font-size: 13px; text-align: center;">{{$parcel->quantity}}</td>
-                                <td class="p-2" style="font-family: Arial; font-size: 13px; text-align: center; width: 70px;">{{$parcel->unit}}</td>
-                                <td class="p-2" style="font-family: Arial; font-size: 13px; text-align: left;">
-                                    {{$parcel->itemName}}{{ !empty($parcel->desc) ? ' - '.$parcel->desc : '' }}
-                                </td>
-                                <td class="p-2" style="font-family: Arial; font-size: 13px;"></td>
-                                <td class="p-2" style="font-family: Arial; font-size: 13px; width: 60px;">
-                                    @if ($parcel->weight && $parcel->weight != '0' && $parcel->weight != '0.00')
-                                        {{$parcel->weight}}
-                                    @endif
-                                </td>
-                                <td class="p-2" style="font-family: Arial; font-size: 13px;">
-                                    @if (!empty($parcel->length) && !empty($parcel->width) && !empty($parcel->height) && 
-                                        $parcel->length != '0' && $parcel->length != '0.00' && 
-                                        $parcel->width != '0' && $parcel->width != '0.00' && 
-                                        $parcel->height != '0' && $parcel->height != '0.00')
-                                        {{$parcel->length}} × {{$parcel->width}} × {{$parcel->height}}
-                                    @endif
-                                </td>
-                                <td class="p-2" style="font-family: Arial; font-size: 13px; text-align: right; width: 100px;"></td>
-                                <td class="p-2" style="font-family: Arial; font-size: 13px; text-align: right; width: 100px;"></td>
-                            </tr>
+                            @php
+                                // Group parcels by itemId or itemName
+                                $grouped = [];
+                                foreach ($parcels as $p) {
+                                    $key = $p->itemId ?? $p->itemName;
+                                    if (!isset($grouped[$key])) {
+                                        $grouped[$key] = [
+                                            'itemName' => $p->itemName,
+                                            'desc' => $p->desc ?? null,
+                                            'unit' => $p->unit ?? null,
+                                            'weight' => $p->weight ?? null,
+                                            'parcels' => [],
+                                        ];
+                                    }
+                                    $grouped[$key]['parcels'][] = $p;
+                                }
+                            @endphp
+
+                            @foreach ($grouped as $group)
+                                @php
+                                    // Sum quantities across grouped parcels
+                                    $totalQty = 0;
+                                    $measurementStrings = [];
+                                    foreach ($group['parcels'] as $parcel) {
+                                        $totalQty += is_numeric($parcel->quantity) ? $parcel->quantity : 0;
+                                        // normalize measurements
+                                        $measurements = null;
+                                        if (!empty($parcel->measurements)) {
+                                            $measurements = is_string($parcel->measurements) ? json_decode($parcel->measurements, true) : $parcel->measurements;
+                                        }
+                                        if ($measurements && is_array($measurements)) {
+                                            foreach ($measurements as $m) {
+                                                $length = $m['length'] ?? ($m->length ?? null);
+                                                $width = $m['width'] ?? ($m->width ?? null);
+                                                $height = $m['height'] ?? ($m->height ?? null);
+                                                $qty = $m['qty'] ?? ($m['quantity'] ?? 1);
+                                                if ($length && $width && $height) {
+                                                    $measurementStrings[] = rtrim(rtrim($length, '0'), '.') . ' × ' . rtrim(rtrim($width, '0'), '.') . ' × ' . rtrim(rtrim($height, '0'), '.') . ' (' . $qty . ')';
+                                                }
+                                            }
+                                        } else {
+                                            if (!empty($parcel->length) && !empty($parcel->width) && !empty($parcel->height)) {
+                                                $measurementStrings[] = $parcel->length . ' × ' . $parcel->width . ' × ' . $parcel->height . ' (' . $parcel->quantity . ')';
+                                            }
+                                        }
+                                    }
+                                @endphp
+                                <tr class="border-gray" style="border-bottom: 1px solid #cccccc;">
+                                    <td class="p-2 text-center" style="font-family: Arial; font-size: 13px; text-align: center;">{{ $totalQty }}</td>
+                                    <td class="p-2" style="font-family: Arial; font-size: 13px; text-align: center; width: 70px;">{{ $group['unit'] }}</td>
+                                    <td class="p-2" style="font-family: Arial; font-size: 13px; text-align: left;">{{ $group['itemName'] }}{{ !empty($group['desc']) ? ' - '.$group['desc'] : '' }}</td>
+                                    <td class="p-2" style="font-family: Arial; font-size: 13px;"></td>
+                                    <td class="p-2" style="font-family: Arial; font-size: 13px; width: 60px;">@if ($group['weight'] && $group['weight'] != '0' && $group['weight'] != '0.00'){{ $group['weight'] }}@endif</td>
+                                    <td class="p-2" style="font-family: Arial; font-size: 13px;">{!! implode('<br>', $measurementStrings) !!}</td>
+                                    <td class="p-2" style="font-family: Arial; font-size: 13px; text-align: right;"></td>
+                                    <td class="p-2" style="font-family: Arial; font-size: 13px; text-align: right;"></td>
+                                </tr>
                             @endforeach
                             <tr class="border-gray" style="border-bottom: none;">
                                 <td class="p-2"></td>

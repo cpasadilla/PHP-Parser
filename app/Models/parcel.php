@@ -22,6 +22,7 @@ class parcel extends Model
         'width',
         'height',
         'multiplier',
+        'measurements',
         'desc',
         'total',
         'unit',
@@ -29,5 +30,9 @@ class parcel extends Model
         'documents',
         'key',
         'date'
+    ];
+
+    protected $casts = [
+        'measurements' => 'array',
     ];
 }

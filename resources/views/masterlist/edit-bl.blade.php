@@ -396,35 +396,77 @@
                                 </div>
                             </div>
 
-                            <!--label class="block font-medium text-gray-900 dark:text-gray-200">Declared Value:</label>
-                            <input type="text" id="value" name="value"
-                                class="w-full p-2 border rounded-md mb-1 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200"-->
-                                <!-- Measurements -->
-                            <div class="space-y-2" id="measurements">
-                                <label class="block font-medium text-gray-900 dark:text-gray-200">Measurements (L × W × H):</label>
-                                <div class="grid grid-cols-4 gap-2 items-center">
-                                    <input type="number" id="length" name="length"
-                                        class="p-2 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200"
-                                        placeholder="Length" min="0" step="0.01">
-
-                                    <input type="number" id="width" name="width"
-                                        class="p-2 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200"
-                                        placeholder="Width" min="0" step="0.01">
-
-                                    <input type="number" id="height" name="height"
-                                        class="p-2 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200"
-                                        placeholder="Height" min="0" step="0.01">
-
-                                    <input list="multipliers" id="multiplier" name="multiplier" type="number"
-                                        class="p-2 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200"
-                                        placeholder="Multiplier" min="0" step="0.01">
-                                </div>
-                            </div>
-
                             <label class="block font-medium text-gray-900 dark:text-gray-200">Description:</label>
                             <textarea id="description" name="description"
                                 class="w-full p-2 border rounded-md mb-1 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white h-20 focus:ring focus:ring-indigo-200">
                             </textarea>
+
+                            <!--label class="block font-medium text-gray-900 dark:text-gray-200">Declared Value:</label>
+                            <input type="text" id="value" name="value"
+                                class="w-full p-2 border rounded-md mb-1 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200"-->
+                                <!-- Measurements -->
+                            <!--div class="grid grid-cols-4 gap-2">
+                                <div>
+                                    <label class="block font-medium text-gray-900 dark:text-gray-200">Length:</label>
+                                    <input type="number" id="length" name="length"
+                                        class="w-full p-2 border rounded-md mb-1 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200"
+                                        placeholder="Length" min="0" step="0.01">
+                                </div>
+                                <div>
+                                    <label class="block font-medium text-gray-900 dark:text-gray-200">Width:</label>
+                                    <input type="number" id="width" name="width"
+                                        class="w-full p-2 border rounded-md mb-1 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200"
+                                        placeholder="Width" min="0" step="0.01">
+                                </div>
+                                <div>
+                                    <label class="block font-medium text-gray-900 dark:text-gray-200">Height:</label>
+                                    <input type="number" id="height" name="height"
+                                        class="w-full p-2 border rounded-md mb-1 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200"
+                                        placeholder="Height" min="0" step="0.01">
+                                </div>
+                                <div>
+                                    <label class="block font-medium text-gray-900 dark:text-gray-200">Multiplier:</label>
+                                    <input type="number" id="multiplier" name="multiplier"
+                                        class="w-full p-2 border rounded-md mb-1 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200"
+                                        placeholder="Multiplier" min="0" step="0.01">
+                                </div>
+                            </div-->
+
+                            <div class="space-y-2" id="measurements">
+                                <button type="button" id="addMeasurementBtn" class="px-2 py-1 bg-indigo-600 text-white rounded text-xs hover:bg-indigo-700">+ Add</button>
+                                <div id="measurementRows" class="space-y-2">
+                                    <!-- Dynamic measurement rows will appear here -->
+                                </div>
+                                <template id="measurementRowTemplate">
+                                    <div class="flex gap-2 items-center measurement-row mb-2">
+                                        <div class="flex-1">
+                                            <label class="block font-medium text-gray-900 dark:text-gray-200 text-xs mb-1">Length:</label>
+                                            <input type="number" class="measure-length p-3 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white text-sm w-full h-10" placeholder="L" min="0" step="0.01">
+                                        </div>
+                                        <div class="flex-1">
+                                            <label class="block font-medium text-gray-900 dark:text-gray-200 text-xs mb-1">Width:</label>
+                                            <input type="number" class="measure-width p-3 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white text-sm w-full h-10" placeholder="W" min="0" step="0.01">
+                                        </div>
+                                        <div class="flex-1">
+                                            <label class="block font-medium text-gray-900 dark:text-gray-200 text-xs mb-1">Height:</label>
+                                            <input type="number" class="measure-height p-3 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white text-sm w-full h-10" placeholder="H" min="0" step="0.01">
+                                        </div>
+                                        <div class="flex-1">
+                                            <label class="block font-medium text-gray-900 dark:text-gray-200 text-xs mb-1">Multiplier:</label>
+                                            <input type="number" class="measure-multiplier p-3 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white text-sm w-full h-10" placeholder="M" min="0" step="0.01">
+                                        </div>
+                                        <div class="flex-1">
+                                            <label class="block font-medium text-gray-900 dark:text-gray-200 text-xs mb-1">Quantity:</label>
+                                            <input type="number" class="measure-qty p-3 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white text-sm w-full h-10" placeholder="Q" min="0" step="1">
+                                        </div>
+                                        <div class="flex-shrink-0 self-end">
+                                            <button type="button" class="remove-measurement text-red-600 font-bold px-2 py-2 hover:bg-red-100 rounded text-sm h-10 flex items-center justify-center">×</button>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+
+                            
                         </div>
 
                         <!-- Right Column: Table -->
@@ -880,19 +922,51 @@
             description = "MODEL: \nENGINE NO: \nCHASSIS NO: \nCOLOR: ";
         }
 
-        let l = parseFloat(document.getElementById('length').value) || "";
-        let w = parseFloat(document.getElementById('width').value) || "";
-        let h = parseFloat(document.getElementById('height').value) || "";
-        let m = parseFloat(document.getElementById('multiplier').value) || 'N/A';
-        let price = parseFloat(document.getElementById('price').value.replace(/,/g, '')) || 0; // Handle thousand separators
+        // Collect measurements
+        const measurements = collectMeasurements();
+        // Legacy single fields (for backward compatibility) use first measurement if exists
+        let l = measurements[0] ? measurements[0].length : "";
+        let w = measurements[0] ? measurements[0].width : "";
+        let h = measurements[0] ? measurements[0].height : "";
+        let m = measurements[0] ? (measurements[0].multiplier ?? 'N/A') : 'N/A';
+        let price = parseFloat(document.getElementById('price').value.replace(/,/g, '')) || 0; // Manual price fallback
         let quantity = parseFloat(document.getElementById('quantity').value) || 1;
         let total = 0;
-
-        if (m === 'N/A' || m === '' || m === 0) {
-            total = price * quantity;
+        if (measurements.length > 0) {
+            // Compute per-measurement rate and freight using measurement-specific qty
+            let aggregateRate = 0; // Sum of per-measurement rates (L*W*H*M)
+            let aggregateFreight = 0; // Sum of per-measurement freight (rate * qty)
+            measurements.forEach(ms => {
+                const ml = parseFloat(ms.length)||0;
+                const mw = parseFloat(ms.width)||0;
+                const mh = parseFloat(ms.height)||0;
+                const mm = parseFloat(ms.multiplier)||0;
+                const mq = parseFloat(ms.qty)||1; // default quantity 1
+                if(ml>0 && mw>0 && mh>0 && mm>0) {
+                    const rate = (ml*mw*mh*mm);
+                    ms.rate = rate; // store per-measurement rate
+                    ms.freight = rate * mq; // store per-measurement freight
+                    aggregateRate += rate;
+                    aggregateFreight += ms.freight;
+                } else {
+                    ms.rate = 0; ms.freight = 0;
+                }
+            });
+            if (aggregateFreight > 0) {
+                price = aggregateRate; // show sum of rates in price column
+                total = aggregateFreight; // total is sum of freight
+            } else {
+                // Fallback to manual price * global quantity if no valid measurements
+                total = price * quantity;
+            }
         } else {
-            price = l * w * h * m;
-            total = price * quantity;
+            // Original single-measurement logic (no per-measurement qty)
+            if (m === 'N/A' || m === '' || m === 0) {
+                total = price * quantity;
+            } else {
+                price = l * w * h * m;
+                total = price * quantity;
+            }
         }
 
         const item = {
@@ -902,10 +976,11 @@
             category: document.getElementById('category').value || '', // Ensure category is never undefined
             weight: document.getElementById('weight').value || "",
             value: document.getElementById('value').value || "",
-            length: l,
+            length: l, // legacy
             width: w,
             height: h,
             multiplier: m,
+            measurements: measurements,
             price: price.toFixed(2), // Ensure price is formatted to two decimal places
             description: description,
             quantity: quantity,
@@ -980,15 +1055,49 @@
             `;
 
             // Check if multiplier is empty or null
-            if (!item.multiplier || item.multiplier === 'N/A') {
-                row.innerHTML += `<td class="p-2 text-center">${item.length} × ${item.width} × ${item.height}</td>`;
+            // Measurement display
+            if (item.measurements && item.measurements.length) {
+                const parts = item.measurements.map(ms => {
+                    if(ms.length||ms.width||ms.height) {
+                        if(ms.multiplier && ms.multiplier !== 'N/A' && ms.multiplier !== '') {
+                            return `${ms.length} × ${ms.width} × ${ms.height} × ${Number(ms.multiplier).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+                        }
+                        return `${ms.length} × ${ms.width} × ${ms.height}`;
+                    }
+                    return '';
+                }).filter(Boolean);
+                // Single-line display of all measurement sets
+                row.innerHTML += `<td class=\"p-2 text-center\" style=\"white-space: normal;\">${parts.join(' ; ')}</td>`;
             } else {
-                row.innerHTML += `<td class="p-2 text-center">${item.length} × ${item.width} × ${item.height} × ${Number(item.multiplier).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>`;
+                if (!item.multiplier || item.multiplier === 'N/A') {
+                    row.innerHTML += `<td class="p-2 text-center">${item.length} × ${item.width} × ${item.height}</td>`;
+                } else {
+                    row.innerHTML += `<td class="p-2 text-center">${item.length} × ${item.width} × ${item.height} × ${Number(item.multiplier).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>`;
+                }
             }
 
+            // Rate column: show per-measurement rates (one per line) if stored
+            let rateCellHtml = '';
+            if (item.measurements && item.measurements.some(ms=>ms.rate>0)) {
+                rateCellHtml = item.measurements.filter(ms=>ms.rate>0).map(ms=>`${Number(ms.rate).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}`).join('<br>');
+            } else {
+                rateCellHtml = Number(item.price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            }
+            // Freight column: per-measurement freight lines; if multiple lines append total bold last
+            let freightCellHtml = '';
+            if (item.measurements && item.measurements.some(ms=>ms.freight>0)) {
+                const freightLines = item.measurements.filter(ms=>ms.freight>0).map(ms=>`${Number(ms.freight).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}`);
+                if (freightLines.length>1) {
+                    const sumFreight = freightLines.reduce((acc,val)=>acc+parseFloat(val.replace(/,/g,'')),0);
+                    freightLines.push(`<strong>${sumFreight.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</strong>`);
+                }
+                freightCellHtml = freightLines.join('<br>');
+            } else {
+                freightCellHtml = Number(item.total).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            }
             row.innerHTML += `
-                <td class="p-2 text-center">${Number(item.price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                <td class="p-2 text-center">${Number(item.total).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                <td class="p-2 text-center" style="line-height:1.1">${rateCellHtml}</td>
+                <td class="p-2 text-center" style="line-height:1.1">${freightCellHtml}</td>
                 <td class="p-2 text-center">
                     <a href="#" class="text-blue-500 text-center" onclick="openEditModal(${index})">
                         <x-button id="eds" variant="warning" class="items-center max-w-xs gap-2" type='button'>
@@ -1083,10 +1192,13 @@
             document.getElementById('unit').value = item.unit;
             document.getElementById('category').value = item.category || ''; // Make sure it's never undefined
             document.getElementById('weight').value = item.weight;
-            document.getElementById('length').value = item.length;
-            document.getElementById('width').value = item.width;
-            document.getElementById('height').value = item.height;
-            document.getElementById('multiplier').value = item.multiplier;
+            // Rebuild measurement rows
+            clearMeasurementRows();
+            if (item.measurements && item.measurements.length) {
+                item.measurements.forEach(ms => addMeasurementRow(ms.length, ms.width, ms.height, ms.multiplier, ms.qty));
+            } else {
+                addMeasurementRow(item.length, item.width, item.height, item.multiplier, item.quantity || 1);
+            }
             document.getElementById('price').value = item.price;
             document.getElementById('description').value = item.description;
             document.getElementById('quantity').value = item.quantity;
@@ -1105,21 +1217,34 @@
             const currentEditIndex = document.getElementById('saveButton').getAttribute('data-index'); // Get stored index
 
             if (currentEditIndex !== null) {
-                let l = parseFloat(document.getElementById('length').value) || "";
-                let w = parseFloat(document.getElementById('width').value) || "";
-                let h = parseFloat(document.getElementById('height').value) || "";
-                let m = parseFloat(document.getElementById('multiplier').value) || 'N/A';
-                let price = parseFloat(document.getElementById('price').value.replace(/,/g, '')) || 0; // Handle thousand separators
+                const measurements = collectMeasurements();
+                let l = measurements[0] ? measurements[0].length : "";
+                let w = measurements[0] ? measurements[0].width : "";
+                let h = measurements[0] ? measurements[0].height : "";
+                let m = measurements[0] ? (measurements[0].multiplier ?? 'N/A') : 'N/A';
+                let price = parseFloat(document.getElementById('price').value.replace(/,/g, '')) || 0; // Manual fallback
                 let quantity = parseFloat(document.getElementById('quantity').value) || 1;
                 let total = 0;
-                if (m == 'N/A' || m == '' || m == 0) {
-                total = price * quantity;
-                }
-                else if (m !=  '' || m != '' || m != 0){
-                    price = l * w * h * m;
-                    total = price * quantity;
-                }
-                else {
+                if (measurements.length > 0) {
+                    let aggregateRate = 0;
+                    let aggregateFreight = 0;
+                    measurements.forEach(ms => {
+                        const ml = parseFloat(ms.length)||0;
+                        const mw = parseFloat(ms.width)||0;
+                        const mh = parseFloat(ms.height)||0;
+                        const mm = parseFloat(ms.multiplier)||0;
+                        const mq = parseFloat(ms.qty)||1;
+                        if(ml>0 && mw>0 && mh>0 && mm>0) {
+                            const rate = (ml*mw*mh*mm);
+                            ms.rate = rate;
+                            ms.freight = rate * mq;
+                            aggregateRate += rate;
+                            aggregateFreight += ms.freight;
+                        } else { ms.rate=0; ms.freight=0; }
+                    });
+                    if (aggregateFreight>0) { price = aggregateRate; total = aggregateFreight; } else { total = price * quantity; }
+                } else {
+                    if (m == 'N/A' || m == '' || m == 0) { total = price * quantity; } else { price = l*w*h*m; total = price * quantity; }
                 }
                 
                 cart[currentEditIndex] = {
@@ -1133,6 +1258,7 @@
                     height: h,
                     multiplier: m,
                     price: price,
+                    measurements: measurements,
                     description: document.getElementById('description').value,
                     quantity: quantity,
                     total: total
@@ -1158,10 +1284,7 @@
         document.getElementById('unit').value = "";
         document.getElementById('category').value = "";
         document.getElementById('weight').value = "";
-        document.getElementById('length').value = "";
-        document.getElementById('width').value = "";
-        document.getElementById('height').value = "";
-        document.getElementById('multiplier').value = "";
+    clearMeasurementRows();
         document.getElementById('price').value = "";
         document.getElementById('description').value = "";
         document.getElementById('quantity').value = "";
@@ -1699,4 +1822,59 @@ document.addEventListener('DOMContentLoaded', function() {
         // Save the raw numeric value for form submission
         hiddenInput.value = rawValue;
     }
+</script>
+<script>
+// Dynamic Measurements Support
+(function(){
+    function addMeasurementRow(l="", w="", h="", m="", q="") {
+        const container = document.getElementById('measurementRows');
+        if(!container) return;
+        const tpl = document.getElementById('measurementRowTemplate');
+        if(!tpl) return;
+        const node = tpl.content.firstElementChild.cloneNode(true);
+        const len = node.querySelector('.measure-length');
+        const wid = node.querySelector('.measure-width');
+        const hei = node.querySelector('.measure-height');
+        const mul = node.querySelector('.measure-multiplier');
+        const qty = node.querySelector('.measure-qty');
+        
+        len.value = l || ""; 
+        wid.value = w || ""; 
+        hei.value = h || ""; 
+        mul.value = m || ""; 
+        if(qty) qty.value = q || "";
+        
+        node.querySelector('.remove-measurement').addEventListener('click',()=>{ node.remove(); });
+        container.appendChild(node);
+    }
+    function clearMeasurementRows(){
+        const container = document.getElementById('measurementRows');
+        if(container) container.innerHTML='';
+    }
+    function collectMeasurements(){
+        const rows = document.querySelectorAll('#measurementRows .measurement-row');
+        const out = [];
+        rows.forEach(r=>{
+            const length = r.querySelector('.measure-length').value;
+            const width = r.querySelector('.measure-width').value;
+            const height = r.querySelector('.measure-height').value;
+            const multiplier = r.querySelector('.measure-multiplier').value;
+            const qty = r.querySelector('.measure-qty') ? r.querySelector('.measure-qty').value : '';
+            if(length || width || height || multiplier || qty) {
+                out.push({length,width,height,multiplier,qty});
+            }
+        });
+        return out;
+    }
+    // Expose to global scope for existing code integration
+    window.addMeasurementRow = addMeasurementRow;
+    window.clearMeasurementRows = clearMeasurementRows;
+    window.collectMeasurements = collectMeasurements;
+    document.addEventListener('DOMContentLoaded',function(){
+        // Ensure at least one row initially
+        if(!document.querySelector('#measurementRows .measurement-row')) addMeasurementRow();
+        const btn = document.getElementById('addMeasurementBtn');
+        if(btn) btn.addEventListener('click',()=>addMeasurementRow());
+    });
+})();
 </script>
