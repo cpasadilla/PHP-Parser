@@ -876,7 +876,8 @@ class MasterListController extends Controller
         }
 
         foreach ($cart as $item) {
-            if ($item->category == 'FROZEN' || $item->category == 'PARCEL') {
+            // Items in FROZEN, PARCEL or AGGREGATES categories should have zero valuation
+            if ($item->category == 'FROZEN' || $item->category == 'PARCEL' || $item->category == 'AGGREGATES') {
                 $noValue = true;
             }
         }

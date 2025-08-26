@@ -27,6 +27,7 @@ class CategorySeeder extends Seeder
             ['name' => 'VARIOUS', 'prefix' => 'VAR'],
             ['name' => 'FROZEN', 'prefix' => 'FRZ'],
             ['name' => 'PARCEL', 'prefix' => 'PAR'],
+            ['name' => 'AGGREGATES', 'prefix' => 'AGG'],
             ['name' => 'SAND', 'prefix' => 'SND'],
         ];
 

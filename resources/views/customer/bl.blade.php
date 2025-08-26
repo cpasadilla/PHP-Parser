@@ -572,16 +572,11 @@
                             </div>
                         </div>
 
-                        <label class="block font-medium text-gray-900 dark:text-gray-200">Description:</label>
-                        <textarea id="description" name="description"
-                            class="w-full p-2 border rounded-md mb-1 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white h-20 focus:ring focus:ring-indigo-200">
-                        </textarea>
-
                         <!--label class="block font-medium text-gray-900 dark:text-gray-200">Declared Value:</label>
                         <input type="text" id="value" name="value"
                             class="w-full p-2 border rounded-md mb-1 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200"-->
                             <!-- Measurements -->
-                        <!--div class="space-y-2" id="measurements">
+                        <div class="space-y-2" id="measurements">
                             <label class="block font-medium text-gray-900 dark:text-gray-200">Measurements (L × W × H):</label>
                             <div class="grid grid-cols-4 gap-2 items-center">
                                 <input type="number" id="length" name="length"
@@ -600,41 +595,12 @@
                                     class="p-2 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200"
                                     placeholder="Multiplier" min="0" step="0.01">
                             </div>
-                        </div-->
-                        
-                        <div class="space-y-2" id="measurements">
-                            <button type="button" id="addMeasurementBtn" class="px-2 py-1 bg-indigo-600 text-white rounded text-xs hover:bg-indigo-700">+ Add</button>
-                            <div id="measurementRows" class="space-y-2">
-                                <!-- Dynamic measurement rows will appear here -->
-                            </div>
-                            <template id="measurementRowTemplate">
-                                <div class="flex gap-2 items-center measurement-row mb-2">
-                                    <div class="flex-1">
-                                        <label class="block font-medium text-gray-900 dark:text-gray-200 text-xs mb-1">Length:</label>
-                                        <input type="number" class="measure-length p-3 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white text-sm w-full h-10" placeholder="L" min="0" step="0.01">
-                                    </div>
-                                    <div class="flex-1">
-                                        <label class="block font-medium text-gray-900 dark:text-gray-200 text-xs mb-1">Width:</label>
-                                        <input type="number" class="measure-width p-3 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white text-sm w-full h-10" placeholder="W" min="0" step="0.01">
-                                    </div>
-                                    <div class="flex-1">
-                                        <label class="block font-medium text-gray-900 dark:text-gray-200 text-xs mb-1">Height:</label>
-                                        <input type="number" class="measure-height p-3 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white text-sm w-full h-10" placeholder="H" min="0" step="0.01">
-                                    </div>
-                                    <div class="flex-1">
-                                        <label class="block font-medium text-gray-900 dark:text-gray-200 text-xs mb-1">Multiplier:</label>
-                                        <input type="number" class="measure-multiplier p-3 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white text-sm w-full h-10" placeholder="M" min="0" step="0.01">
-                                    </div>
-                                    <div class="flex-1">
-                                        <label class="block font-medium text-gray-900 dark:text-gray-200 text-xs mb-1">Quantity:</label>
-                                        <input type="number" class="measure-qty p-3 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white text-sm w-full h-10" placeholder="Q" min="0" step="1">
-                                    </div>
-                                    <div class="flex-shrink-0 self-end">
-                                        <button type="button" class="remove-measurement text-red-600 font-bold px-2 py-2 hover:bg-red-100 rounded text-sm h-10 flex items-center justify-center">×</button>
-                                    </div>
-                                </div>
-                            </template>
                         </div>
+
+                        <label class="block font-medium text-gray-900 dark:text-gray-200">Description:</label>
+                        <textarea id="description" name="description"
+                            class="w-full p-2 border rounded-md mb-1 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white h-20 focus:ring focus:ring-indigo-200">
+                        </textarea>
                     </div>
 
                     <!-- Right Column: Table -->
@@ -787,23 +753,6 @@
 </x-app-layout>
 
 <script>
-// Enable dynamic measurement row addition
-document.addEventListener('DOMContentLoaded', function() {
-    const addBtn = document.getElementById('addMeasurementBtn');
-    const rowsContainer = document.getElementById('measurementRows');
-    const template = document.getElementById('measurementRowTemplate');
-    if (addBtn && rowsContainer && template) {
-        addBtn.addEventListener('click', function() {
-            const clone = template.content.cloneNode(true);
-            rowsContainer.appendChild(clone);
-        });
-        rowsContainer.addEventListener('click', function(e) {
-            if (e.target.classList.contains('remove-measurement')) {
-                e.target.closest('.measurement-row').remove();
-            }
-        });
-    }
-});
     // For printing
     function printContent(divId) {
         console.log("printContent function called");
@@ -1093,81 +1042,74 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     function addToCart() {
+        // Plus
         let selectedValue = document.getElementById("unit").value;
         let description = document.getElementById("description").value;
         const itemCode = document.getElementById('itemCode').value;
+
         if (!selectedValue) {
             alert("Please select a unit before adding to cart!");
             return;
         }
+        
+        // Check if it's a motorcycle item and needs description
         const motorcycleCodes = ["VHC-011", "VHC-012", "VHC-013", "VOL-013"];
         if (motorcycleCodes.includes(itemCode.trim()) && !description.includes("MODEL:")) {
             description = "MODEL: \nENGINE NO: \nCHASSIS NO: \nCOLOR: ";
         }
+
+        // Handle empty or zero values to be null/empty for database
+        let l = parseFloat(document.getElementById('length').value) || null;
+        let w = parseFloat(document.getElementById('width').value) || null;
+        let h = parseFloat(document.getElementById('height').value) || null;
         let weight = document.getElementById('weight').value ? parseFloat(document.getElementById('weight').value) : null;
-        let price = parseFloat(document.getElementById('price').value.replace(/,/g, "")) || 0;
-        let category = document.getElementById('category').value;
-        let total = 0;
-        let aggregateRate = 0;
-        let aggregateFreight = 0;
-        const measurements = collectMeasurements();
-        if (measurements.length > 0) {
-            measurements.forEach(ms => {
-                const ml = ms.length;
-                const mw = ms.width;
-                const mh = ms.height;
-                const mm = ms.multiplier;
-                const mq = ms.qty;
-                if (ml > 0 && mw > 0 && mh > 0 && mm > 0) {
-                    const rate = ml * mw * mh * mm;
-                    aggregateRate += rate;
-                    aggregateFreight += rate * mq;
-                }
-            });
-            if (aggregateFreight > 0) {
-                price = aggregateRate;
-                total = aggregateFreight;
-            } else {
-                // fallback to manual price if no valid measurements
-                let quantity = parseFloat(document.getElementById('quantity').value) || 1;
-                total = price * quantity;
-            }
+        
+        // Handle multiplier - convert 'N/A' or empty string to null
+        let m = document.getElementById('multiplier').value;
+        if (m === 'N/A' || m === '' || m === '0') {
+            m = null;
         } else {
-            // fallback to manual price if no measurements
-            let quantity = parseFloat(document.getElementById('quantity').value) || 1;
+            m = parseFloat(m);
+        }
+        
+        let price = parseFloat(document.getElementById('price').value.replace(/,/g, "")) || 0; // Ensure price is a number
+        let quantity = parseFloat(document.getElementById('quantity').value) || 1;
+        let total = 0;
+        let category = document.getElementById('category').value;
+
+        if (m === null) {
+            total = price * quantity;
+        } else {
+            if(l === null || w === null || h === null) {
+                alert("Please enter the measurements before adding to cart!");
+                return;
+            }
+            price = l * w * h * m;
             total = price * quantity;
         }
+
         totalPrice += total;
         const item = {
-            itemCode: itemCode,
+            itemCode: document.getElementById('itemCode').value,
             itemName: document.getElementById('itemName').value,
             unit: document.getElementById('unit').value,
             category: category,
             weight: weight,
-            measurements: measurements,
+            length: l,
+            width: w,
+            height: h,
+            multiplier: m,
             price: price,
-            description: description || "",
+            description: description || "", // Allow empty description
+            quantity: quantity,
             total: total
         };
+
         cart.push(item);
         updateMainTable();
-        clearFields();
+        clearFields(); // Clear all fields after adding to cart
         closeModal();
         console.log('Cart:', cart);
-    }
-
-    function collectMeasurements() {
-        const rows = document.querySelectorAll('#measurementRows .measurement-row');
-        let measurements = [];
-        rows.forEach(row => {
-            const l = parseFloat(row.querySelector('.measure-length').value) || 0;
-            const w = parseFloat(row.querySelector('.measure-width').value) || 0;
-            const h = parseFloat(row.querySelector('.measure-height').value) || 0;
-            const m = parseFloat(row.querySelector('.measure-multiplier').value) || 0;
-            const q = parseFloat(row.querySelector('.measure-qty').value) || 1;
-            measurements.push({length: l, width: w, height: h, multiplier: m, qty: q});
-        });
-        return measurements;
     }
 
     function formatPrice(value) {
@@ -1184,15 +1126,18 @@ document.addEventListener('DOMContentLoaded', function() {
         // Always enable the submit button regardless of cart length
         submitBtn.disabled = false;
 
-        // Check if there's at least one 'FROZEN' or 'PARCEL' in the cart
-        const hasRestrictedItem = cart.some(item => item.category === 'FROZEN' || item.category === 'PARCEL');
+        // Lock the value input only when FROZEN or PARCEL items are present.
+        // AGGREGATES items are allowed to have a VALUE entered but the server will still
+        // ignore value for valuation calculation (valuation will be zero when AGGREGATES are present).
+        const hasFrozenOrParcel = cart.some(item => item.category === 'FROZEN' || item.category === 'PARCEL');
 
-        if (hasRestrictedItem) {
+        if (hasFrozenOrParcel) {
             inputField.value = ''; // Clear input
             inputField.readOnly = true; // Make it readonly
             isLocked = true; // Lock it permanently
-        } else if (!hasRestrictedItem) {
-            inputField.readOnly = false; // Allow editing if no restricted items
+        } else {
+            // If only AGGREGATES or other categories exist, allow editing
+            inputField.readOnly = false;
         }
     }
 
@@ -1210,69 +1155,61 @@ document.addEventListener('DOMContentLoaded', function() {
             const row = document.createElement('tr');
             row.className = "border-b";
 
+            row.innerHTML = `
+                <td class="p-2 text-center">${item.quantity}</td>
+                <td class="p-2 text-center">${item.unit}</td>
+                <td class="p-2 text-center">${item.itemName} ${item.description}</td>
+                <td class="p-2 text-center"> </td>
+                <td class="p-2 text-center">${item.weight !== null ? item.weight : ''}</td>
+            `;
 
-                // Calculate total quantity
-                let displayQuantity = 1;
-                if (Array.isArray(item.measurements) && item.measurements.length > 0) {
-                    displayQuantity = item.measurements.reduce((sum, m) => sum + (m.qty || 0), 0);
-                } else if (typeof item.quantity !== 'undefined') {
-                    displayQuantity = item.quantity;
-                }
-
-                row.innerHTML = `
-                    <td class="p-2 text-center">${displayQuantity}</td>
-                    <td class="p-2 text-center">${item.unit}</td>
-                    <td class="p-2 text-center">${item.itemName} ${item.description}</td>
-                    <td class="p-2 text-center"> </td>
-                    <td class="p-2 text-center">${item.weight !== null ? item.weight : ''}</td>
-                `;
-
-                // Render all measurements in the measurement column
-                let measurementHtml = '';
-                if (Array.isArray(item.measurements) && item.measurements.length > 0) {
-                    measurementHtml = item.measurements.map(m => {
-                        let parts = [];
-                        if (m.length) parts.push(m.length);
-                        if (m.width) parts.push(m.width);
-                        if (m.height) parts.push(m.height);
-                        let str = parts.join(' × ');
-                        if (m.multiplier) str += ` × ${Number(m.multiplier).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-                        if (m.qty) str += ` (Qty: ${m.qty})`;
-                        return str;
-                    }).join('<br>');
+            // Check if multiplier is empty or null
+            if (!item.multiplier || item.multiplier === 'N/A') {
+                // Check if length, width, or height are null and display accordingly
+                const length = item.length !== null ? item.length : '';
+                const width = item.width !== null ? item.width : '';
+                const height = item.height !== null ? item.height : '';
+                
+                if (length || width || height) {
+                    row.innerHTML += `<td class="p-2 text-center">${length} × ${width} × ${height}</td>`;
                 } else {
-                    // Fallback for single measurement fields
-                    const length = item.length !== null ? item.length : '';
-                    const width = item.width !== null ? item.width : '';
-                    const height = item.height !== null ? item.height : '';
-                    if (length || width || height) {
-                        measurementHtml = `${length} × ${width} × ${height}`;
-                    }
+                    row.innerHTML += `<td class="p-2 text-center"></td>`;
                 }
-                row.innerHTML += `<td class="p-2 text-center">${measurementHtml}</td>`;
+            } else {
+                // Check if length, width, or height are null and display accordingly
+                const length = item.length !== null ? item.length : '';
+                const width = item.width !== null ? item.width : '';
+                const height = item.height !== null ? item.height : '';
+                
+                if (length || width || height) {
+                    row.innerHTML += `<td class="p-2 text-center">${length} × ${width} × ${height} × ${Number(item.multiplier).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>`;
+                } else {
+                    row.innerHTML += `<td class="p-2 text-center"></td>`;
+                }
+            }
 
-                row.innerHTML += `
-                    <td class="p-2 text-center">${Number(item.price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                    <td class="p-2 text-center">${Number(item.total).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                    <td class="p-2 text-center">
-                        <a href="#" class="text-blue-500 text-center" onclick="openEditModal(${index}, event)">
-                            <button id="eds" type="button" variant="warning" class="bg-yellow-500 hover:bg-yellow-600 text-white rounded p-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
-                                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                                </svg>
-                            </button>
-                        </a>
-                    </td>
-                    <td class="p-2 text-center">
-                        <a href="#" class="text-blue-500 text-center" onclick="deleteItem(${index}, event)">
-                            <button id="dels" type="button" variant="danger" class="bg-red-500 hover:bg-red-600 text-white rounded p-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
-                                </svg>
-                            </button>
-                        </a>
-                    </td>
-                `;
+            row.innerHTML += `
+                <td class="p-2 text-center">${Number(item.price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                <td class="p-2 text-center">${Number(item.total).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                <td class="p-2 text-center">
+                    <a href="#" class="text-blue-500 text-center" onclick="openEditModal(${index}, event)">
+                        <button id="eds" type="button" variant="warning" class="bg-yellow-500 hover:bg-yellow-600 text-white rounded p-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                            </svg>
+                        </button>
+                    </a>
+                </td>
+                <td class="p-2 text-center">
+                    <a href="#" class="text-blue-500 text-center" onclick="deleteItem(${index}, event)">
+                        <button id="dels" type="button" variant="danger" class="bg-red-500 hover:bg-red-600 text-white rounded p-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                    </a>
+                </td>
+            `;
 
             mainTableBody.appendChild(row);
         });

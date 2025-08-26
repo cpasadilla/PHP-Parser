@@ -1065,15 +1065,18 @@
         } else {
             submitBtn.disabled = false; // Enable the button
         }
-        // Check if there's at least one 'FROZEN' or 'PARCEL' in the cart
-        const hasRestrictedItem = cart.some(item => item.category === 'FROZEN' || item.category === 'PARCEL');
+        // Lock the value input only when FROZEN or PARCEL items are present.
+        // AGGREGATES items are allowed to have a VALUE entered but the server will still
+        // ignore value for valuation calculation (valuation will be zero when AGGREGATES are present).
+        const hasFrozenOrParcel = cart.some(item => item.category === 'FROZEN' || item.category === 'PARCEL');
 
-        if (hasRestrictedItem) {
+        if (hasFrozenOrParcel) {
             inputField.value = ''; // Clear input
             inputField.readOnly = true; // Make it readonly
             isLocked = true; // Lock it permanently
-        } else if (!hasRestrictedItem) {
-            inputField.readOnly = false; // Allow editing if no restricted items
+        } else {
+            // If only AGGREGATES or other categories exist, allow editing
+            inputField.readOnly = false;
         }
 
     }

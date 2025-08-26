@@ -633,7 +633,8 @@ class CustomerController extends Controller {
         $noValue = false;
         if ($cart) {
             foreach ($cart as $item) {
-                if ($item->category == 'FROZEN' || $item->category == 'PARCEL') {
+                // Items in FROZEN, PARCEL or AGGREGATES categories should have zero valuation
+                if ($item->category == 'FROZEN' || $item->category == 'PARCEL' || $item->category == 'AGGREGATES') {
                     $noValue = true;
                 }
             }
@@ -681,96 +682,43 @@ class CustomerController extends Controller {
         // Only process cart items if cart is not empty
         if ($cart && !empty($cart)) {
             foreach ($cart as $item) {
-                // If measurements exist, save each as a separate parcel row
-                if (isset($item->measurements) && !empty($item->measurements)) {
-                    // Support both arrays and objects (json_decode may return stdClass)
-                    $measurements = is_array($item->measurements) ? $item->measurements : (is_object($item->measurements) ? (array)$item->measurements : $item->measurements);
-                    foreach ($measurements as $measurement) {
-                        // measurement may be an object or array
-                        $m_length = is_array($measurement) ? ($measurement['length'] ?? null) : ($measurement->length ?? null);
-                        $m_width = is_array($measurement) ? ($measurement['width'] ?? null) : ($measurement->width ?? null);
-                        $m_height = is_array($measurement) ? ($measurement['height'] ?? null) : ($measurement->height ?? null);
-                        $m_multiplier = is_array($measurement) ? ($measurement['multiplier'] ?? null) : ($measurement->multiplier ?? null);
-                        $m_qty = is_array($measurement) ? ($measurement['qty'] ?? ($measurement['quantity'] ?? null)) : ($measurement->qty ?? ($measurement->quantity ?? null));
+                // Handle empty or zero values for weight and measurements
+                $weight = !empty($item->weight) && $item->weight !== '0' && $item->weight !== '0.00' ? $item->weight : null;
+                $length = !empty($item->length) && $item->length !== '0' && $item->length !== '0.00' ? $item->length : null;
+                $width = !empty($item->width) && $item->width !== '0' && $item->width !== '0.00' ? $item->width : null;
+                $height = !empty($item->height) && $item->height !== '0' && $item->height !== '0.00' ? $item->height : null;
+                $multiplier = $item->multiplier == "N/A" || empty($item->multiplier) ? null : $item->multiplier;
 
-                        $weight = !empty($item->weight) && $item->weight !== '0' && $item->weight !== '0.00' ? $item->weight : null;
-                        $length = !empty($m_length) && $m_length !== '0' && $m_length !== '0.00' ? $m_length : null;
-                        $width = !empty($m_width) && $m_width !== '0' && $m_width !== '0.00' ? $m_width : null;
-                        $height = !empty($m_height) && $m_height !== '0' && $m_height !== '0.00' ? $m_height : null;
-                        $multiplier = isset($m_multiplier) && $m_multiplier != "N/A" && !empty($m_multiplier) ? $m_multiplier : null;
-                        $qty = isset($m_qty) ? $m_qty : 1;
-
-                        // Compute per-measurement rate and freight so each saved parcel has its own values
-                        $lenF = is_numeric($length) ? floatval($length) : 0;
-                        $widF = is_numeric($width) ? floatval($width) : 0;
-                        $heiF = is_numeric($height) ? floatval($height) : 0;
-                        $mulF = is_numeric($multiplier) ? floatval($multiplier) : 0;
-                        $qtyF = is_numeric($qty) ? floatval($qty) : 0;
-
-                        $rate = 0;
-                        $freightAmount = 0;
-                        if ($lenF > 0 && $widF > 0 && $heiF > 0 && $mulF > 0) {
-                            $rate = $lenF * $widF * $heiF * $mulF;
-                            $freightAmount = $rate * $qtyF;
-                        }
-
-                        $parcel = parcel::create([
-                            'orderId' => $order->id,
-                            'itemId' => $item->itemCode,
-                            'itemName' => $item->itemName,
-                            // itemPrice should represent per-measurement rate
-                            'itemPrice' => $rate,
-                            'quantity' => $qtyF,
-                            'length' => $length,
-                            'width' => $width,
-                            'height' => $height,
-                            'multiplier' => $multiplier,
-                            'measurements' => null, // per-measurement saved as individual rows
-                            'desc' => $item->description,
-                            // total should represent freight for this measurement (rate * qty)
-                            'total' => $freightAmount,
-                            'unit' => $item->unit,
-                            'weight' => $weight,
-                        ]);
-                    }
-                } else {
-                    // Fallback: save as single parcel row
-                    $weight = !empty($item->weight) && $item->weight !== '0' && $item->weight !== '0.00' ? $item->weight : null;
-                    $length = !empty($item->length) && $item->length !== '0' && $item->length !== '0.00' ? $item->length : null;
-                    $width = !empty($item->width) && $item->width !== '0' && $item->width !== '0.00' ? $item->width : null;
-                    $height = !empty($item->height) && $item->height !== '0' && $item->height !== '0.00' ? $item->height : null;
-                    $multiplier = isset($item->multiplier) && $item->multiplier != "N/A" && !empty($item->multiplier) ? $item->multiplier : null;
-                    $qty = isset($item->quantity) ? $item->quantity : 1;
-                    // Compute rate/total for single-measurement fallback
-                    $lenF = is_numeric($length) ? floatval($length) : 0;
-                    $widF = is_numeric($width) ? floatval($width) : 0;
-                    $heiF = is_numeric($height) ? floatval($height) : 0;
-                    $mulF = is_numeric($multiplier) ? floatval($multiplier) : 0;
-                    $qtyF = is_numeric($qty) ? floatval($qty) : 0;
-                    $rate = 0;
-                    $freightAmount = 0;
-                    if ($lenF > 0 && $widF > 0 && $heiF > 0 && $mulF > 0) {
-                        $rate = $lenF * $widF * $heiF * $mulF;
-                        $freightAmount = $rate * $qtyF;
-                    } else {
-                        // fallback to provided price/total fields
-                        $rate = is_numeric($item->price) ? floatval($item->price) : 0;
-                        $freightAmount = is_numeric($item->total) ? floatval($item->total) : 0;
-                    }
-
+                if (isset($checks) && $checks == true) {
                     $parcel = parcel::create([
                         'orderId' => $order->id,
                         'itemId' => $item->itemCode,
                         'itemName' => $item->itemName,
-                        'itemPrice' => $rate,
-                        'quantity' => $qtyF,
+                        'itemPrice' => is_numeric($item->price) ? floatval($item->price) : 0,
+                        'quantity' => is_numeric($item->quantity) ? floatval($item->quantity) : 0,
                         'length' => $length,
                         'width' => $width,
                         'height' => $height,
                         'multiplier' => $multiplier,
-                        'measurements' => null,
                         'desc' => $item->description,
-                        'total' => $freightAmount,
+                        'total' => 0,
+                        'unit' => $item->unit,
+                        'weight' => $weight,
+                    ]);
+                }
+                else {
+                    $parcel = parcel::create([
+                        'orderId' => $order->id,
+                        'itemId' => $item->itemCode,
+                        'itemName' => $item->itemName,
+                        'itemPrice' => is_numeric($item->price) ? floatval($item->price) : 0,
+                        'quantity' => is_numeric($item->quantity) ? floatval($item->quantity) : 0,
+                        'length' => $length,
+                        'width' => $width,
+                        'height' => $height,
+                        'multiplier' => $multiplier,
+                        'desc' => $item->description,
+                        'total' => is_numeric($item->total) ? floatval($item->total) : 0,
                         'unit' => $item->unit,
                         'weight' => $weight,
                     ]);
