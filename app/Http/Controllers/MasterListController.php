@@ -662,118 +662,28 @@ class MasterListController extends Controller
         $order = Order::where('id', $orderId)->firstOrFail();
 
         $items = PriceList::all()->keyBy('item_code'); // Fetch all items from the PriceList model
-        // Fetch raw parcel rows for the order
-        $parcelRows = parcel::where('orderId', $order->id)->get();
+        $parcels = parcel::where('orderId', $order->id)->get()->map(function ($item) use ($items) {
+            // Use itemId to find matching item in PriceList since that's what's stored in the parcels table
+            $priceListItem = $items[$item->itemId] ?? null;
 
-        // Group parcels by item (itemId + itemName + unit) and collapse multiple parcel rows
-        // into a single item entry that contains a 'measurements' array.
-        $groups = [];
-        foreach ($parcelRows as $row) {
-            // Find matching price list item if available
-            $priceListItem = $items[$row->itemId] ?? null;
-
-            // Normalize unit: prefer explicit unit from parcel row; fall back to price list unit
-            $unitFromRow = isset($row->unit) ? trim((string)$row->unit) : '';
-            $unit = $unitFromRow !== '' ? $unitFromRow : (isset($priceListItem->unit) ? trim((string)$priceListItem->unit) : '');
-
-            // Build grouping key using itemId, itemName, and normalized unit
-            $key = ($row->itemId ?? '') . '|' . ($row->itemName ?? '') . '|' . $unit;
-
-            if (!isset($groups[$key])) {
-                $groups[$key] = [
-                    'itemCode' => $row->itemId ?? "",
-                    'itemName' => $row->itemName ?? "",
-                    'unit' => $unit ?? "",
-                    'category' => $priceListItem->category ?? "",
-                    'weight' => $row->weight ?? " ",
-                    'value' => $row->value ?? " ",
-                    'multiplier' => $row->multiplier ?? ($priceListItem->multiplier ?? 'N/A'),
-                    'price' => $row->itemPrice ?? 0,
-                    'description' => $row->desc ?? "",
-                    'quantity' => 0, // will sum up from measurements
-                    'total' => 0, // will sum up
-                    'measurements' => [],
-                ];
-            }
-
-            // Determine measurements stored on this parcel row. The parcel model may store
-            // an array in the 'measurements' cast, or have single measurement fields.
-            $storedMeasurements = $row->measurements;
-            if (is_array($storedMeasurements) && count($storedMeasurements) > 0) {
-                foreach ($storedMeasurements as $ms) {
-                    $qty = isset($ms['qty']) ? floatval($ms['qty']) : (isset($ms['quantity']) ? floatval($ms['quantity']) : 1);
-                    $length = isset($ms['length']) ? floatval($ms['length']) : 0;
-                    $width = isset($ms['width']) ? floatval($ms['width']) : 0;
-                    $height = isset($ms['height']) ? floatval($ms['height']) : 0;
-                    $mult = isset($ms['multiplier']) ? floatval($ms['multiplier']) : floatval($row->multiplier ?: 0);
-
-                    // Try to use stored itemPrice when available, otherwise compute rate
-                    $rate = isset($ms['itemPrice']) ? floatval($ms['itemPrice']) : ($length * $width * $height * $mult);
-
-                    // If the parcel row includes measurements, prefer stored ms['total'] as the
-                    // final freight amount (do not multiply it by qty again). If ms['total'] is
-                    // not present, compute freight = rate * qty.
-                    if (isset($ms['total']) && $ms['total'] !== null) {
-                        $freight = floatval($ms['total']);
-                    } else {
-                        $freight = $rate * $qty;
-                    }
-
-                    $groups[$key]['measurements'][] = [
-                        'length' => $length,
-                        'width' => $width,
-                        'height' => $height,
-                        'multiplier' => $mult,
-                        'qty' => $qty,
-                        'itemPrice' => $rate,
-                        'total' => $freight,
-                    ];
-
-                    $groups[$key]['quantity'] += $qty;
-                    $groups[$key]['total'] += $freight;
-                }
-            } else {
-                // Single-measurement legacy fields
-                $qty = floatval($row->quantity ?? 1);
-                $length = floatval($row->length ?? 0);
-                $width = floatval($row->width ?? 0);
-                $height = floatval($row->height ?? 0);
-                $mult = floatval($row->multiplier ?? ($priceListItem->multiplier ?? 0));
-
-                $rate = floatval($row->itemPrice ?? ($length * $width * $height * $mult));
-                $storedRowTotal = isset($row->total) ? floatval($row->total) : null;
-                if ($storedRowTotal !== null && $storedRowTotal > 0) {
-                    $epsilon = 0.01;
-                    if (abs($storedRowTotal - $rate) <= $epsilon) {
-                        $freight = $rate * $qty;
-                    } elseif (abs($storedRowTotal - ($rate * $qty)) <= $epsilon) {
-                        $freight = $storedRowTotal;
-                    } else {
-                        $freight = $storedRowTotal;
-                    }
-                } else {
-                    $freight = $rate * $qty;
-                }
-
-                $groups[$key]['measurements'][] = [
-                    'length' => $length,
-                    'width' => $width,
-                    'height' => $height,
-                    'multiplier' => $mult,
-                    'qty' => $qty,
-                    'itemPrice' => $rate,
-                    'total' => $freight,
-                ];
-
-                $groups[$key]['quantity'] += $qty;
-                $groups[$key]['total'] += $freight;
-            }
-        }
-
-    // Convert groups map to indexed array for the view
-    $parcels = array_values($groups);
-    // $parcels is an array now; use collect() to compute sums like a Collection
-    $total = collect($parcels)->sum('total'); // Calculate the total of all parcels
+            return [
+                'itemCode' => $item->itemId ?? "",
+                'itemName' => $item->itemName ?? "",
+                'unit' => $item->unit ?? "",
+                'category' => $priceListItem->category ?? "", // Use category from PriceList
+                'weight' => $item->weight ?? " ",
+                'value' => $item->value ?? " ",
+                'length' => $item->length ?? " ",
+                'width' => $item->width ?? " ",
+                'height' => $item->height ?? " ",
+                'multiplier' => $item->multiplier ?? "N/A",
+                'price' => $item->itemPrice ?? 0,
+                'description' => $item->desc ?? "",
+                'quantity' => $item->quantity ?? 1,
+                'total' => $item->total,
+            ];
+        });
+        $total = $parcels->sum('total'); // Calculate the total of all parcels
         $lists = PriceList::all(); // Fetch all items from the PriceList model
 
         // Fetch all customers for the shipper and consignee dropdowns
@@ -956,6 +866,15 @@ class MasterListController extends Controller
             $wharfage = $this->formatNumber($wharfage);
         }
 
+        // If front-end set a manual override, use that value instead of the computed one
+        // (the front-end sets a hidden input named 'wharfage_manual' = '1' when user edits wharfage)
+        if (isset($data['wharfage_manual']) && $data['wharfage_manual'] == '1') {
+            // Use provided wharfage (validate/format it)
+            $manualWharfage = isset($data['wharfage']) ? $data['wharfage'] : 0;
+            $wharfage = $this->formatNumber($manualWharfage);
+            Log::info('Wharfage manual override detected. Using user value:', ['wharfage' => $wharfage]);
+        }
+
         foreach ($cart as $item) {
             if ($item->category == 'FROZEN' || $item->category == 'PARCEL') {
                 $noValue = true;
@@ -1078,7 +997,6 @@ class MasterListController extends Controller
                         'width' => $width,
                         'height' => $height,
                         'multiplier' => $multiplier,
-                        'measurements' => isset($item->measurements) ? $item->measurements : null,
                         'desc' => $item->description,
                         'total' => 0,
                         'unit' => $item->unit,
@@ -1096,7 +1014,6 @@ class MasterListController extends Controller
                         'width' => $width,
                         'height' => $height,
                         'multiplier' => $multiplier,
-                        'measurements' => isset($item->measurements) ? $item->measurements : null,
                         'desc' => $item->description,
                         'total' => is_numeric($item->total) ? floatval($item->total) : 0,
                         'unit' => $item->unit,

@@ -240,8 +240,9 @@
                             </span>
                         </td>
                         <td style="width: 25%; border-bottom: 1px solid black; font-family: Arial; font-size: 12px; text-align: center; position: relative;">
-                            <input id="wharfage" name="wharfage" value="{{ $order->wharfage }}" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1'); formatValueInput(this);"
-                                style="font-family: Arial; font-size: 11px; width: 100%; height: 15px; border: none; outline: none; padding: 0px; text-align: center; line-height: 1; background: transparent; position: absolute; left: 0; right: 0; top: 0; bottom: 0;"/>
+                            <input id="wharfage" name="wharfage" value="{{ $order->wharfage }}" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');"
+                                class="wharfage-input"
+                                style="font-family: Arial; font-size: 11px; width: 100%; height: 18px; border: none; outline: none; padding: 0px 72px 0px 0px; text-align: center; line-height: 1; background: transparent; display: block;"/>
                         </td>
                     </tr>
                     <tr>
@@ -396,77 +397,35 @@
                                 </div>
                             </div>
 
-                            <label class="block font-medium text-gray-900 dark:text-gray-200">Description:</label>
-                            <textarea id="description" name="description"
-                                class="w-full p-2 border rounded-md mb-1 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white h-20 focus:ring focus:ring-indigo-200">
-                            </textarea>
-
                             <!--label class="block font-medium text-gray-900 dark:text-gray-200">Declared Value:</label>
                             <input type="text" id="value" name="value"
                                 class="w-full p-2 border rounded-md mb-1 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200"-->
                                 <!-- Measurements -->
-                            <!--div class="grid grid-cols-4 gap-2">
-                                <div>
-                                    <label class="block font-medium text-gray-900 dark:text-gray-200">Length:</label>
+                            <div class="space-y-2" id="measurements">
+                                <label class="block font-medium text-gray-900 dark:text-gray-200">Measurements (L × W × H):</label>
+                                <div class="grid grid-cols-4 gap-2 items-center">
                                     <input type="number" id="length" name="length"
-                                        class="w-full p-2 border rounded-md mb-1 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200"
+                                        class="p-2 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200"
                                         placeholder="Length" min="0" step="0.01">
-                                </div>
-                                <div>
-                                    <label class="block font-medium text-gray-900 dark:text-gray-200">Width:</label>
+
                                     <input type="number" id="width" name="width"
-                                        class="w-full p-2 border rounded-md mb-1 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200"
+                                        class="p-2 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200"
                                         placeholder="Width" min="0" step="0.01">
-                                </div>
-                                <div>
-                                    <label class="block font-medium text-gray-900 dark:text-gray-200">Height:</label>
+
                                     <input type="number" id="height" name="height"
-                                        class="w-full p-2 border rounded-md mb-1 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200"
+                                        class="p-2 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200"
                                         placeholder="Height" min="0" step="0.01">
-                                </div>
-                                <div>
-                                    <label class="block font-medium text-gray-900 dark:text-gray-200">Multiplier:</label>
-                                    <input type="number" id="multiplier" name="multiplier"
-                                        class="w-full p-2 border rounded-md mb-1 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200"
+
+                                    <input list="multipliers" id="multiplier" name="multiplier" type="number"
+                                        class="p-2 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200"
                                         placeholder="Multiplier" min="0" step="0.01">
                                 </div>
-                            </div-->
-
-                            <div class="space-y-2" id="measurements">
-                                <button type="button" id="addMeasurementBtn" class="px-2 py-1 bg-indigo-600 text-white rounded text-xs hover:bg-indigo-700">+ Add</button>
-                                <div id="measurementRows" class="space-y-2">
-                                    <!-- Dynamic measurement rows will appear here -->
-                                </div>
-                                <template id="measurementRowTemplate">
-                                    <div class="flex gap-2 items-center measurement-row mb-2">
-                                        <div class="flex-1">
-                                            <label class="block font-medium text-gray-900 dark:text-gray-200 text-xs mb-1">Length:</label>
-                                            <input type="number" class="measure-length p-3 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white text-sm w-full h-10" placeholder="L" min="0" step="0.01">
-                                        </div>
-                                        <div class="flex-1">
-                                            <label class="block font-medium text-gray-900 dark:text-gray-200 text-xs mb-1">Width:</label>
-                                            <input type="number" class="measure-width p-3 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white text-sm w-full h-10" placeholder="W" min="0" step="0.01">
-                                        </div>
-                                        <div class="flex-1">
-                                            <label class="block font-medium text-gray-900 dark:text-gray-200 text-xs mb-1">Height:</label>
-                                            <input type="number" class="measure-height p-3 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white text-sm w-full h-10" placeholder="H" min="0" step="0.01">
-                                        </div>
-                                        <div class="flex-1">
-                                            <label class="block font-medium text-gray-900 dark:text-gray-200 text-xs mb-1">Multiplier:</label>
-                                            <input type="number" class="measure-multiplier p-3 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white text-sm w-full h-10" placeholder="M" min="0" step="0.01">
-                                        </div>
-                                        <div class="flex-1">
-                                            <label class="block font-medium text-gray-900 dark:text-gray-200 text-xs mb-1">Quantity:</label>
-                                            <input type="number" class="measure-qty p-3 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white text-sm w-full h-10" placeholder="Q" min="0" step="1">
-                                        </div>
-                                        <div class="flex-shrink-0 self-end">
-                                            <button type="button" class="remove-measurement text-red-600 font-bold px-2 py-2 hover:bg-red-100 rounded text-sm h-10 flex items-center justify-center">×</button>
-                                        </div>
-                                    </div>
-                                </template>
                             </div>
 
-                            
+                            <label class="block font-medium text-gray-900 dark:text-gray-200">Description:</label>
+                            <textarea id="description" name="description"
+                                class="w-full p-2 border rounded-md mb-1 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white h-20 focus:ring focus:ring-indigo-200">
+                            </textarea>
                         </div>
 
                         <!-- Right Column: Table -->
@@ -761,67 +720,188 @@
         const wharfageInput = document.getElementById("wharfage");
         const containerInput = document.getElementById("container_no");
         
-        // Function to calculate wharfage
+        // Ensure there's a hidden input to tell server whether wharfage was manually overridden
+        let manualFlagInput = document.getElementById('wharfage_manual');
+        if (!manualFlagInput) {
+            manualFlagInput = document.createElement('input');
+            manualFlagInput.type = 'hidden';
+            manualFlagInput.name = 'wharfage_manual';
+            manualFlagInput.id = 'wharfage_manual';
+            manualFlagInput.value = '0';
+            const formEl = document.getElementById('myForm');
+            if (formEl) formEl.appendChild(manualFlagInput);
+        }
+
+        // Local flag that determines whether automatic calculation should overwrite the field
+        let manualWharfage = manualFlagInput.value === '1';
+
+        // Add a small icon button inside the existing TD so user can toggle manual/auto without breaking layout
+        if (wharfageInput && wharfageInput.parentNode) {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.id = 'manualWharfageToggle';
+            btn.className = 'btn manual-wharfage-btn';
+            btn.title = manualWharfage ? 'Using manual wharfage (click to reset to auto)' : 'Use manual wharfage (click to edit)';
+
+            btn.innerHTML = `
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z" fill="currentColor"/>
+                    <path d="M20.71 7.04a1.003 1.003 0 0 0 0-1.42l-2.34-2.34a1.003 1.003 0 0 0-1.42 0l-1.83 1.83 3.75 3.75 1.84-1.82z" fill="currentColor"/>
+                </svg>
+            `;
+
+            // Append button into the parent TD (TD already has position: relative in the markup)
+            const td = wharfageInput.parentNode;
+            td.appendChild(btn);
+
+            // Create a small status badge to show current mode (Auto / Manual)
+            const status = document.createElement('span');
+            status.id = 'wharfageStatus';
+            status.style.position = 'absolute';
+            status.style.right = '34px';
+            status.style.top = '50%';
+            status.style.transform = 'translateY(-50%)';
+            status.style.fontSize = '10px';
+            status.style.padding = '2px 6px';
+            status.style.borderRadius = '10px';
+            status.style.color = '#ffffff';
+            status.style.background = manualWharfage ? '#e11d48' : '#10b981'; // red for manual, green for auto
+            status.style.cursor = 'default';
+            status.setAttribute('aria-live', 'polite');
+            status.textContent = manualWharfage ? 'Manual' : 'Auto';
+            td.appendChild(status);
+
+            // Style the button to appear on the right side of the TD
+            btn.style.position = 'absolute';
+            btn.style.right = '6px';
+            btn.style.top = '50%';
+            btn.style.transform = 'translateY(-50%)';
+            btn.style.border = 'none';
+            btn.style.background = 'transparent';
+            btn.style.cursor = 'pointer';
+            btn.style.padding = '2px';
+            btn.style.color = manualWharfage ? '#e11d48' : '#374151'; // red when manual, gray otherwise
+
+            // Make sure the input has enough right padding so text doesn't go under the icon
+            wharfageInput.style.paddingRight = '66px';
+
+            // Set initial editable state: if automatic, prevent typing; if manual, allow typing
+            try {
+                wharfageInput.readOnly = !manualWharfage;
+            } catch (e) {
+                // ignore if element doesn't support readOnly
+            }
+
+            // When clicked: toggle manual/auto and update the status badge and input editability
+            btn.addEventListener('click', function () {
+                const statusEl = document.getElementById('wharfageStatus');
+                if (manualWharfage) {
+                    // Switch back to automatic
+                    manualWharfage = false;
+                    manualFlagInput.value = '0';
+                    btn.style.color = '#374151';
+                    if (statusEl) {
+                        statusEl.style.background = '#10b981';
+                        statusEl.textContent = 'Auto';
+                    }
+                    // Make input readonly and recalc value
+                    try { wharfageInput.readOnly = true; } catch (e) {}
+                    calculateWharfage();
+                } else {
+                    // Enable manual edit
+                    manualWharfage = true;
+                    manualFlagInput.value = '1';
+                    btn.style.color = '#e11d48';
+                    if (statusEl) {
+                        statusEl.style.background = '#e11d48';
+                        statusEl.textContent = 'Manual';
+                    }
+                    try { wharfageInput.readOnly = false; } catch (e) {}
+                    wharfageInput.focus();
+                }
+                btn.title = manualWharfage ? 'Using manual wharfage (click to reset to auto)' : 'Use manual wharfage (click to edit)';
+            });
+
+            // If user types into wharfage, treat it as manual override and update status
+            wharfageInput.addEventListener('input', function () {
+                manualWharfage = true;
+                manualFlagInput.value = '1';
+                const btnEl = document.getElementById('manualWharfageToggle');
+                const statusEl = document.getElementById('wharfageStatus');
+                if (btnEl) btnEl.style.color = '#e11d48';
+                if (statusEl) {
+                    statusEl.textContent = 'Manual';
+                    statusEl.style.background = '#e11d48';
+                }
+                try { wharfageInput.readOnly = false; } catch (e) {}
+            });
+        }
+        // Function to calculate wharfage. It will NOT overwrite user-entered wharfage when manualWharfage==true
         function calculateWharfage() {
+            if (manualWharfage) return; // Respect manual override
+
             // Get current values
-            const freight = parseFloat(freightInput.value) || 0;
-            const value = parseFloat(valueInput.value) || 0;
-            
-            // Check if container is in a reserved list with existing orders
-            // This is handled server-side, so we'll just validate if both value and freight are 0
-            
+            const freight = parseFloat(freightInput ? freightInput.value : 0) || 0;
+            const value = parseFloat(valueInput ? valueInput.value.replace(/,/g,'') : 0) || 0;
+
             // Skip wharfage calculation if both value and freight are 0
             if (value <= 0 && freight <= 0) {
-                wharfageInput.value = "0.00";
+                if (wharfageInput) wharfageInput.value = '0.00';
                 return;
             }
-            
-            // Check if the cart contains only GROCERIES
+
+            // Check if the cart contains only GROCERIES or contains special codes
             let onlyGroceries = true;
             let hasNonGroceries = false;
             let hasGM019orGM020 = false;
-            
-            // Check each parcel item
-            cart.forEach(function(item) {
-                if (item.category !== 'GROCERIES') {
-                    onlyGroceries = false;
-                    hasNonGroceries = true;
-                }
-                
-                // Check if the item is GM-019 or GM-020
-                // Look for both item_code and itemCode properties that might be used
-                const itemCode = item.item_code || item.itemCode || '';
-                if (itemCode === 'GM-019' || itemCode === 'GM-020') {
-                    hasGM019orGM020 = true;
-                }
-            });
-            
-            // Calculate wharfage based on parcel category
+
+            if (Array.isArray(cart)) {
+                cart.forEach(function(item) {
+                    const code = (item.itemCode || '').toString().trim();
+                    const category = (item.category || '').toString().toUpperCase();
+
+                    if (code === 'GM-019' || code === 'GM-020') {
+                        hasGM019orGM020 = true;
+                    }
+
+                    if (category !== 'GROCERIES' && category !== '') {
+                        hasNonGroceries = true;
+                    }
+
+                    if (category !== 'GROCERIES') {
+                        onlyGroceries = false;
+                    }
+                });
+            }
+
+            // Calculate wharfage based on rules
             let wharfage = 0;
             if (onlyGroceries || hasGM019orGM020) {
-                wharfage = freight / 800 * 23; // For GROCERIES only or when contains GM-019/GM-020
+                wharfage = (freight / 800) * 23;
             } else {
-                wharfage = freight / 1200 * 23; // For other items
+                wharfage = (freight / 1200) * 23;
             }
-            
+
             // Set minimum wharfage to 11.20 if not zero
             if (wharfage > 0 && wharfage < 11.20) {
                 wharfage = 11.20;
             }
-            
-            // Format and set the wharfage value
-            wharfageInput.value = wharfage.toFixed(2);
+
+            // Format and set the wharfage value if element exists
+            if (wharfageInput) {
+                wharfageInput.value = wharfage.toFixed(2);
+            }
         }
-        
+
         // Add event listeners to recalculate wharfage when freight or value changes
         if (freightInput) {
-            freightInput.addEventListener("change", calculateWharfage);
-            freightInput.addEventListener("input", calculateWharfage);
+            freightInput.addEventListener('change', calculateWharfage);
+            freightInput.addEventListener('input', calculateWharfage);
         }
         
         if (valueInput) {
-            valueInput.addEventListener("change", calculateWharfage);
-            valueInput.addEventListener("input", calculateWharfage);
+            valueInput.addEventListener('change', calculateWharfage);
+            valueInput.addEventListener('input', calculateWharfage);
         }
         
         // Calculate initial wharfage when the page loads
@@ -854,42 +934,11 @@
     
     let totalPrice = @json($total) || 0;
     
-    // Function to recalculate total price from cart items.
-    // When items have measurements, compute the item's total as the sum of per-measurement freight
-    // to avoid any accidental legacy multiplication (price * quantity) overwriting an aggregated freight.
+    // Function to recalculate total price from cart items
     function recalculateTotalPrice() {
-        // helper to parse numeric strings and remove thousands separators
-        const num = v => {
-            if (v === undefined || v === null) return 0;
-            const s = String(v).replace(/,/g, '').trim();
-            return isNaN(parseFloat(s)) ? 0 : parseFloat(s);
-        };
-
         totalPrice = 0;
         cart.forEach(item => {
-            if (item.measurements && item.measurements.length) {
-                // Recompute item total from measurements to be authoritative
-                let itemTotal = 0;
-                item.measurements.forEach(ms => {
-                    const l = num(ms.length);
-                    const w = num(ms.width);
-                    const h = num(ms.height);
-                    const mult = num(ms.multiplier || item.multiplier || 0);
-                    const qty = num(ms.qty ?? ms.quantity ?? 1) || 1;
-
-                    const computedRate = (l > 0 && w > 0 && h > 0 && mult > 0) ? (l * w * h * mult) : 0;
-                    const computedFreight = computedRate * qty;
-
-                    const storedTotal = num(ms.total);
-                    const rateFallback = num(ms.itemPrice) || num(item.price) || 0;
-
-                    const freight = (computedRate > 0) ? computedFreight : (storedTotal > 0 ? storedTotal : (rateFallback * qty));
-                    itemTotal += freight;
-                });
-                totalPrice += itemTotal;
-            } else {
-                totalPrice += parseFloat(item.total) || 0;
-            }
+            totalPrice += parseFloat(item.total) || 0;
         });
         return totalPrice;
     }
@@ -953,51 +1002,19 @@
             description = "MODEL: \nENGINE NO: \nCHASSIS NO: \nCOLOR: ";
         }
 
-        // Collect measurements
-        const measurements = collectMeasurements();
-        // Legacy single fields (for backward compatibility) use first measurement if exists
-        let l = measurements[0] ? measurements[0].length : "";
-        let w = measurements[0] ? measurements[0].width : "";
-        let h = measurements[0] ? measurements[0].height : "";
-        let m = measurements[0] ? (measurements[0].multiplier ?? 'N/A') : 'N/A';
-        let price = parseFloat(document.getElementById('price').value.replace(/,/g, '')) || 0; // Manual price fallback
+        let l = parseFloat(document.getElementById('length').value) || "";
+        let w = parseFloat(document.getElementById('width').value) || "";
+        let h = parseFloat(document.getElementById('height').value) || "";
+        let m = parseFloat(document.getElementById('multiplier').value) || 'N/A';
+        let price = parseFloat(document.getElementById('price').value.replace(/,/g, '')) || 0; // Handle thousand separators
         let quantity = parseFloat(document.getElementById('quantity').value) || 1;
         let total = 0;
-        if (measurements.length > 0) {
-            // Compute per-measurement rate and freight using measurement-specific qty
-            let aggregateRate = 0; // Sum of per-measurement rates (L*W*H*M)
-            let aggregateFreight = 0; // Sum of per-measurement freight (rate * qty)
-            measurements.forEach(ms => {
-                const ml = parseFloat(ms.length)||0;
-                const mw = parseFloat(ms.width)||0;
-                const mh = parseFloat(ms.height)||0;
-                const mm = parseFloat(ms.multiplier)||0;
-                const mq = parseFloat(ms.qty)||1; // default quantity 1
-                if(ml>0 && mw>0 && mh>0 && mm>0) {
-                    const rate = (ml*mw*mh*mm);
-                    ms.rate = rate; // store per-measurement rate
-                    ms.freight = rate * mq; // store per-measurement freight
-                    aggregateRate += rate;
-                    aggregateFreight += ms.freight;
-                } else {
-                    ms.rate = 0; ms.freight = 0;
-                }
-            });
-            if (aggregateFreight > 0) {
-                price = aggregateRate; // show sum of rates in price column (numeric)
-                total = aggregateFreight; // total is sum of freight (numeric)
-            } else {
-                // Fallback to manual price * global quantity if no valid measurements
-                total = price * quantity;
-            }
+
+        if (m === 'N/A' || m === '' || m === 0) {
+            total = price * quantity;
         } else {
-            // Original single-measurement logic (no per-measurement qty)
-            if (m === 'N/A' || m === '' || m === 0) {
-                total = price * quantity;
-            } else {
-                price = l * w * h * m;
-                total = price * quantity;
-            }
+            price = l * w * h * m;
+            total = price * quantity;
         }
 
         const item = {
@@ -1007,15 +1024,14 @@
             category: document.getElementById('category').value || '', // Ensure category is never undefined
             weight: document.getElementById('weight').value || "",
             value: document.getElementById('value').value || "",
-            length: l, // legacy
+            length: l,
             width: w,
             height: h,
             multiplier: m,
-            measurements: measurements,
-            price: Number(Number(price).toFixed(2)), // store numeric price rounded to 2 decimals
+            price: price.toFixed(2), // Ensure price is formatted to two decimal places
             description: description,
             quantity: quantity,
-            total: Number(Number(total).toFixed(2)) // store numeric total rounded to 2 decimals
+            total: total.toFixed(2) // Ensure total is formatted to two decimal places
         };
         
         console.log('Adding item to cart:', item);
@@ -1086,89 +1102,15 @@
             `;
 
             // Check if multiplier is empty or null
-            // Measurement display
-            if (item.measurements && item.measurements.length) {
-                const parts = item.measurements.map(ms => {
-                    if(ms.length||ms.width||ms.height) {
-                        const qty = ms.qty || ms.quantity || 1;
-                        if(ms.multiplier && ms.multiplier !== 'N/A' && ms.multiplier !== '') {
-                            return `${ms.length} × ${ms.width} × ${ms.height} × ${Number(ms.multiplier).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})} (qty: ${qty})`;
-                        }
-                        return `${ms.length} × ${ms.width} × ${ms.height} (qty: ${qty})`;
-                    }
-                    return '';
-                }).filter(Boolean);
-                // Single-line display of all measurement sets
-                row.innerHTML += `<td class=\"p-2 text-center\" style=\"white-space: normal;\">${parts.join(' ; ')}</td>`;
+            if (!item.multiplier || item.multiplier === 'N/A') {
+                row.innerHTML += `<td class="p-2 text-center">${item.length} × ${item.width} × ${item.height}</td>`;
             } else {
-                if (!item.multiplier || item.multiplier === 'N/A') {
-                    row.innerHTML += `<td class="p-2 text-center">${item.length} × ${item.width} × ${item.height}</td>`;
-                } else {
-                    row.innerHTML += `<td class="p-2 text-center">${item.length} × ${item.width} × ${item.height} × ${Number(item.multiplier).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>`;
-                }
+                row.innerHTML += `<td class="p-2 text-center">${item.length} × ${item.width} × ${item.height} × ${Number(item.multiplier).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>`;
             }
 
-            // Rate & Freight columns: compute per-measurement rate and freight from measurement fields
-            let rateCellHtml = '';
-            let freightCellHtml = '';
-            if (item.measurements && item.measurements.length) {
-                const rateLines = [];
-                const freightLines = [];
-
-                // helper to parse numeric strings and remove thousands separators
-                const num = v => {
-                    if (v === undefined || v === null) return 0;
-                    const s = String(v).replace(/,/g, '').trim();
-                    return isNaN(parseFloat(s)) ? 0 : parseFloat(s);
-                };
-
-                item.measurements.forEach(ms => {
-                    // Parse numbers robustly (strip commas)
-                    const l = num(ms.length);
-                    const w = num(ms.width);
-                    const h = num(ms.height);
-                    // Prefer measurement multiplier, fall back to item.multiplier
-                    const mult = num(ms.multiplier || item.multiplier || 0);
-                    const qty = num(ms.qty ?? ms.quantity ?? 1) || 1;
-
-
-                    // Compute rate from measurement fields whenever possible
-                    const computedRate = (l > 0 && w > 0 && h > 0 && mult > 0) ? (l * w * h * mult) : 0;
-                    const computedFreight = computedRate * qty;
-
-                    // Use computedRate when available; otherwise fall back to stored itemPrice
-                    const rate = computedRate > 0 ? computedRate : ((ms.itemPrice !== undefined && ms.itemPrice !== null && !isNaN(num(ms.itemPrice))) ? num(ms.itemPrice) : 0);
-
-                    // Prefer computed freight when measurements are available and computedRate > 0.
-                    // Only use stored ms.total when we couldn't compute freight.
-                    const storedTotal = num(ms.total);
-                    const freight = (computedRate > 0) ? computedFreight : (storedTotal > 0 ? storedTotal : (rate * qty));
-
-                    // Debug info to console for diagnosis
-                    console.debug('Measurement compute', { itemCode: item.itemCode, l, w, h, mult, qty, computedRate, computedFreight, storedItemPrice: ms.itemPrice, storedTotal, rate, freight });
-
-                    rateLines.push(rate);
-                    freightLines.push(freight);
-                });
-
-                // Format rate lines
-                rateCellHtml = rateLines.map(r => Number(r).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).join('<br>');
-
-                // Format freight lines and add grouped total if there are multiple measurements
-                const formattedFreightLines = freightLines.map(f => Number(f).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
-                if (freightLines.length > 1) {
-                    const sumFreight = freightLines.reduce((acc, v) => acc + v, 0);
-                    formattedFreightLines.push(`<strong>${Number(sumFreight).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>`);
-                }
-                freightCellHtml = formattedFreightLines.join('<br>');
-            } else {
-                // No per-measurement data: fallback to price/total fields
-                rateCellHtml = Number(item.price || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                freightCellHtml = Number(item.total || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            }
             row.innerHTML += `
-                <td class="p-2 text-center" style="line-height:1.1">${rateCellHtml}</td>
-                <td class="p-2 text-center" style="line-height:1.1">${freightCellHtml}</td>
+                <td class="p-2 text-center">${Number(item.price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                <td class="p-2 text-center">${Number(item.total).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                 <td class="p-2 text-center">
                     <a href="#" class="text-blue-500 text-center" onclick="openEditModal(${index})">
                         <x-button id="eds" variant="warning" class="items-center max-w-xs gap-2" type='button'>
@@ -1263,13 +1205,10 @@
             document.getElementById('unit').value = item.unit;
             document.getElementById('category').value = item.category || ''; // Make sure it's never undefined
             document.getElementById('weight').value = item.weight;
-            // Rebuild measurement rows
-            clearMeasurementRows();
-            if (item.measurements && item.measurements.length) {
-                item.measurements.forEach(ms => addMeasurementRow(ms.length, ms.width, ms.height, ms.multiplier, ms.qty));
-            } else {
-                addMeasurementRow(item.length, item.width, item.height, item.multiplier, item.quantity || 1);
-            }
+            document.getElementById('length').value = item.length;
+            document.getElementById('width').value = item.width;
+            document.getElementById('height').value = item.height;
+            document.getElementById('multiplier').value = item.multiplier;
             document.getElementById('price').value = item.price;
             document.getElementById('description').value = item.description;
             document.getElementById('quantity').value = item.quantity;
@@ -1288,34 +1227,21 @@
             const currentEditIndex = document.getElementById('saveButton').getAttribute('data-index'); // Get stored index
 
             if (currentEditIndex !== null) {
-                const measurements = collectMeasurements();
-                let l = measurements[0] ? measurements[0].length : "";
-                let w = measurements[0] ? measurements[0].width : "";
-                let h = measurements[0] ? measurements[0].height : "";
-                let m = measurements[0] ? (measurements[0].multiplier ?? 'N/A') : 'N/A';
-                let price = parseFloat(document.getElementById('price').value.replace(/,/g, '')) || 0; // Manual fallback
+                let l = parseFloat(document.getElementById('length').value) || "";
+                let w = parseFloat(document.getElementById('width').value) || "";
+                let h = parseFloat(document.getElementById('height').value) || "";
+                let m = parseFloat(document.getElementById('multiplier').value) || 'N/A';
+                let price = parseFloat(document.getElementById('price').value.replace(/,/g, '')) || 0; // Handle thousand separators
                 let quantity = parseFloat(document.getElementById('quantity').value) || 1;
                 let total = 0;
-                if (measurements.length > 0) {
-                    let aggregateRate = 0;
-                    let aggregateFreight = 0;
-                    measurements.forEach(ms => {
-                        const ml = parseFloat(ms.length)||0;
-                        const mw = parseFloat(ms.width)||0;
-                        const mh = parseFloat(ms.height)||0;
-                        const mm = parseFloat(ms.multiplier)||0;
-                        const mq = parseFloat(ms.qty)||1;
-                        if(ml>0 && mw>0 && mh>0 && mm>0) {
-                            const rate = (ml*mw*mh*mm);
-                            ms.rate = rate;
-                            ms.freight = rate * mq;
-                            aggregateRate += rate;
-                            aggregateFreight += ms.freight;
-                        } else { ms.rate=0; ms.freight=0; }
-                    });
-                    if (aggregateFreight>0) { price = aggregateRate; total = aggregateFreight; } else { total = price * quantity; }
-                } else {
-                    if (m == 'N/A' || m == '' || m == 0) { total = price * quantity; } else { price = l*w*h*m; total = price * quantity; }
+                if (m == 'N/A' || m == '' || m == 0) {
+                total = price * quantity;
+                }
+                else if (m !=  '' || m != '' || m != 0){
+                    price = l * w * h * m;
+                    total = price * quantity;
+                }
+                else {
                 }
                 
                 cart[currentEditIndex] = {
@@ -1328,11 +1254,10 @@
                     width: w,
                     height: h,
                     multiplier: m,
-                    price: Number(Number(price).toFixed(2)),
-                    measurements: measurements,
+                    price: price,
                     description: document.getElementById('description').value,
                     quantity: quantity,
-                    total: Number(Number(total).toFixed(2))
+                    total: total
                 };
                 
                 console.log('Updated item in cart:', cart[currentEditIndex]);
@@ -1355,7 +1280,10 @@
         document.getElementById('unit').value = "";
         document.getElementById('category').value = "";
         document.getElementById('weight').value = "";
-    clearMeasurementRows();
+        document.getElementById('length').value = "";
+        document.getElementById('width').value = "";
+        document.getElementById('height').value = "";
+        document.getElementById('multiplier').value = "";
         document.getElementById('price').value = "";
         document.getElementById('description').value = "";
         document.getElementById('quantity').value = "";
@@ -1843,6 +1771,18 @@ document.addEventListener('DOMContentLoaded', function() {
         height: 15px; /* Ensure the input fields are tall enough */
         font-size: 11px;
     }
+
+    /* Wharfage control styles */
+    .manual-wharfage-btn {
+        z-index: 30; /* Above input */
+        background: transparent;
+    }
+
+    #wharfageStatus {
+        z-index: 20; /* Below icon but above input */
+        text-align: center;
+        min-width: 40px;
+    }
 </style>
 
 <script>
@@ -1893,59 +1833,4 @@ document.addEventListener('DOMContentLoaded', function() {
         // Save the raw numeric value for form submission
         hiddenInput.value = rawValue;
     }
-</script>
-<script>
-// Dynamic Measurements Support
-(function(){
-    function addMeasurementRow(l="", w="", h="", m="", q="") {
-        const container = document.getElementById('measurementRows');
-        if(!container) return;
-        const tpl = document.getElementById('measurementRowTemplate');
-        if(!tpl) return;
-        const node = tpl.content.firstElementChild.cloneNode(true);
-        const len = node.querySelector('.measure-length');
-        const wid = node.querySelector('.measure-width');
-        const hei = node.querySelector('.measure-height');
-        const mul = node.querySelector('.measure-multiplier');
-        const qty = node.querySelector('.measure-qty');
-        
-        len.value = l || ""; 
-        wid.value = w || ""; 
-        hei.value = h || ""; 
-        mul.value = m || ""; 
-        if(qty) qty.value = q || "";
-        
-        node.querySelector('.remove-measurement').addEventListener('click',()=>{ node.remove(); });
-        container.appendChild(node);
-    }
-    function clearMeasurementRows(){
-        const container = document.getElementById('measurementRows');
-        if(container) container.innerHTML='';
-    }
-    function collectMeasurements(){
-        const rows = document.querySelectorAll('#measurementRows .measurement-row');
-        const out = [];
-        rows.forEach(r=>{
-            const length = r.querySelector('.measure-length').value;
-            const width = r.querySelector('.measure-width').value;
-            const height = r.querySelector('.measure-height').value;
-            const multiplier = r.querySelector('.measure-multiplier').value;
-            const qty = r.querySelector('.measure-qty') ? r.querySelector('.measure-qty').value : '';
-            if(length || width || height || multiplier || qty) {
-                out.push({length,width,height,multiplier,qty});
-            }
-        });
-        return out;
-    }
-    // Expose to global scope for existing code integration
-    window.addMeasurementRow = addMeasurementRow;
-    window.clearMeasurementRows = clearMeasurementRows;
-    window.collectMeasurements = collectMeasurements;
-    document.addEventListener('DOMContentLoaded',function(){
-        // Ensure at least one row initially
-        if(!document.querySelector('#measurementRows .measurement-row')) addMeasurementRow();
-        const btn = document.getElementById('addMeasurementBtn');
-        if(btn) btn.addEventListener('click',()=>addMeasurementRow());
-    });
-})();
 </script>
