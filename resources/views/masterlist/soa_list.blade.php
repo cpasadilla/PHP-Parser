@@ -64,7 +64,7 @@
                                                 ]) }}" 
                                                 class="px-3 py-1 text-white bg-blue-500 rounded hover:bg-blue-700"
                                                 onclick="event.preventDefault(); openSOACustom('{{ $ship }}', '{{ urlencode($voyage) }}', '{{ request('customer_id') }}')">
-                                                    Custom SOA Template
+                                                    Print SOA for Government
                                                 </a>
                                                 
                                                 <!-- Interest Calculation Button -->

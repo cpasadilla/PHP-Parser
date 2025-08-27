@@ -208,12 +208,12 @@
                             @if($isEligible)
                                 <tr id="discountRow" class="font-semibold" style="line-height: 0; background-color:rgb(240, 240, 5); color: black;">
                                     <td colspan="4" class="px-4 py-2" style="text-align: left;">5% Discount on total freight if paid within <span style="font-weight: bold;">15 days</span> upon receipt of SOA</td>
-                                    <td style="width: 100px; font-weight: bold;" class="px-4 py-2 text-right" >{{ number_format($discountedFreight, 2) }}</td>
-                                    <td style="width: 100px;" class="px-4 py-2 text-right">{{ number_format($voyageValuation, 2) }}</td>
-                                    <td style="width: 100px;" class="px-4 py-2 text-right">{{ number_format($voyageWharfage, 2) }}</td>
-                                    <td style="width: 100px;" class="px-4 py-2 text-right">{{ number_format($voyagePadlockFee, 2) }}</td>
-                                    <td style="width: 100px;" class="px-4 py-2 text-right">{{ number_format($voyagePpaManila, 2) }}</td>
-                                    <td style="width: 100px; font-weight: bold;" class="px-4 py-2 text-right">{{ number_format($discountedTotal, 2) }}</td>
+                                    <td id="discountedFreightCell" style="width: 100px; font-weight: bold;" class="px-4 py-2 text-right">{{ number_format($discountedFreight, 2) }}</td>
+                                    <td id="discountedValuationCell" style="width: 100px;" class="px-4 py-2 text-right">{{ number_format($voyageValuation, 2) }}</td>
+                                    <td id="discountedWharfageCell" style="width: 100px;" class="px-4 py-2 text-right">{{ number_format($voyageWharfage, 2) }}</td>
+                                    <td id="discountedPadlockCell" style="width: 100px;" class="px-4 py-2 text-right">{{ number_format($voyagePadlockFee, 2) }}</td>
+                                    <td id="discountedPpaCell" style="width: 100px;" class="px-4 py-2 text-right">{{ number_format($voyagePpaManila, 2) }}</td>
+                                    <td id="discountedTotalCell" style="width: 100px; font-weight: bold;" class="px-4 py-2 text-right">{{ number_format($discountedTotal, 2) }}</td>
                                     <td></td>
                                 </tr>
                             @endif
@@ -567,29 +567,28 @@
 
         // Function to toggle between original and discounted totals
         function toggleDiscount() {
-            const finalAmountElement = document.getElementById('finalAmount');
             const discountBtnText = document.getElementById('discountBtnText');
             const toggleDiscountBtn = document.getElementById('toggleDiscountBtn');
-            const discountedTotal = {{ $discountedTotal }};
-            const originalTotal = {{ $voyageTotal }};
-            
+            discountActive = !discountActive;
+
             if (discountActive) {
-                // Deactivate discount - show original total
-                finalAmountElement.textContent = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(originalTotal);
-                discountBtnText.innerHTML = '<i class="fas fa-percentage me-2"></i>Discount Deactivated';
-                toggleDiscountBtn.className = 'btn btn-danger px-4 py-2';
-                toggleDiscountBtn.style.backgroundColor = '#dc3545';
-                toggleDiscountBtn.style.borderColor = '#dc3545';
-                discountActive = false;
+                if (discountBtnText) discountBtnText.innerHTML = '<i class="fas fa-times me-2"></i>Discount Activated';
+                if (toggleDiscountBtn) {
+                    toggleDiscountBtn.className = 'btn btn-success px-4 py-2';
+                    toggleDiscountBtn.style.backgroundColor = '#28a745';
+                    toggleDiscountBtn.style.borderColor = '#28a745';
+                }
             } else {
-                // Activate discount - show discounted total
-                finalAmountElement.textContent = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(discountedTotal);
-                discountBtnText.innerHTML = '<i class="fas fa-times me-2"></i>Discount Activated';
-                toggleDiscountBtn.className = 'btn btn-success px-4 py-2';
-                toggleDiscountBtn.style.backgroundColor = '#28a745';
-                toggleDiscountBtn.style.borderColor = '#28a745';
-                discountActive = true;
+                if (discountBtnText) discountBtnText.innerHTML = '<i class="fas fa-percentage me-2"></i>Discount Deactivated';
+                if (toggleDiscountBtn) {
+                    toggleDiscountBtn.className = 'btn btn-danger px-4 py-2';
+                    toggleDiscountBtn.style.backgroundColor = '#dc3545';
+                    toggleDiscountBtn.style.borderColor = '#dc3545';
+                }
             }
+
+            // Recalculate totals to reflect discount state
+            recalcTotals();
         }
 
         // Penalty functionality
@@ -605,30 +604,74 @@
             document.getElementById('penaltyModal').classList.add('hidden');
         }
 
+        // Helper to parse a formatted number string like "1,234.56" into Number
+        function parseFormattedNumber(str) {
+            if (!str) return 0;
+            return parseFloat(String(str).replace(/,/g, '')) || 0;
+        }
+
+        // Determine the current base amount for penalty calculations.
+        // Compute base directly from current DOM rows so we never use a value that already includes an applied penalty.
+        function getCurrentBaseAmount() {
+            // Sum rows like recalcTotals does
+            const rows = document.querySelectorAll('tr.soa-order-row');
+            let freight=0, valuation=0, wharfage=0, padlock=0, ppa=0, interest=0;
+            rows.forEach(r=>{
+                freight += parseFloat(r.dataset.freight)||0;
+                valuation += parseFloat(r.dataset.valuation)||0;
+                wharfage += parseFloat(r.dataset.wharfage)||0;
+                padlock += parseFloat(r.dataset.padlock)||0;
+                ppa += parseFloat(r.dataset.ppa)||0;
+                interest += parseFloat(r.dataset.interest)||0;
+            });
+
+            const total = freight + valuation + wharfage + padlock + ppa + interest;
+
+            // Discount logic: must meet original eligibility list & freight >= 50000
+            const eligibleCustomerIds = @json($eligibleCustomerIds);
+            const customerEligible = eligibleCustomerIds.includes({{ $customer->id }});
+            let discountAmountLocal = 0;
+            let discountedTotalLocal = total;
+            if (customerEligible && freight >= 50000 && discountActive) {
+                discountAmountLocal = freight * 0.05;
+                discountedTotalLocal = total - discountAmountLocal; // discount applies only to freight portion
+            }
+
+            // Return the base amount without any penalty applied
+            return discountedTotalLocal;
+        }
+
         function updatePenaltyCalculation() {
             const months = parseInt(document.getElementById('penaltyMonths').value) || 1;
-            const baseTotal = discountActive ? {{ $discountedTotal }} : {{ $voyageTotal }};
+            const baseTotal = getCurrentBaseAmount();
             const penaltyAmount = baseTotal * 0.01 * months;
             const totalWithPenalty = baseTotal + penaltyAmount;
-            
-            document.getElementById('penaltyAmount').textContent = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(penaltyAmount);
-            document.getElementById('totalWithPenalty').textContent = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(totalWithPenalty);
+
+            const penaltyAmountEl = document.getElementById('penaltyAmount');
+            const totalWithPenaltyEl = document.getElementById('totalWithPenalty');
+            const baseAmountEl = document.getElementById('penaltyBaseAmount');
+
+            if (baseAmountEl) baseAmountEl.textContent = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(baseTotal);
+            if (penaltyAmountEl) penaltyAmountEl.textContent = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(penaltyAmount);
+            if (totalWithPenaltyEl) totalWithPenaltyEl.textContent = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(totalWithPenalty);
         }
 
         function applyPenalty() {
             const months = parseInt(document.getElementById('penaltyMonths').value) || 1;
-            const baseTotal = discountActive ? {{ $discountedTotal }} : {{ $voyageTotal }};
+            const baseTotal = getCurrentBaseAmount();
             currentPenaltyAmount = baseTotal * 0.01 * months;
             penaltyActive = true;
-            
+
             updateFinalAmount();
             closePenaltyModal();
-            
+
             // Update button text to show penalty is applied
             const penaltyBtn = document.getElementById('calculatePenaltyBtn');
-            penaltyBtn.innerHTML = 'Remove 1% Penalty';
-            penaltyBtn.onclick = removePenalty;
-            penaltyBtn.className = 'btn btn-danger px-4 py-2';
+            if (penaltyBtn) {
+                penaltyBtn.innerHTML = 'Remove 1% Penalty';
+                penaltyBtn.onclick = removePenalty;
+                penaltyBtn.className = 'btn btn-danger px-4 py-2';
+            }
         }
 
         function removePenalty() {
@@ -646,14 +689,17 @@
 
         function updateFinalAmount() {
             const finalAmountElement = document.getElementById('finalAmount');
-            let baseTotal = discountActive ? {{ $discountedTotal }} : {{ $voyageTotal }};
+            // Start from the live computed base (which reflects discount and removed rows)
+            const baseTotal = getCurrentBaseAmount();
             let finalTotal = baseTotal;
-            
+
             if (penaltyActive) {
                 finalTotal += currentPenaltyAmount;
             }
-            
-            finalAmountElement.textContent = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(finalTotal);
+
+            if (finalAmountElement) {
+                finalAmountElement.textContent = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(finalTotal);
+            }
         }
 
         // Event listener for penalty months input
@@ -786,24 +832,31 @@
             let discountAmountLocal = 0;
             let discountedFreightLocal = freight;
             let discountedTotalLocal = total;
-            if(customerEligible && freight >= 50000) {
+            if (customerEligible && freight >= 50000) {
                 discountAmountLocal = freight * 0.05;
                 discountedFreightLocal = freight - discountAmountLocal;
                 discountedTotalLocal = total - discountAmountLocal; // interest already in total; discount only on freight
-                if(discountRow) {
-                    discountRow.style.display='';
-                    const cells = discountRow.querySelectorAll('td');
-                    if(cells.length >= 10) {
-                        cells[4].textContent = formatNumber(discountedFreightLocal); // discounted freight
-                        cells[5].textContent = formatNumber(valuation);
-                        cells[6].textContent = formatNumber(wharfage);
-                        cells[7].textContent = formatNumber(padlock);
-                        cells[8].textContent = formatNumber(ppa);
-                        cells[9].textContent = formatNumber(discountedTotalLocal);
-                    }
+
+                if (discountRow) {
+                    discountRow.style.display = '';
+
+                    // Prefer updating by IDs (more robust than td indexes)
+                    const df = document.getElementById('discountedFreightCell');
+                    const dv = document.getElementById('discountedValuationCell');
+                    const dw = document.getElementById('discountedWharfageCell');
+                    const dp = document.getElementById('discountedPadlockCell');
+                    const dpv = document.getElementById('discountedPpaCell');
+                    const dt = document.getElementById('discountedTotalCell');
+
+                    if (df) df.textContent = formatNumber(discountedFreightLocal);
+                    if (dv) dv.textContent = formatNumber(valuation);
+                    if (dw) dw.textContent = formatNumber(wharfage);
+                    if (dp) dp.textContent = formatNumber(padlock);
+                    if (dpv) dpv.textContent = formatNumber(ppa);
+                    if (dt) dt.textContent = formatNumber(discountedTotalLocal);
                 }
             } else {
-                if(discountRow) discountRow.style.display='none';
+                if (discountRow) discountRow.style.display = 'none';
                 discountedTotalLocal = total; // no discount
             }
 
@@ -825,7 +878,30 @@
             // Final amount (penalty row)
             const finalAmountEl = document.getElementById('finalAmount');
             if(finalAmountEl) {
-                finalAmountEl.textContent = formatNumber(discountRow && discountRow.style.display !== 'none' ? discountedTotalLocal : total);
+                // Decide the current base (after discount if active)
+                const baseUsed = (customerEligible && discountActive) ? discountedTotalLocal : total;
+
+                // If a penalty is already active, recompute penalty on the new base and update display
+                if (penaltyActive) {
+                    // Read months from the input (default to 1)
+                    let months = 1;
+                    try {
+                        const monthsEl = document.getElementById('penaltyMonths');
+                        months = monthsEl ? (parseInt(monthsEl.value) || 1) : 1;
+                    } catch (e) { months = 1; }
+
+                    // Recalculate current penalty amount based on new base
+                    currentPenaltyAmount = baseUsed * 0.01 * months;
+
+                    // Update final amount to include the freshly computed penalty
+                    finalAmountEl.textContent = formatNumber(baseUsed + currentPenaltyAmount);
+
+                    // Update penalty modal values (if open) so Modal shows fresh numbers
+                    try { updatePenaltyCalculation(); } catch (e) { /* noop */ }
+                } else {
+                    // No penalty applied, show base only
+                    finalAmountEl.textContent = formatNumber(baseUsed);
+                }
             }
         }
     </script>
@@ -841,7 +917,7 @@
             </div>
             
             <div class="mb-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-md">
-                <p class="text-sm text-gray-600 dark:text-gray-400">Base Amount: <span class="font-semibold">{{ number_format($voyageTotal, 2) }}</span></p>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Base Amount: <span id="penaltyBaseAmount" class="font-semibold">{{ number_format($voyageTotal, 2) }}</span></p>
                 <p class="text-sm text-gray-600 dark:text-gray-400">Penalty Amount: <span id="penaltyAmount" class="font-semibold">0.00</span></p>
                 <p class="text-sm text-gray-900 dark:text-gray-100 font-semibold">Total with Penalty: <span id="totalWithPenalty" class="text-red-600">{{ number_format($voyageTotal, 2) }}</span></p>
             </div>

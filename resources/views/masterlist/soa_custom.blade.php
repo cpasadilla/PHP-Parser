@@ -196,15 +196,27 @@
         </div>
         
         <div id="printContainer" class="border p-6 shadow-lg text-black bg-white print-container" style="font-family: Arial, sans-serif;" data-ship="{{ $ship }}" data-voyage="{{ htmlspecialchars_decode($voyage, ENT_QUOTES) }}">
+            <!-- Hidden per-order data for client-side recalculation -->
+            <div id="soaOrderRows" style="display:none;">
+                @foreach($orders as $order)
+                    <div class="soa-order-row" 
+                         data-freight="{{ $order->freight }}" 
+                         data-valuation="{{ $order->valuation }}" 
+                         data-wharfage="{{ $order->wharfage ?? 0 }}" 
+                         data-padlock="{{ $order->padlock_fee ?? 0 }}" 
+                         data-ppa="{{ $order->ppa_manila ?? 0 }}">
+                    </div>
+                @endforeach
+            </div>
             <div class="main-content">
                 <div style="display: flex; align-items: flex-start; gap: 0; margin-bottom: 0; border: 1px solid #000; padding: 10px;">
                     <div style="flex: 0 0 auto; display: flex; align-items: flex-start; margin-left: 40px;">
-                        <img style="height: 83px; width: auto;" src="{{ asset('images/logo.png') }}" alt="Logo">
+                        <img style="height: 90px; width: auto;" src="{{ asset('images/logo.png') }}" alt="Logo">
                     </div>
                     <div style="flex: 1 1 auto; line-height: 1; text-align: center; margin-right: 40px;">
                         <p style="margin: 0; font-size: 23px; font-weight: bold; color: #00B050; padding: 2px 5px;">ST. FRANCIS XAVIER STAR SHIPPING LINES, INC.</p>
-                        <p style="margin: 0; font-size: 17px; padding: 2px 5px;">National Road Brgy. Kaychanarianan, Basco Batanes</p>
-                        <p style="margin: 0; font-size: 17px; padding: 2px 5px; font-style: italic;"> Vat Reg. TIN: 009-081-111-000 CP No: 0999-889-5851    Email Add: fxavier_2015@yahoo.com.ph</p>
+                        <p style="margin: 0; font-size: 14px; padding: 2px 5px;">National Road Brgy. Kaychanarianan, Basco Batanes</p>
+                        <p style="margin: 0; font-size: 14px; padding: 2px 5px; font-style: italic;"> Vat Reg. TIN: 009-081-111-000 CP No: 0999-889-5851    Email Add: fxavier_2015@yahoo.com.ph</p>
                         <p style="margin: 0; margin-bottom: 0; padding: 2px 5px; line-height: 1; font-size: 20px; color: blue; text-decoration: underline;">STATEMENT OF ACCOUNT</p>
                     </div>
                 </div>
@@ -215,38 +227,50 @@
                         <button type="button" onclick="saveSoaNumber()" style="margin-left: 5px; padding: 2px 5px; background: #007cba; color: white; border: none; border-radius: 3px; font-size: 10px; cursor: pointer;" title="Test Save">💾</button>
                     </p>
                 </div>
-                <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 0; margin-bottom: 0; border: 1px solid #000; border-top: none; padding: 0;">
+                <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 0; margin-bottom: 0; border: 1px solid #000; border-top: none; border-bottom: none; padding: 0;">
                     <div style="margin-left : 10px; flex: 0 0 8%; line-height: 1; text-align: left; display: flex; flex-direction: column;">
                         <p style="margin: 0; font-size: 12px; line-height: 1.2; font-weight: bold;">BILLED TO: </p>
                         <p style="margin: 0; font-size: 12px; line-height: 1.2; font-weight: bold;">ADDRESS:</p>
-                        <p style="margin: 0; font-size: 12px; line-height: 1.2; font-weight: bold;">CONSIGNEE:</p>
                     </div>
                     <div style="flex: 0 0 92%; line-height: 1; text-align: left; display: flex; flex-direction: column;">
                         <p style="margin: 0; font-size: 13px;"><span style="padding: 2px 5px; font-family: 'Courier New', 'Consolas', 'Monaco', monospace;">{{ !empty($customer->first_name) || !empty($customer->last_name) ? $customer->first_name . ' ' . $customer->last_name : $customer->company_name }}</span></p>
                         <p style="margin: 0; font-size: 13px;"><span style="padding: 2px 5px; font-family: 'Courier New', 'Consolas', 'Monaco', monospace;">BASCO, BATANES</span></p>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 0; margin-bottom: 0; border: 1px solid #000; border-top: none; padding: 0;">
+                    <div style="margin-left : 10px; flex: 0 0 8%; line-height: 1; text-align: left; display: flex; flex-direction: column;">
+                        <p style="margin: 0; font-size: 12px; line-height: 1.2; font-weight: bold;">CONSIGNEE:</p>
+                    </div>
+                    <div style="flex: 0 0 25%; line-height: 1; text-align: left; display: flex; flex-direction: column;">
                         <p style="margin: 0; font-size: 13px;"><span style="padding: 2px 5px; line-height: 1.2; font-family: 'Courier New', 'Consolas', 'Monaco', monospace;">{{ collect($orders)->pluck('recName')->filter()->unique()->implode(', ') }}</span></p>
+                    </div>
+                    <div style="flex: 0 0 5%; line-height: 1; text-align: left; display: flex; flex-direction: column;">
+                        <p style="margin: 0; font-size: 12px; line-height: 1.2; font-weight: bold;">SHIPPER:</p>
+                    </div>
+                    <div style="flex: 0 0 62%; line-height: 1; text-align: left; display: flex; flex-direction: column;">
+                        <p style="margin: 0; font-size: 13px;"><span style="padding: 2px 5px; line-height: 1.2; font-family: 'Courier New', 'Consolas', 'Monaco', monospace;">{{ collect($orders)->pluck('shipperName')->filter()->unique()->implode(', ') }}</span></p>
                     </div>
                 </div>
                 <div style="display: flex; align-items: stretch; gap: 0; margin-bottom: 0; padding: 0;">
-                    <div style="flex: 0 0 20%; box-sizing: border-box; line-height: 1; text-align: center; display: flex; flex-direction: column;">
-                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; font-weight: bold; border-bottom: 1px solid #000; border-left: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: center;">VESSEL</p>
-                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; border: none; border-bottom: 1px solid #000; border-left: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: center; flex: 1;">M/V EVERWIN STAR {{ $ship }}</p>
+                    <div style="flex: 0 0 13%; box-sizing: border-box; line-height: 1; text-align: center; display: flex; flex-direction: column;">
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; font-weight: bold; border-bottom: 1px solid #000; border-left: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: center; background-color: #A9D08E;">VESSEL</p>
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; border: none; border-bottom: 1px solid #000; border-left: 1px solid #000; min-height: 80px; display: flex; align-items: center; justify-content: center; flex: 1;">M/V EVERWIN STAR {{ $ship }}</p>
                     </div>
-                    <div style="flex: 0 0 25%; box-sizing: border-box; line-height: 1; text-align: center; display: flex; flex-direction: column;">
-                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; font-weight: bold; border-bottom: 1px solid #000; border-left: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: center;">VOYAGE #</p>
-                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; border: none; border-bottom: 1px solid #000; border-left: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: center; flex: 1;">{{ htmlspecialchars_decode($voyage, ENT_QUOTES) }} {{ $origin }} - {{ $destination }}</p>
+                    <div style="flex: 0 0 17%; box-sizing: border-box; line-height: 1; text-align: center; display: flex; flex-direction: column;">
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; font-weight: bold; border-bottom: 1px solid #000; border-left: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: center; background-color: #A9D08E;">VOYAGE #</p>
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; border: none; border-bottom: 1px solid #000; border-left: 1px solid #000; min-height: 80px; display: flex; align-items: center; justify-content: center; flex: 1;">{{ htmlspecialchars_decode($voyage, ENT_QUOTES) }} {{ $origin }} - {{ $destination }}</p>
                     </div>
-                    <div style="flex: 0 0 10%; box-sizing: border-box; line-height: 1; text-align: center; display: flex; flex-direction: column;">
-                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; font-weight: bold; border-bottom: 1px solid #000; border-left: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: center;">BL #</p>
-                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; border: none; border-bottom: 1px solid #000; border-left: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: center; flex: 1; word-wrap: break-word; word-break: break-all;">
+                    <div style="flex: 0 0 15%; box-sizing: border-box; line-height: 1; text-align: center; display: flex; flex-direction: column;">
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; font-weight: bold; border-bottom: 1px solid #000; border-left: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: center; background-color: #A9D08E;">BL #</p>
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; border: none; border-bottom: 1px solid #000; border-left: 1px solid #000; min-height: 80px; display: flex; align-items: center; justify-content: center; flex: 1; word-wrap: break-word; word-break: break-all;">
                             @foreach($orders as $order)
                                 {{ $order->orderId }}@if(!$loop->last), @endif
                             @endforeach
                         </p>
                     </div>
-                    <div style="flex: 0 0 45%; box-sizing: border-box; line-height: 1; text-align: center; display: flex; flex-direction: column;">
-                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; font-weight: bold; border-bottom: 1px solid #000; border-left: 1px solid #000; border-right: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: center;">DESCRIPTION</p>
-                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; border-bottom: 1px solid #000; border-left: 1px solid #000; border-right: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: center; flex: 1; word-wrap: break-word; word-break: break-word;">
+                    <div style="flex: 0 0 55%; box-sizing: border-box; line-height: 1; text-align: center; display: flex; flex-direction: column;">
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; font-weight: bold; border-bottom: 1px solid #000; border-left: 1px solid #000; border-right: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: center; background-color: #A9D08E;">DESCRIPTION</p>
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; border-bottom: 1px solid #000; border-left: 1px solid #000; border-right: 1px solid #000; min-height: 80px; display: flex; align-items: center; justify-content: center; flex: 1; word-wrap: break-word; word-break: break-word;">
                             @php 
                                 $parcelItems = [];
                                 foreach($orders as $order) {
@@ -271,7 +295,7 @@
                     <div style="flex: 0 0 20%; box-sizing: border-box; line-height: 1; text-align: center; min-height: 17px;">
                         <p style="margin: 0; font-size: 12px; padding: 2px 5px; font-weight: bold; border-bottom: 1px solid #000; border-left: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: left;">FREIGHT :</p>
                         <p style="margin: 0; font-size: 12px; padding: 2px 5px; font-weight: bold; border-bottom: 1px solid #000; border-left: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: left;">INSURANCE :</p>
-                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; font-weight: bold; border-bottom: 1px solid #000; border-left: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: left;">ARRASTRE MNL :</p>
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; font-weight: bold; border-bottom: 1px solid #000; border-left: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: left;">PPA MNL :</p>
                         <p style="margin: 0; font-size: 12px; padding: 2px 5px; font-weight: bold; border-bottom: 1px solid #000; border-left: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: left;">WHARFAGE :</p>
                         <p style="margin: 0; font-size: 12px; padding: 2px 5px; font-weight: bold; border-bottom: 1px solid #000; border-left: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: left; background-color: #ffff38ff;">GRAND TOTAL :</p>
                     </div>
@@ -631,39 +655,89 @@
                 printWindow.print();
                 printWindow.close();
             };
-        }        // Variable to track if discount is active
+        // Variable to track if discount is active
         let discountActive = false;
 
-        // Function to toggle between original and discounted totals
-        function toggleDiscount() {
-            const finalAmountElement = document.getElementById('finalAmount');
-            const discountBtnText = document.getElementById('discountBtnText');
-            const toggleDiscountBtn = document.getElementById('toggleDiscountBtn');
-            const discountedTotal = {{ $discountedTotal }};
-            const originalTotal = {{ $voyageTotal }};
-            
-            if (discountActive) {
-                // Deactivate discount - show original total
-                finalAmountElement.textContent = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(originalTotal);
-                discountBtnText.innerHTML = '<i class="fas fa-percentage me-2"></i>Discount Deactivated';
-                toggleDiscountBtn.className = 'btn btn-danger px-4 py-2';
-                toggleDiscountBtn.style.backgroundColor = '#dc3545';
-                toggleDiscountBtn.style.borderColor = '#dc3545';
-                discountActive = false;
-            } else {
-                // Activate discount - show discounted total
-                finalAmountElement.textContent = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(discountedTotal);
-                discountBtnText.innerHTML = '<i class="fas fa-times me-2"></i>Discount Activated';
-                toggleDiscountBtn.className = 'btn btn-success px-4 py-2';
-                toggleDiscountBtn.style.backgroundColor = '#28a745';
-                toggleDiscountBtn.style.borderColor = '#28a745';
-                discountActive = true;
+        // Remove an order row (for interactive view) and recalc totals
+        function removeSoaRow(btn) {
+            // Expect btn inside a visible row; this function is provided for parity with soa_temp
+            const row = btn.closest('.soa-order-row');
+            if (row) {
+                row.remove();
+                recalcTotals();
             }
         }
 
-        // Penalty functionality
+        // Recalculate totals from .soa-order-row dataset attributes
+        function recalcTotals() {
+            // Sum fields from hidden order rows (or visible ones if you adapt layout)
+            const rows = document.querySelectorAll('#soaOrderRows .soa-order-row');
+            let freight = 0, valuation = 0, wharfage = 0, padlock = 0, ppa = 0;
+
+            rows.forEach(r => {
+                freight += parseFloat(r.dataset.freight || 0) || 0;
+                valuation += parseFloat(r.dataset.valuation || 0) || 0;
+                wharfage += parseFloat(r.dataset.wharfage || 0) || 0;
+                padlock += parseFloat(r.dataset.padlock || 0) || 0;
+                ppa += parseFloat(r.dataset.ppa || 0) || 0;
+            });
+
+            // Base total before interest/penalty
+            let baseTotal = freight + valuation + wharfage + padlock + ppa;
+
+            // Apply discount if eligible and active
+            const eligible = {{ $isEligible ? 'true' : 'false' }};
+            const discountAmount = (eligible && freight >= 50000 && discountActive) ? (freight * 0.05) : 0;
+
+            const finalBase = baseTotal - discountAmount;
+
+            // Update final amount element (if interest isn't showing)
+            const finalAmountElement = document.getElementById('finalAmount');
+            if (finalAmountElement) {
+                finalAmountElement.textContent = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(finalBase);
+            }
+
+            // If penalty modal is open, update its calculations
+            updatePenaltyCalculation();
+        }
+
+        // Function to toggle between original and discounted totals
+        function toggleDiscount() {
+            discountActive = !discountActive;
+            const discountBtnText = document.getElementById('discountBtnText');
+            const toggleDiscountBtn = document.getElementById('toggleDiscountBtn');
+            if (discountActive) {
+                if (discountBtnText) discountBtnText.innerHTML = '<i class="fas fa-times me-2"></i>Discount Activated';
+                if (toggleDiscountBtn) {
+                    toggleDiscountBtn.className = 'btn btn-success px-4 py-2';
+                    toggleDiscountBtn.style.backgroundColor = '#28a745';
+                    toggleDiscountBtn.style.borderColor = '#28a745';
+                }
+            } else {
+                if (discountBtnText) discountBtnText.innerHTML = '<i class="fas fa-percentage me-2"></i>Discount Deactivated';
+                if (toggleDiscountBtn) {
+                    toggleDiscountBtn.className = 'btn btn-danger px-4 py-2';
+                    toggleDiscountBtn.style.backgroundColor = '#dc3545';
+                    toggleDiscountBtn.style.borderColor = '#dc3545';
+                }
+            }
+            recalcTotals();
+        }
+
+        // Penalty functionality (dynamic base amount)
         let penaltyActive = false;
         let currentPenaltyAmount = 0;
+
+        function parseFormattedNumber(str) {
+            if (!str) return 0;
+            return parseFloat(String(str).replace(/,/g, '')) || 0;
+        }
+
+        function getCurrentBaseAmount() {
+            const finalEl = document.getElementById('finalAmount');
+            if (finalEl) return parseFormattedNumber(finalEl.textContent || finalEl.innerText);
+            return {{ $voyageTotal }};
+        }
 
         function calculatePenalty() {
             document.getElementById('penaltyModal').classList.remove('hidden');
@@ -676,62 +750,74 @@
 
         function updatePenaltyCalculation() {
             const months = parseInt(document.getElementById('penaltyMonths').value) || 1;
-            const baseTotal = discountActive ? {{ $discountedTotal }} : {{ $voyageTotal }};
+            const baseTotal = getCurrentBaseAmount();
             const penaltyAmount = baseTotal * 0.01 * months;
             const totalWithPenalty = baseTotal + penaltyAmount;
-            
-            document.getElementById('penaltyAmount').textContent = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(penaltyAmount);
-            document.getElementById('totalWithPenalty').textContent = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(totalWithPenalty);
+
+            const penaltyAmountEl = document.getElementById('penaltyAmount');
+            const totalWithPenaltyEl = document.getElementById('totalWithPenalty');
+            const baseAmountEl = document.getElementById('penaltyBaseAmount');
+
+            if (baseAmountEl) baseAmountEl.textContent = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(baseTotal);
+            if (penaltyAmountEl) penaltyAmountEl.textContent = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(penaltyAmount);
+            if (totalWithPenaltyEl) totalWithPenaltyEl.textContent = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(totalWithPenalty);
         }
 
         function applyPenalty() {
             const months = parseInt(document.getElementById('penaltyMonths').value) || 1;
-            const baseTotal = discountActive ? {{ $discountedTotal }} : {{ $voyageTotal }};
+            const baseTotal = getCurrentBaseAmount();
             currentPenaltyAmount = baseTotal * 0.01 * months;
             penaltyActive = true;
-            
+
             updateFinalAmount();
             closePenaltyModal();
-            
+
             // Update button text to show penalty is applied
             const penaltyBtn = document.getElementById('calculatePenaltyBtn');
-            penaltyBtn.innerHTML = 'Remove 1% Penalty';
-            penaltyBtn.onclick = removePenalty;
-            penaltyBtn.className = 'btn btn-danger px-4 py-2';
+            if (penaltyBtn) {
+                penaltyBtn.innerHTML = 'Remove 1% Penalty';
+                penaltyBtn.onclick = removePenalty;
+                penaltyBtn.className = 'btn btn-danger px-4 py-2';
+            }
         }
 
         function removePenalty() {
             penaltyActive = false;
             currentPenaltyAmount = 0;
-            
+
             updateFinalAmount();
-            
+
             // Reset button
             const penaltyBtn = document.getElementById('calculatePenaltyBtn');
-            penaltyBtn.innerHTML = 'Calculate 1% Penalty';
-            penaltyBtn.onclick = calculatePenalty;
-            penaltyBtn.className = 'btn btn-warning px-4 py-2';
+            if (penaltyBtn) {
+                penaltyBtn.innerHTML = 'Calculate 1% Penalty';
+                penaltyBtn.onclick = calculatePenalty;
+                penaltyBtn.className = 'btn btn-warning px-4 py-2';
+            }
         }
 
         function updateFinalAmount() {
             const finalAmountElement = document.getElementById('finalAmount');
-            let baseTotal = discountActive ? {{ $discountedTotal }} : {{ $voyageTotal }};
+            const baseTotal = getCurrentBaseAmount();
             let finalTotal = baseTotal;
-            
+
             if (penaltyActive) {
                 finalTotal += currentPenaltyAmount;
             }
-            
-            finalAmountElement.textContent = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(finalTotal);
+
+            if (finalAmountElement) {
+                finalAmountElement.textContent = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(finalTotal);
+            }
         }
 
-        // Event listener for penalty months input
-        document.getElementById('penaltyMonths').addEventListener('input', updatePenaltyCalculation);
+    // Event listener for penalty months input (guarded)
+    const penaltyMonthsEl = document.getElementById('penaltyMonths');
+    if (penaltyMonthsEl) penaltyMonthsEl.addEventListener('input', updatePenaltyCalculation);
 
-        // SOA Number auto-save functionality
-        let soaNumberTimeout;
+    // SOA Number auto-save functionality
+    let soaNumberTimeout;
         
-        function saveSoaNumber() {
+    function saveSoaNumber() {
             const soaInputElement = document.getElementById('soaNumberInput');
             const soaNumber = soaInputElement.value.trim();
             const statusElement = document.getElementById('soaNumberStatus');
@@ -837,6 +923,8 @@
             } else {
                 console.error('SOA number input element not found');
             }
+            // Initialize reactive totals on load
+            try { recalcTotals(); } catch (e) { /* no-op if recalcTotals not defined */ }
         });
     </script>
 
@@ -851,7 +939,7 @@
             </div>
             
             <div class="mb-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-md">
-                <p class="text-sm text-gray-600 dark:text-gray-400">Base Amount: <span class="font-semibold">{{ number_format($voyageTotal, 2) }}</span></p>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Base Amount: <span id="penaltyBaseAmount" class="font-semibold">{{ number_format($voyageTotal, 2) }}</span></p>
                 <p class="text-sm text-gray-600 dark:text-gray-400">Penalty Amount: <span id="penaltyAmount" class="font-semibold">0.00</span></p>
                 <p class="text-sm text-gray-900 dark:text-gray-100 font-semibold">Total with Penalty: <span id="totalWithPenalty" class="text-red-600">{{ number_format($voyageTotal, 2) }}</span></p>
             </div>
