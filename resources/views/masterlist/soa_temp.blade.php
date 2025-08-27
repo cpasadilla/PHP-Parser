@@ -611,34 +611,14 @@
         }
 
         // Determine the current base amount for penalty calculations.
-        // Compute base directly from current DOM rows so we never use a value that already includes an applied penalty.
+        // Prefer the live computed final amount (which reflects discounts and row removals).
         function getCurrentBaseAmount() {
-            // Sum rows like recalcTotals does
-            const rows = document.querySelectorAll('tr.soa-order-row');
-            let freight=0, valuation=0, wharfage=0, padlock=0, ppa=0, interest=0;
-            rows.forEach(r=>{
-                freight += parseFloat(r.dataset.freight)||0;
-                valuation += parseFloat(r.dataset.valuation)||0;
-                wharfage += parseFloat(r.dataset.wharfage)||0;
-                padlock += parseFloat(r.dataset.padlock)||0;
-                ppa += parseFloat(r.dataset.ppa)||0;
-                interest += parseFloat(r.dataset.interest)||0;
-            });
-
-            const total = freight + valuation + wharfage + padlock + ppa + interest;
-
-            // Discount logic: must meet original eligibility list & freight >= 50000
-            const eligibleCustomerIds = @json($eligibleCustomerIds);
-            const customerEligible = eligibleCustomerIds.includes({{ $customer->id }});
-            let discountAmountLocal = 0;
-            let discountedTotalLocal = total;
-            if (customerEligible && freight >= 50000 && discountActive) {
-                discountAmountLocal = freight * 0.05;
-                discountedTotalLocal = total - discountAmountLocal; // discount applies only to freight portion
+            const finalEl = document.getElementById('finalAmount');
+            if (finalEl) {
+                return parseFormattedNumber(finalEl.textContent || finalEl.innerText);
             }
-
-            // Return the base amount without any penalty applied
-            return discountedTotalLocal;
+            // Fallback to server-side totals
+            return {{ $voyageTotal }};
         }
 
         function updatePenaltyCalculation() {
