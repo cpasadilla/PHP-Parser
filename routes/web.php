@@ -270,6 +270,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/masterlist/voyage/orders-by-id/{voyageId}', [MasterListController::class, 'voyageOrdersById'])->name('masterlist.voyage-orders-by-id');
         Route::post('/update-bl-status/{orderId}', [MasterListController::class, 'updateBlStatus']);
         Route::post('/update-order-field/{orderId}', [MasterListController::class, 'updateOrderField']);
+    // Transfer (copy) BL to another ship/voyage
+    Route::post('/masterlist/transfer-order/{orderId}', [MasterListController::class, 'transferOrder'])->name('masterlist.transfer-order');
         Route::post('/masterlist/update-order-field/{orderId}', [MasterListController::class, 'updateOrderField'])->name('masterlist.update-order-field');
         Route::post('/update-soa-number', [MasterListController::class, 'updateSoaNumber'])->name('update-soa-number');
         Route::post('/update-note-field/{orderId}', [MasterListController::class, 'updateNoteField']);

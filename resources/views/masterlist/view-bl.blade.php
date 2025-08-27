@@ -38,9 +38,9 @@
             <table class="w-full text-sm text-center" style="border-collapse: collapse; border-spacing: 0; width: 100%;">
                     <tr>
                       <td style="font-family: Arial; font-size: 11px; text-align: left; width: 78px; padding: 1px;"><strong>M/V EVERWIN STAR</strong></td>
-                      <td style="font-family: Arial; font-size: 12px; width: 20px; border-bottom: 1px solid black; text-align: center;">{{$order->shipNum}}</td>
+                      <td style="font-family: Arial; font-size: 12px; width: 20px; border-bottom: 1px solid black; text-align: center;">{{ $displayShip ?? $order->shipNum }}</td>
                         <td style="font-family: Arial; font-size: 11px; text-align: right; width: 50px; padding: 1px;"><strong>VOYAGE NO.</strong></td>
-                        <td style="font-family: Arial; font-size: 12px; width: 50px; border-bottom: 1px solid black; text-align: center;">{{$order->voyageNum}}</td>
+                        <td style="font-family: Arial; font-size: 12px; width: 50px; border-bottom: 1px solid black; text-align: center;">{{ $displayVoyage ?? $order->voyageNum }}</td>
                         <td style="font-family: Arial; font-size: 11px; text-align: right; width: 30px; padding: 1px;"><strong>CONTAINER NO.</strong></td>
                         <td style="font-family: Arial; font-size: 11px; width: 200px; border-bottom: 1px solid black; text-align: center;">{{$order->containerNum}}</td>
                         <td style="font-family: Arial; font-size: 11px; text-align: right; width: 33px; padding: 2px;"><strong>BL NO.</strong></td>
@@ -84,8 +84,7 @@
                 </table>
 
                 <!-- Main Table -->
-                <div class="main-table-container">
-                    <table class="w-full border-collapse text-sm main-table" style="padding: 0 5px; margin-top: 20px;">
+                <table class="w-full border-collapse text-sm main-table" style="padding: 0 5px; margin-top: 20px;">
                     <thead class="text-white border border-gray" style="background-color: #78BF65;">
                         <tr class="border border-gray">
                             <th class="p-2" style="font-family: Arial; font-size: 13px;">QTY</th>
@@ -93,119 +92,36 @@
                             <th class="p-2" style="font-family: Arial; font-size: 13px;">DESCRIPTION</th>
                             <th class="p-2" style="font-family: Arial; font-size: 13px;">VALUE</th>
                             <th class="p-2" style="font-family: Arial; font-size: 13px;">WEIGHT</th>
-                            <th class="p-2" style="font-family: Arial; font-size: 13px; width: 150px;">MEASUREMENT(cm)</th>
+                            <th class="p-2" style="font-family: Arial; font-size: 13px;">MEASUREMENT</th>
                             <th class="p-2" style="font-family: Arial; font-size: 13px;">RATE</th>
                             <th class="p-2" style="font-family: Arial; font-size: 13px;">FREIGHT</th>
                         </tr>
                     </thead>
                     <tbody>
-                            @php
-                            // Group parcels by itemId, itemName and unit so same name but different unit become separate rows
-                            $grouped = [];
-                            foreach ($parcels as $p) {
-                                $key = ($p->itemId ?? '') . '|' . ($p->itemName ?? '') . '|' . ($p->unit ?? '');
-                                if (!isset($grouped[$key])) {
-                                    $grouped[$key] = [
-                                        'itemName' => $p->itemName,
-                                        'desc' => $p->desc ?? null,
-                                        'unit' => $p->unit ?? null,
-                                        'weight' => $p->weight ?? null,
-                                        'parcels' => [],
-                                    ];
-                                }
-                                $grouped[$key]['parcels'][] = $p;
-                            }
-                        @endphp
-
-                        @foreach ($grouped as $group)
-                            @php
-                                $totalQty = 0;
-                                $measurementStrings = [];
-                                $rateLines = [];
-                                $freightLines = [];
-                                foreach ($group['parcels'] as $parcel) {
-                                    $totalQty += is_numeric($parcel->quantity) ? $parcel->quantity : 0;
-                                    $measurements = null;
-                                    if (!empty($parcel->measurements)) {
-                                        $measurements = is_string($parcel->measurements) ? json_decode($parcel->measurements, true) : $parcel->measurements;
-                                    }
-                                    if ($measurements && is_array($measurements)) {
-                                        foreach ($measurements as $m) {
-                                            $length = $m['length'] ?? ($m->length ?? null);
-                                            $width = $m['width'] ?? ($m->width ?? null);
-                                            $height = $m['height'] ?? ($m->height ?? null);
-                                            $qty = isset($m['qty']) ? $m['qty'] : (isset($m['quantity']) ? $m['quantity'] : 1);
-                                            if ($length && $width && $height) {
-                                                $measurementStrings[] = rtrim(rtrim($length, '0'), '.') . ' × ' . rtrim(rtrim($width, '0'), '.') . ' × ' . rtrim(rtrim($height, '0'), '.') . ' (' . $qty . ')';
-                                            }
-
-                                            // Compute rate and freight per measurement as fallback when not stored
-                                            $lenF = is_numeric($length) ? floatval($length) : 0;
-                                            $widF = is_numeric($width) ? floatval($width) : 0;
-                                            $heiF = is_numeric($height) ? floatval($height) : 0;
-                                            $mulF = is_numeric($m['multiplier'] ?? $m->multiplier ?? null) ? floatval($m['multiplier'] ?? $m->multiplier ?? 0) : 0;
-                                            $qtyF = is_numeric($qty) ? floatval($qty) : 0;
-                                            $computedRate = 0;
-                                            $computedFreight = 0;
-                                            if ($lenF > 0 && $widF > 0 && $heiF > 0 && $mulF > 0) {
-                                                $computedRate = $lenF * $widF * $heiF * $mulF;
-                                                $computedFreight = $computedRate * $qtyF;
-                                            }
-
-                                            if (!empty($m['rate']) && $m['rate'] > 0) {
-                                                $rateLines[] = number_format($m['rate'],2);
-                                            } elseif ($computedRate > 0) {
-                                                $rateLines[] = number_format($computedRate,2);
-                                            }
-
-                                            if (!empty($m['freight']) && $m['freight'] > 0) {
-                                                $freightLines[] = number_format($m['freight'],2);
-                                            } elseif ($computedFreight > 0) {
-                                                $freightLines[] = number_format($computedFreight,2);
-                                            }
-                                        }
-                                    } else {
-                                        if (!empty($parcel->length) && !empty($parcel->width) && !empty($parcel->height)) {
-                                            $measurementStrings[] = $parcel->length . ' × ' . $parcel->width . ' × ' . $parcel->height . ' (' . $parcel->quantity . ')';
-                                        }
-
-                                        // Recompute rate/freight from parcel fields if available
-                                        $lenF = is_numeric($parcel->length) ? floatval($parcel->length) : 0;
-                                        $widF = is_numeric($parcel->width) ? floatval($parcel->width) : 0;
-                                        $heiF = is_numeric($parcel->height) ? floatval($parcel->height) : 0;
-                                        $mulF = is_numeric($parcel->multiplier) ? floatval($parcel->multiplier) : 0;
-                                        $qtyF = is_numeric($parcel->quantity) ? floatval($parcel->quantity) : 0;
-                                        $computedRate = 0;
-                                        $computedFreight = 0;
-                                        if ($lenF > 0 && $widF > 0 && $heiF > 0 && $mulF > 0) {
-                                            $computedRate = $lenF * $widF * $heiF * $mulF;
-                                            $computedFreight = $computedRate * $qtyF;
-                                        }
-
-                                        if (!empty($parcel->itemPrice) && $parcel->itemPrice > 0 && ($computedRate == 0)) {
-                                            $rateLines[] = number_format($parcel->itemPrice,2);
-                                        } elseif ($computedRate > 0) {
-                                            $rateLines[] = number_format($computedRate,2);
-                                        }
-
-                                        if (!empty($parcel->total) && $parcel->total > 0 && ($computedFreight == 0)) {
-                                            $freightLines[] = number_format($parcel->total,2);
-                                        } elseif ($computedFreight > 0) {
-                                            $freightLines[] = number_format($computedFreight,2);
-                                        }
-                                    }
-                                }
-                            @endphp
-                            <tr class="border-gray" style="border-bottom: 1px solid #cccccc;">
-                                <td class="p-2 text-center" style="font-family: Arial; font-size: 13px; text-align: center;">{{ $totalQty }}</td>
-                                <td class="p-2" style="font-family: Arial; font-size: 13px; text-align: center; width: 70px;">{{ $group['unit'] }}</td>
-                                <td class="p-2" style="font-family: Arial; font-size: 13px; text-align: left;">{{ $group['itemName'] }}{{ !empty($group['desc']) ? ' - '.$group['desc'] : '' }}</td>
-                                <td class="p-2" style="font-family: Arial; font-size: 13px;"></td>
-                                <td class="p-2" style="font-family: Arial; font-size: 13px; width: 60px;">@if ($group['weight'] && $group['weight'] != '0' && $group['weight'] != '0.00'){{ $group['weight'] }}@endif</td>
-                                <td class="p-2" style="font-family: Arial; font-size: 13px; width: 140px;">{!! implode('<br>', $measurementStrings) !!}</td>
-                                <td class="p-2" style="font-family: Arial; font-size: 13px; text-align: right;">{!! implode('<br>', $rateLines) !!}</td>
-                                <td class="p-2" style="font-family: Arial; font-size: 13px; text-align: right;">{!! implode('<br>', $freightLines) !!}</td>
-                            </tr>
+                        @foreach ($parcels as $parcel)
+                        <tr class="border-gray" style="border-bottom: 1px solid #cccccc;">
+                            <td class="p-2 text-center" style="font-family: Arial; font-size: 13px; text-align: center;">{{$parcel->quantity}}</td>
+                            <td class="p-2" style="font-family: Arial; font-size: 13px; text-align: center; width: 70px;">{{$parcel->unit}}</td>
+                            <td class="p-2" style="font-family: Arial; font-size: 13px; text-align: left;">
+                                {{$parcel->itemName}}{{ !empty($parcel->desc) ? ' - '.$parcel->desc : '' }}
+                            </td>
+                            <td class="p-2" style="font-family: Arial; font-size: 13px;"></td>
+                            <td class="p-2" style="font-family: Arial; font-size: 13px; width: 60px;">
+                                @if ($parcel->weight && $parcel->weight != '0' && $parcel->weight != '0.00')
+                                    {{$parcel->weight}}
+                                @endif
+                            </td>
+                            <td class="p-2" style="font-family: Arial; font-size: 13px;">
+                                @if (!empty($parcel->length) && !empty($parcel->width) && !empty($parcel->height) && 
+                                    $parcel->length != '0' && $parcel->length != '0.00' && 
+                                    $parcel->width != '0' && $parcel->width != '0.00' && 
+                                    $parcel->height != '0' && $parcel->height != '0.00')
+                                    {{$parcel->length}} × {{$parcel->width}} × {{$parcel->height}}
+                                @endif
+                            </td>
+                            <td class="p-2" style="font-family: Arial; font-size: 13px; text-align: right; width: 100px;">{{ number_format($parcel->itemPrice, 2) }}</td>
+                            <td class="p-2" style="font-family: Arial; font-size: 13px; text-align: right; width: 100px;">{{ number_format($parcel->total, 2) }}</td>
+                        </tr>
                         @endforeach
                         <tr class="border-gray" style="border-bottom: none;">
                             <td class="p-2"></td>
@@ -219,7 +135,6 @@
                         </tr>
                     </tbody>
                 </table>
-                </div>
                 @if($order->blStatus === 'PAID')
                     <div class="paid-stamp" style="position: absolute; bottom: 210px; right: 10px; color: red; border: 3px solid rgb(128, 0, 0); color: rgb(128, 0, 0); font-size: 16px; font-weight: bold; font-family: 'Bebas Neue', sans-serif; padding: 5px; text-align: center; background-color: none; z-index: 1000; width: 220px; height: 50px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
                         <span>PAID IN SFXSSLI {{ $order->updated_location }}</span>
@@ -241,68 +156,6 @@
                         }
                     }
 
-                                                    @php
-                                                        // Group parcels by itemId, itemName and unit so same name but different unit become separate rows
-                                                        $grouped = [];
-                                                        foreach ($parcels as $p) {
-                                                            $key = ($p->itemId ?? '') . '|' . ($p->itemName ?? '') . '|' . ($p->unit ?? '');
-                                                            if (!isset($grouped[$key])) {
-                                                                $grouped[$key] = [
-                                                                    'itemName' => $p->itemName,
-                                                                    'desc' => $p->desc ?? null,
-                                                                    'unit' => $p->unit ?? null,
-                                                                    'weight' => $p->weight ?? null,
-                                                                    'parcels' => [],
-                                                                ];
-                                                            }
-                                                            $grouped[$key]['parcels'][] = $p;
-                                                        }
-                                                    @endphp
-
-                                                    @foreach ($grouped as $group)
-                                                        @php
-                                                            $totalQty = 0;
-                                                            $measurementStrings = [];
-                                                            $rateLines = [];
-                                                            $freightLines = [];
-                                                            foreach ($group['parcels'] as $parcel) {
-                                                                $totalQty += is_numeric($parcel->quantity) ? $parcel->quantity : 0;
-                                                                $measurements = null;
-                                                                if (!empty($parcel->measurements)) {
-                                                                    $measurements = is_string($parcel->measurements) ? json_decode($parcel->measurements, true) : $parcel->measurements;
-                                                                }
-                                                                if ($measurements && is_array($measurements)) {
-                                                                    foreach ($measurements as $m) {
-                                                                        $length = $m['length'] ?? ($m->length ?? null);
-                                                                        $width = $m['width'] ?? ($m->width ?? null);
-                                                                        $height = $m['height'] ?? ($m->height ?? null);
-                                                                        $qty = $m['qty'] ?? ($m['quantity'] ?? 1);
-                                                                        if ($length && $width && $height) {
-                                                                            $measurementStrings[] = rtrim(rtrim($length, '0'), '.') . ' × ' . rtrim(rtrim($width, '0'), '.') . ' × ' . rtrim(rtrim($height, '0'), '.') . ' (' . $qty . ')';
-                                                                        }
-                                                                        if (!empty($m['rate']) && $m['rate'] > 0) $rateLines[] = number_format($m['rate'],2);
-                                                                        if (!empty($m['freight']) && $m['freight'] > 0) $freightLines[] = number_format($m['freight'],2);
-                                                                    }
-                                                                } else {
-                                                                    if (!empty($parcel->length) && !empty($parcel->width) && !empty($parcel->height)) {
-                                                                        $measurementStrings[] = $parcel->length . ' × ' . $parcel->width . ' × ' . $parcel->height . ' (' . $parcel->quantity . ')';
-                                                                    }
-                                                                    if (!empty($parcel->itemPrice)) $rateLines[] = number_format($parcel->itemPrice,2);
-                                                                    if (!empty($parcel->total)) $freightLines[] = number_format($parcel->total,2);
-                                                                }
-                                                            }
-                                                        @endphp
-                                                        <tr class="border-gray" style="border-bottom: 1px solid #cccccc;">
-                                                            <td class="p-2 text-center" style="font-family: Arial; font-size: 13px; text-align: center;">{{ $totalQty }}</td>
-                                                            <td class="p-2" style="font-family: Arial; font-size: 13px; text-align: center; width: 70px;">{{ $group['unit'] }}</td>
-                                                            <td class="p-2" style="font-family: Arial; font-size: 13px; text-align: left;">{{ $group['itemName'] }}{{ !empty($group['desc']) ? ' - '.$group['desc'] : '' }}</td>
-                                                            <td class="p-2" style="font-family: Arial; font-size: 13px;"></td>
-                                                            <td class="p-2" style="font-family: Arial; font-size: 13px; width: 60px;">@if ($group['weight'] && $group['weight'] != '0' && $group['weight'] != '0.00'){{ $group['weight'] }}@endif</td>
-                                                            <td class="p-2" style="font-family: Arial; font-size: 13px; width: 140px;">{!! implode('<br>', $measurementStrings) !!}</td>
-                                                            <td class="p-2" style="font-family: Arial; font-size: 13px; text-align: right;">{!! implode('<br>', $rateLines) !!}</td>
-                                                            <td class="p-2" style="font-family: Arial; font-size: 13px; text-align: right;">{!! implode('<br>', $freightLines) !!}</td>
-                                                        </tr>
-                                                    @endforeach
                     document.querySelectorAll('button').forEach(button => {
                         button.addEventListener('click', removePaddingForPrint);
                     });
@@ -464,47 +317,12 @@
                 #printContainer { 
                     position: relative; 
                     width: 100%; 
+                    min-height: 11in; 
                     margin: 0;
                     padding: 0;
-                    padding-bottom: 200px; /* Space for footer */
                 }
                 img { display: block !important; margin: 0 auto; }
-                
-                /* Footer positioning */
-                footer { 
-                    position: fixed; 
-                    bottom: 0; 
-                    left: 0; 
-                    right: 0; 
-                    width: 100%; 
-                    background: white;
-                    padding: 10px 0.5in;
-                    box-sizing: border-box;
-                    z-index: 999;
-                }
-                
-                /* Main table flexibility */
-                .main-table { 
-                    border-collapse: collapse; 
-                    width: 100%;
-                    page-break-inside: auto;
-                }
-                
-                .main-table thead {
-                    background-color: #78BF65 !important; 
-                    color: white !important;
-                    page-break-after: avoid;
-                }
-                
-                .main-table tbody tr {
-                    page-break-inside: avoid;
-                    page-break-after: auto;
-                }
-                
-                .main-table tbody tr:last-child {
-                    page-break-after: avoid;
-                }
-                
+                footer { position: absolute; bottom: 0; left: 0; width: 100%; }
                 table { border-collapse: collapse; width: 100%; }
                 thead { background-color: #78BF65 !important; color: white !important; }
                 button { display: none; }
@@ -544,11 +362,6 @@
                 /* Remove border from VALUE row specifically */
                 .border-gray[style*="border-bottom: none"] {
                     border-bottom: none !important;
-                }
-                
-                /* Ensure content doesn't overlap with footer */
-                .main-table-container {
-                    margin-bottom: 200px;
                 }
             }
         `);

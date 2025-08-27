@@ -87,6 +87,7 @@
                         <th class="p-2" style="text-align: center;">IMAGE</th>
                         <th class="p-2" style="width: 80px; text-align: center;">VIEW BL</th>
                         <th class="p-2" style="width: 100px; text-align: center;">NO-PRICE BL</th>
+                        <th class="p-2" style="width: 100px; text-align: center;">TRANSFER</th>
                         @if(Auth::user()->hasSubpagePermission('masterlist', 'list', 'edit'))
                         <th class="p-2 update-bl-column">UPDATE BL</th>
                         @endif
@@ -528,6 +529,13 @@
                                     </x-button>
                                 </a>
                             </td>
+                            <td class="p-2 text-center">
+                                @if(Auth::user()->hasSubpagePermission('masterlist', 'list', 'edit'))
+                                <button type="button" class="px-3 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700" onclick="openTransferModal({{ $order->id }}, '{{ $order->shipNum }}', '{{ addslashes($order->voyageNum) }}')">Transfer</button>
+                                @else
+                                <span class="text-gray-500">No access</span>
+                                @endif
+                            </td>
                             @if(Auth::user()->hasSubpagePermission('masterlist', 'list', 'edit'))
                             <td class="p-2 text-center update-bl-column">
                                 <a href="{{ route('masterlist.edit-bl', $order->id) }}" class="text-blue-500 hover:underline flex items-center justify-center gap-2">
@@ -597,6 +605,89 @@
         </div>
     </div>
 </x-app-layout>
+<!-- Transfer Modal -->
+<div id="transferModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-6 w-96">
+        <h3 class="text-lg font-semibold mb-4">Transfer BL</h3>
+        <input type="hidden" id="transferOrderId" />
+        <div class="mb-3">
+            <label class="block text-sm font-medium text-gray-700">Current Ship/Voyage</label>
+            <div id="currentShipVoyage" class="mt-1 text-sm text-gray-800"></div>
+        </div>
+        <div class="mb-3">
+            <label class="block text-sm font-medium text-gray-700">Target Ship</label>
+            <select id="targetShip" class="w-full border rounded p-2">
+                <option value="">Select Ship</option>
+                @foreach(\App\Models\Ship::all() as $s)
+                    <option value="{{ $s->ship_number }}">{{ $s->ship_number }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="mb-3">
+            <label class="block text-sm font-medium text-gray-700">Target Voyage</label>
+            <input id="targetVoyage" type="text" class="w-full border rounded p-2" placeholder="Enter voyage number (e.g. 30 or 7-OUT)">
+        </div>
+        <div class="flex justify-end gap-2">
+            <button class="px-4 py-2 bg-gray-300 rounded" onclick="closeTransferModal()">Cancel</button>
+            <button class="px-4 py-2 bg-indigo-600 text-white rounded" onclick="submitTransfer()">Transfer</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openTransferModal(orderId, shipNum, voyageNum) {
+        document.getElementById('transferOrderId').value = orderId;
+        document.getElementById('currentShipVoyage').innerText = shipNum + ' / ' + voyageNum;
+        document.getElementById('targetShip').value = '';
+        document.getElementById('targetVoyage').value = '';
+        document.getElementById('transferModal').classList.remove('hidden');
+    }
+
+    function closeTransferModal() {
+        document.getElementById('transferModal').classList.add('hidden');
+    }
+
+    async function submitTransfer() {
+        const orderId = document.getElementById('transferOrderId').value;
+        const targetShip = document.getElementById('targetShip').value;
+        const targetVoyage = document.getElementById('targetVoyage').value.trim();
+
+        if (!targetShip || !targetVoyage) {
+            alert('Please select target ship and enter voyage');
+            return;
+        }
+
+        const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+        try {
+            const res = await fetch("{{ url('/masterlist/transfer-order') }}" + '/' + orderId, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': token,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    target_ship: targetShip,
+                    target_voyage: targetVoyage
+                })
+            });
+
+            const data = await res.json();
+            if (res.ok && data.success) {
+                alert('Transfer successful. New Order ID: ' + data.new_order_id);
+                closeTransferModal();
+                // Optionally reload to show the new BL in the list
+                location.reload();
+            } else {
+                alert('Transfer failed: ' + (data.message || 'Unknown error'));
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Transfer failed: ' + err.message);
+        }
+    }
+</script>
 <head>
     <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>

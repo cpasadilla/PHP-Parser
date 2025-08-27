@@ -66,6 +66,108 @@ class MasterListController extends Controller
             DB::rollback();
             return redirect()->back()->with('error', 'Error updating parcels: ' . $e->getMessage());
         }
+
+    }
+
+    /**
+     * Transfer (copy) an order (BL) to another ship and voyage.
+     * This creates a new order record and copies parcels. It does NOT modify the original order
+     * and does NOT create or modify SOA entries to avoid duplication in SOA.
+     */
+    public function transferOrder(Request $request, $orderId)
+    {
+        $request->validate([
+            'target_ship' => 'required|string',
+            'target_voyage' => 'required|string',
+        ]);
+
+        $original = Order::with('parcels')->findOrFail($orderId);
+
+        DB::beginTransaction();
+        try {
+            // Create a copy of the order with updated ship/voyage and a reference to the original
+            $data = $original->toArray();
+
+            // Remove fields we don't want copied or that are auto-managed
+            unset($data['id']);
+            unset($data['created_at']);
+            unset($data['updated_at']);
+
+            // Update ship/voyage and clear fields related to SOA/payment identifiers so they won't affect original SOA
+            $data['shipNum'] = $request->input('target_ship');
+            $data['voyageNum'] = $request->input('target_voyage');
+
+            // Keep a trace to the original order (optional) by adding a transferred_from field if exists,
+            // otherwise use remark to note transfer.
+            if (in_array('transferred_from', $original->getFillable())) {
+                $data['transferred_from'] = $original->id;
+            } else {
+                $data['remark'] = trim(($original->remark ?? '') . "\nTRANSFERRED FROM ORDER ID: {$original->id} (M/V EVERWIN STAR {$original->shipNum} VOYAGE NO. {$original->voyageNum})");
+            }
+
+            // Clear SOA-related fields so the new copy won't inherit payment associations
+            $data['OR'] = null;
+            $data['AR'] = null;
+            $data['or_ar_date'] = null;
+            $data['updated_by'] = Auth::user()->fName . ' ' . Auth::user()->lName;
+            $data['updated_location'] = $request->input('target_ship') . ' ' . $request->input('target_voyage');
+
+            $copy = Order::create($data);
+
+            // Copy parcels
+            foreach ($original->parcels as $parcel) {
+                $p = $parcel->replicate();
+                $p->orderId = $copy->id;
+                $p->save();
+            }
+
+            // Update original order to note where it was transferred to
+            $transferToInfo = "TRANSFERRED TO ORDER ID: {$copy->id} (M/V EVERWIN STAR {$copy->shipNum} VOYAGE NO. {$copy->voyageNum})";
+
+            // Preserve original ship/voyage explicitly to ensure they are not changed
+            $originalShip = $original->shipNum;
+            $originalVoyage = $original->voyageNum;
+
+            if (in_array('transferred_to', $original->getFillable())) {
+                $original->transferred_to = $copy->id;
+            } else {
+                $original->remark = trim(($original->remark ?? '') . "\n" . $transferToInfo);
+            }
+
+            // Reassign preserved values to avoid accidental changes
+            $original->shipNum = $originalShip;
+            $original->voyageNum = $originalVoyage;
+            $original->save();
+
+            // Log the transfer on the original order as an update
+            OrderUpdateLog::create([
+                'order_id' => $original->id,
+                'updated_by' => Auth::user()->fName . ' ' . Auth::user()->lName,
+                'field_name' => 'transfer',
+                'old_value' => null,
+                'new_value' => $transferToInfo,
+                'action_type' => 'update'
+            ]);
+
+            // Log the transfer as an OrderUpdateLog entry
+            OrderUpdateLog::create([
+                'order_id' => $copy->id,
+                'updated_by' => Auth::user()->fName . ' ' . Auth::user()->lName,
+                'field_name' => 'transfer',
+                'old_value' => null,
+                'new_value' => "Transferred from order {$original->id} ({$original->shipNum}/{$original->voyageNum}) to {$copy->shipNum}/{$copy->voyageNum}",
+                'action_type' => 'create'
+            ]);
+
+            DB::commit();
+
+            return response()->json(['success' => true, 'message' => 'Order transferred successfully', 'new_order_id' => $copy->id]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Transfer Order Error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Transfer failed: ' . $e->getMessage()], 500);
+        }
     }
 
     public function voyage($id) {
@@ -294,8 +396,33 @@ class MasterListController extends Controller
 
         // Fetch related parcels using the orderId
         $parcels = Parcel::where('orderId', $order->id)->get();
-        // Pass the order and parcels to the view
-        return view('masterlist.view-bl', compact('order', 'parcels'));
+        // Determine display ship/voyage: if this order was transferred from another, show original
+        $displayShip = $order->shipNum;
+        $displayVoyage = $order->voyageNum;
+
+        // If there's a transferred_from field, prefer it
+        if (isset($order->transferred_from) && $order->transferred_from) {
+            $orig = Order::find($order->transferred_from);
+            if ($orig) {
+                $displayShip = $orig->shipNum;
+                $displayVoyage = $orig->voyageNum;
+            }
+        } else {
+            // Try to parse remark for transfer note: "TRANSFERRED FROM ORDER ID: <id>"
+            if (!empty($order->remark)) {
+                if (preg_match('/TRANSFERRED FROM ORDER ID:\s*(\d+)/i', $order->remark, $m)) {
+                    $origId = intval($m[1]);
+                    $orig = Order::find($origId);
+                    if ($orig) {
+                        $displayShip = $orig->shipNum;
+                        $displayVoyage = $orig->voyageNum;
+                    }
+                }
+            }
+        }
+
+        // Pass the order, parcels and display values to the view
+        return view('masterlist.view-bl', compact('order', 'parcels', 'displayShip', 'displayVoyage'));
     }
 
     public function viewNoPriceBl($shipNum, $voyageNum, $orderId) {
@@ -304,8 +431,33 @@ class MasterListController extends Controller
 
         // Fetch related parcels using the orderId
         $parcels = Parcel::where('orderId', $order->id)->get();
-        // Pass the order and parcels to the view
-        return view('masterlist.view-no-price-bl', compact('order', 'parcels'));
+        // Determine display ship/voyage: if this order was transferred from another, show original
+        $displayShip = $order->shipNum;
+        $displayVoyage = $order->voyageNum;
+
+        // If there's a transferred_from field, prefer it
+        if (isset($order->transferred_from) && $order->transferred_from) {
+            $orig = Order::find($order->transferred_from);
+            if ($orig) {
+                $displayShip = $orig->shipNum;
+                $displayVoyage = $orig->voyageNum;
+            }
+        } else {
+            // Try to parse remark for transfer note: "TRANSFERRED FROM ORDER ID: <id>"
+            if (!empty($order->remark)) {
+                if (preg_match('/TRANSFERRED FROM ORDER ID:\s*(\d+)/i', $order->remark, $m)) {
+                    $origId = intval($m[1]);
+                    $orig = Order::find($origId);
+                    if ($orig) {
+                        $displayShip = $orig->shipNum;
+                        $displayVoyage = $orig->voyageNum;
+                    }
+                }
+            }
+        }
+
+        // Pass the order, parcels and display values to the view
+        return view('masterlist.view-no-price-bl', compact('order', 'parcels', 'displayShip', 'displayVoyage'));
     }
 
     public function container(Request $request) {
