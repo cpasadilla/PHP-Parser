@@ -282,6 +282,15 @@
                                 </td>
                             </tr>
                         </table>
+                        <datalist id="multipliers">
+                            <option value="3256">
+                            <option value="3000">
+                            <option value="2500">
+                            <option value="2000">
+                            <option value="1500">
+                            <option value="1000">
+                            <option value="500">
+                        </datalist>
                         <table class="w-full text-sm text-center" style="border-collapse: collapse; border-spacing: 0; width: 100%; table-layout: fixed;">
                             <tr style="height: 15px;"> <!-- Set row height -->
                                 <!-- SHIPPER CONTACT NUMBER -->
@@ -576,24 +585,15 @@
                         <input type="text" id="value" name="value"
                             class="w-full p-2 border rounded-md mb-1 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200"-->
                             <!-- Measurements -->
-                        <div class="space-y-2" id="measurements">
-                            <label class="block font-medium text-gray-900 dark:text-gray-200">Measurements (L × W × H):</label>
-                            <div class="grid grid-cols-4 gap-2 items-center">
-                                <input type="number" id="length" name="length"
-                                    class="p-2 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200"
-                                    placeholder="Length" min="0" step="0.01">
-
-                                <input type="number" id="width" name="width"
-                                    class="p-2 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200"
-                                    placeholder="Width" min="0" step="0.01">
-
-                                <input type="number" id="height" name="height"
-                                    class="p-2 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200"
-                                    placeholder="Height" min="0" step="0.01">
-
-                                <input list="multipliers" id="multiplier" name="multiplier" type="number"
-                                    class="p-2 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200"
-                                    placeholder="Multiplier" min="0" step="0.01">
+                        <div class="space-y-2" id="measurementsContainer">
+                            <div class="flex justify-between items-center">
+                                <label class="block font-medium text-gray-900 dark:text-gray-200">Measurements (L × W × H):</label>
+                                <button type="button" id="addMeasurementBtn" class="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm">
+                                    + Add Measurement
+                                </button>
+                            </div>
+                            <div id="measurementsList">
+                                <!-- Measurement entries will be added here -->
                             </div>
                         </div>
 
@@ -1041,6 +1041,62 @@
         });
     });
 
+    // Initialize measurements
+    function initializeMeasurements() {
+        const measurementsList = document.getElementById('measurementsList');
+        measurementsList.innerHTML = ''; // Clear existing
+        addMeasurementEntry(); // Add first measurement entry
+    }
+
+    function addMeasurementEntry(length = '', width = '', height = '', multiplier = '', quantity = '') {
+        const measurementsList = document.getElementById('measurementsList');
+        const measurementIndex = measurementsList.children.length;
+
+        const measurementDiv = document.createElement('div');
+        measurementDiv.className = 'measurement-entry grid grid-cols-5 gap-2 items-center mb-2 p-2 border rounded';
+        measurementDiv.innerHTML = `
+            <input type="number" name="measurement_length_${measurementIndex}" 
+                class="p-2 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200"
+                placeholder="Length" min="0" step="0.01" value="${length}">
+            <input type="number" name="measurement_width_${measurementIndex}" 
+                class="p-2 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200"
+                placeholder="Width" min="0" step="0.01" value="${width}">
+            <input type="number" name="measurement_height_${measurementIndex}" 
+                class="p-2 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200"
+                placeholder="Height" min="0" step="0.01" value="${height}">
+            <input list="multipliers" name="measurement_multiplier_${measurementIndex}" type="number"
+                class="p-2 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200"
+                placeholder="Multiplier" min="0" step="0.01" value="${multiplier}">
+            <div class="flex items-center gap-1">
+                <input type="number" name="measurement_quantity_${measurementIndex}" 
+                    class="p-2 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200 flex-1"
+                    placeholder="Qty" min="1" value="${quantity || 1}">
+                <button type="button" class="remove-measurement px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600" 
+                    onclick="removeMeasurementEntry(this)">×</button>
+            </div>
+        `;
+        measurementsList.appendChild(measurementDiv);
+    }
+
+    function removeMeasurementEntry(button) {
+        const measurementsList = document.getElementById('measurementsList');
+        if (measurementsList.children.length > 1) {
+            button.closest('.measurement-entry').remove();
+        } else {
+            alert('At least one measurement is required.');
+        }
+    }
+
+    // Add event listener for add measurement button
+    document.getElementById('addMeasurementBtn').addEventListener('click', function() {
+        addMeasurementEntry();
+    });
+
+    // Initialize measurements on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeMeasurements();
+    });
+
     function addToCart() {
         // Plus
         let selectedValue = document.getElementById("unit").value;
@@ -1058,33 +1114,49 @@
             description = "MODEL: \nENGINE NO: \nCHASSIS NO: \nCOLOR: ";
         }
 
-        // Handle empty or zero values to be null/empty for database
-        let l = parseFloat(document.getElementById('length').value) || null;
-        let w = parseFloat(document.getElementById('width').value) || null;
-        let h = parseFloat(document.getElementById('height').value) || null;
-        let weight = document.getElementById('weight').value ? parseFloat(document.getElementById('weight').value) : null;
-        
-        // Handle multiplier - convert 'N/A' or empty string to null
-        let m = document.getElementById('multiplier').value;
-        if (m === 'N/A' || m === '' || m === '0') {
-            m = null;
-        } else {
-            m = parseFloat(m);
-        }
-        
-        let price = parseFloat(document.getElementById('price').value.replace(/,/g, "")) || 0; // Ensure price is a number
-        let quantity = parseFloat(document.getElementById('quantity').value) || 1;
-        let total = 0;
-        let category = document.getElementById('category').value;
+        // Collect all measurements
+        const measurementsList = document.getElementById('measurementsList');
+        const measurementEntries = measurementsList.querySelectorAll('.measurement-entry');
+        const measurements = [];
+        let totalQuantity = 0;
+        let hasValidMeasurements = false;
 
-        if (m === null) {
-            total = price * quantity;
-        } else {
-            if(l === null || w === null || h === null) {
-                alert("Please enter the measurements before adding to cart!");
-                return;
+        measurementEntries.forEach((entry, index) => {
+            const length = parseFloat(entry.querySelector(`[name="measurement_length_${index}"]`).value) || 0;
+            const width = parseFloat(entry.querySelector(`[name="measurement_width_${index}"]`).value) || 0;
+            const height = parseFloat(entry.querySelector(`[name="measurement_height_${index}"]`).value) || 0;
+            const multiplier = parseFloat(entry.querySelector(`[name="measurement_multiplier_${index}"]`).value) || 0;
+            const quantity = parseInt(entry.querySelector(`[name="measurement_quantity_${index}"]`).value) || 0;
+
+            if (length > 0 && width > 0 && height > 0 && multiplier > 0 && quantity > 0) {
+                const rate = length * width * height * multiplier;
+                measurements.push({
+                    length: length,
+                    width: width,
+                    height: height,
+                    multiplier: multiplier,
+                    quantity: quantity,
+                    rate: rate,
+                    freight: rate * quantity
+                });
+                totalQuantity += quantity;
+                hasValidMeasurements = true;
             }
-            price = l * w * h * m;
+        });
+
+        let weight = document.getElementById('weight').value ? parseFloat(document.getElementById('weight').value) : null;
+        let price = parseFloat(document.getElementById('price').value.replace(/,/g, "")) || 0;
+        let category = document.getElementById('category').value;
+        let total = 0;
+
+        if (hasValidMeasurements) {
+            // Use measurements to calculate total
+            total = measurements.reduce((sum, measurement) => sum + measurement.freight, 0);
+            price = 0; // Price will be calculated per measurement
+        } else {
+            // No valid measurements, use the input quantity
+            let quantity = parseFloat(document.getElementById('quantity').value) || 1;
+            totalQuantity = quantity;
             total = price * quantity;
         }
 
@@ -1095,14 +1167,11 @@
             unit: document.getElementById('unit').value,
             category: category,
             weight: weight,
-            length: l,
-            width: w,
-            height: h,
-            multiplier: m,
             price: price,
-            description: description || "", // Allow empty description
-            quantity: quantity,
-            total: total
+            description: description || "",
+            quantity: totalQuantity,
+            total: total,
+            measurements: measurements
         };
 
         cart.push(item);
@@ -1161,36 +1230,9 @@
                 <td class="p-2 text-center">${item.itemName} ${item.description}</td>
                 <td class="p-2 text-center"> </td>
                 <td class="p-2 text-center">${item.weight !== null ? item.weight : ''}</td>
-            `;
-
-            // Check if multiplier is empty or null
-            if (!item.multiplier || item.multiplier === 'N/A') {
-                // Check if length, width, or height are null and display accordingly
-                const length = item.length !== null ? item.length : '';
-                const width = item.width !== null ? item.width : '';
-                const height = item.height !== null ? item.height : '';
-                
-                if (length || width || height) {
-                    row.innerHTML += `<td class="p-2 text-center">${length} × ${width} × ${height}</td>`;
-                } else {
-                    row.innerHTML += `<td class="p-2 text-center"></td>`;
-                }
-            } else {
-                // Check if length, width, or height are null and display accordingly
-                const length = item.length !== null ? item.length : '';
-                const width = item.width !== null ? item.width : '';
-                const height = item.height !== null ? item.height : '';
-                
-                if (length || width || height) {
-                    row.innerHTML += `<td class="p-2 text-center">${length} × ${width} × ${height} × ${Number(item.multiplier).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>`;
-                } else {
-                    row.innerHTML += `<td class="p-2 text-center"></td>`;
-                }
-            }
-
-            row.innerHTML += `
-                <td class="p-2 text-center">${Number(item.price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                <td class="p-2 text-center">${Number(item.total).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                <td class="p-2 text-center">${item.measurements && item.measurements.length > 0 ? item.measurements.map(m => `${m.length} × ${m.width} × ${m.height}`).join('<br>') : ''}</td>
+                <td class="p-2 text-center">${item.measurements && item.measurements.length > 0 ? item.measurements.map(m => Number(m.rate).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).join('<br>') : Number(item.price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                <td class="p-2 text-center">${item.measurements && item.measurements.length > 0 ? item.measurements.map(m => Number(m.freight).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).join('<br>') : Number(item.total).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                 <td class="p-2 text-center">
                     <a href="#" class="text-blue-500 text-center" onclick="openEditModal(${index}, event)">
                         <button id="eds" type="button" variant="warning" class="bg-yellow-500 hover:bg-yellow-600 text-white rounded p-2">
@@ -1370,14 +1412,11 @@
         document.getElementById('unit').value = "";
         document.getElementById('category').value = "";
         document.getElementById('weight').value = "";
-        document.getElementById('length').value = "";
-        document.getElementById('width').value = "";
-        document.getElementById('height').value = "";
-        document.getElementById('multiplier').value = "";
         document.getElementById('price').value = "";
         document.getElementById('description').value = "";
         document.getElementById('quantity').value = "";
-        document.getElementById('description').value = "";
+        // Clear measurements and reinitialize
+        initializeMeasurements();
     }
 
     // Add this script to your existing JavaScript code

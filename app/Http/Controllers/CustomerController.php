@@ -682,12 +682,28 @@ class CustomerController extends Controller {
         // Only process cart items if cart is not empty
         if ($cart && !empty($cart)) {
             foreach ($cart as $item) {
+                // Initialize variables to prevent undefined variable errors
+                $weight = null;
+                $length = null;
+                $width = null;
+                $height = null;
+                $multiplier = null;
+                
                 // Handle empty or zero values for weight and measurements
                 $weight = !empty($item->weight) && $item->weight !== '0' && $item->weight !== '0.00' ? $item->weight : null;
-                $length = !empty($item->length) && $item->length !== '0' && $item->length !== '0.00' ? $item->length : null;
-                $width = !empty($item->width) && $item->width !== '0' && $item->width !== '0.00' ? $item->width : null;
-                $height = !empty($item->height) && $item->height !== '0' && $item->height !== '0.00' ? $item->height : null;
-                $multiplier = $item->multiplier == "N/A" || empty($item->multiplier) ? null : $item->multiplier;
+                
+                // Handle dimensions - for multiple measurements, use null for legacy fields
+                if (isset($item->measurements) && is_array($item->measurements) && !empty($item->measurements)) {
+                    // For new multiple measurements, use null for legacy dimension fields
+                    $length = null;
+                    $width = null;
+                    $height = null;
+                } else {
+                    // For legacy single measurement items, use the direct properties
+                    $length = !empty($item->length) && $item->length !== '0' && $item->length !== '0.00' ? $item->length : null;
+                    $width = !empty($item->width) && $item->width !== '0' && $item->width !== '0.00' ? $item->width : null;
+                    $height = !empty($item->height) && $item->height !== '0' && $item->height !== '0.00' ? $item->height : null;
+                }
 
                 if (isset($checks) && $checks == true) {
                     $parcel = parcel::create([
@@ -700,6 +716,7 @@ class CustomerController extends Controller {
                         'width' => $width,
                         'height' => $height,
                         'multiplier' => $multiplier,
+                        'measurements' => isset($item->measurements) ? $item->measurements : null,
                         'desc' => $item->description,
                         'total' => 0,
                         'unit' => $item->unit,
@@ -717,6 +734,7 @@ class CustomerController extends Controller {
                         'width' => $width,
                         'height' => $height,
                         'multiplier' => $multiplier,
+                        'measurements' => isset($item->measurements) ? $item->measurements : null,
                         'desc' => $item->description,
                         'total' => is_numeric($item->total) ? floatval($item->total) : 0,
                         'unit' => $item->unit,

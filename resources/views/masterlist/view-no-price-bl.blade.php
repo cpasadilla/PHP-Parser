@@ -112,7 +112,11 @@
                                 @endif
                             </td>
                             <td class="p-2" style="font-family: Arial; font-size: 13px;">
-                                @if (!empty($parcel->length) && !empty($parcel->width) && !empty($parcel->height) && 
+                                @if (!empty($parcel->measurements) && is_array($parcel->measurements))
+                                    @foreach($parcel->measurements as $measurement)
+                                        {{$measurement['length']}} × {{$measurement['width']}} × {{$measurement['height']}} ({{$measurement['quantity']}})<br>
+                                    @endforeach
+                                @elseif (!empty($parcel->length) && !empty($parcel->width) && !empty($parcel->height) && 
                                     $parcel->length != '0' && $parcel->length != '0.00' && 
                                     $parcel->width != '0' && $parcel->width != '0.00' && 
                                     $parcel->height != '0' && $parcel->height != '0.00')
