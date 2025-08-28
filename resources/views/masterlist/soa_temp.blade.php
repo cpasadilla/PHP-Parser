@@ -74,7 +74,7 @@
             <div id="voyage-{{ $ship }}-{{ Str::slug($voyage) }}" class="accordion-content">
                 <div class="overflow-x-auto mt-4">
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700" style="font-family: Arial, sans-serif; font-size: 11px; table-layout: fixed; width: 100%;">
-            <thead class="bg-gray-100 dark:bg-gray-800">
+                        <thead class="bg-gray-100 dark:bg-gray-800">
                             <tr>
                                 <th style="width: 5%;" class="px-4 py-2">BL #</th>
                                 <th style="width: 12%;" class="px-4 py-2">CONSIGNEE</th>
@@ -83,13 +83,14 @@
                                 <th style="width: 8%;" class="px-4 py-2">FREIGHT</th>
                                 <th style="width: 8%;" class="px-4 py-2">VALUATION</th>
                                 <th style="width: 8%;" class="px-4 py-2">WHARFAGE</th>
-                                <th style="width: 8%;" class="px-4 py-2">PADLOCK FEE</th>
+                                <th style="width: 8%;" class="px-4 py-2">OTHERS FEE</th>
                                 <th style="width: 8%;" class="px-4 py-2">PPA MANILA</th>
-                <th style="width: 8%;" class="px-4 py-2">TOTAL</th>
-                <th style="width: 4%;" class="px-2 py-2">&nbsp;</th>
+                                <th style="width: 8%;" class="px-4 py-2">TOTAL</th>
+                                <th style="width: 4%;" class="px-2 py-2">&nbsp;</th>
                             </tr>
                         </thead>
-            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">                            @php 
+                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                            @php
                                 $voyageTotal = 0;
                                 $voyageFreight = 0;
                                 $voyageValuation = 0;
@@ -100,7 +101,8 @@
                             @endphp
                             @foreach($orders as $order)
                                 @php
-                                    $interestAmount = 0;                                    // Calculate interest if interest_start_date is set
+                                    $interestAmount = 0;
+                                    // Calculate interest if interest_start_date is set
                                     if ($order->interest_start_date) {
                                         $startDate = \Carbon\Carbon::parse($order->interest_start_date);
                                         $currentDate = \Carbon\Carbon::now();
@@ -117,7 +119,6 @@
                                         // No interest should be calculated if interest has been deactivated
                                         $interestAmount = 0;
                                     }
-                                    
                                     // Add interest to the total
                                     $totalWithInterest = $order->totalAmount + $interestAmount;
                                     $voyageInterest += $interestAmount;
@@ -156,15 +157,16 @@
                                     </td>
                                 </tr>
                                 @php
-                                $voyageTotal += ($order->freight + $order->valuation + ($order->wharfage ?? 0) + ($order->padlock_fee ?? 0) + ($order->ppa_manila ?? 0)) + $interestAmount;
+                                    $voyageTotal += ($order->freight + $order->valuation + ($order->wharfage ?? 0) + ($order->padlock_fee ?? 0) + ($order->ppa_manila ?? 0)) + $interestAmount;
                                     $voyageFreight += $order->freight; 
                                     $voyageValuation += $order->valuation;
                                     $voyageWharfage += ($order->wharfage ?? 0);
                                     $voyagePadlockFee += ($order->padlock_fee ?? 0);
                                     $voyagePpaManila += ($order->ppa_manila ?? 0);
                                     $voyageInterest += $interestAmount;
-                                @endphp@endforeach
-                                @php
+                                @endphp
+                            @endforeach
+                            @php
                                 // Calculate discounted values if customer is eligible AND voyageFreight is at least 50,000
                                 if ($isEligible && $voyageFreight >= 50000) {
                                     $discountAmount = $voyageFreight * 0.05;
@@ -177,7 +179,6 @@
                                     $discountedTotal = $voyageTotal;
                                     $isEligible = false; // Override eligibility if freight is less than 50,000
                                 }
-                                
                                 // The padlock fee is already included in $voyageTotal and $discountedTotal
                             @endphp
                             <tr class="bg-gray-50 dark:bg-gray-900 font-semibold" style="line-height: 0.8;">
@@ -206,7 +207,7 @@
                                 </tr>
                             @endif
                             @if($isEligible)
-                                <tr id="discountRow" class="font-semibold" style="line-height: 0; background-color:rgb(240, 240, 5); color: black;">
+                                <tr id="discountRow" class="font-semibold" style="line-height: 0; background-color:rgb(240, 240, 5); color: black;">\
                                     <td colspan="4" class="px-4 py-2" style="text-align: left;">5% Discount on total freight if paid within <span style="font-weight: bold;">15 days</span> upon receipt of SOA</td>
                                     <td id="discountedFreightCell" style="width: 100px; font-weight: bold;" class="px-4 py-2 text-right">{{ number_format($discountedFreight, 2) }}</td>
                                     <td id="discountedValuationCell" style="width: 100px;" class="px-4 py-2 text-right">{{ number_format($voyageValuation, 2) }}</td>
@@ -217,127 +218,108 @@
                                     <td></td>
                                 </tr>
                             @endif
-                            <tr id="penaltyInfoRow" class="font-semibold" style="line-height: 0.8; background-color:rgb(231, 15, 22); color: white;">
-                                <td colspan="4" class="px-4 py-1" style="text-align: left; word-wrap: break-word; white-space: normal; color: white;">a PENALTY rate of 1% PER MONTH will be applied to total bills if not paid every after 30days</td>
-                                <td class="px-4 py-1 text-right"></td>
-                                <td class="px-4 py-1 text-right"></td>
-                                <td class="px-4 py-1 text-right"></td>
-                                <td class="px-4 py-1 text-right"></td>
-                                <td class="px-4 py-1 text-right"></td>
-                                <td class="px-4 py-1 text-right" style="color: white;">
-                                    <span id="finalAmount" class="font-bold" style="color: white;">
-                                        @if($voyageInterest > 0)
-                                            {{ number_format($voyageTotal, 2) }}
-                                        @else
-                                            @if($isEligible)
-                                                {{ number_format($discountedTotal, 2) }}
-                                            @else
+                                <tr id="penaltyInfoRow" class="font-semibold" style="line-height: 0.8; background-color:rgb(231, 15, 22); color: white;">
+                                    <td colspan="4" class="px-4 py-1" style="text-align: left; word-wrap: break-word; white-space: normal; color: white;">a PENALTY rate of 1% PER MONTH will be applied to total bills if not paid every after 30days</td>
+                                    <td class="px-4 py-1 text-right"></td>
+                                    <td class="px-4 py-1 text-right"></td>
+                                    <td class="px-4 py-1 text-right"></td>
+                                    <td class="px-4 py-1 text-right"></td>
+                                    <td class="px-4 py-1 text-right"></td>
+                                    <td class="px-4 py-1 text-right" style="color: white;">
+                                        <span id="finalAmount" class="font-bold" style="color: white;">
+                                            @if($voyageInterest > 0)
                                                 {{ number_format($voyageTotal, 2) }}
+                                            @else
+                                                @if($isEligible)
+                                                    {{ number_format($discountedTotal, 2) }}
+                                                @else
+                                                    {{ number_format($voyageTotal, 2) }}
+                                                @endif
                                             @endif
-                                        @endif
-                                    </span>
-                                </td>
-                                <td></td>
-                            </tr>
-                        </tbody>
+                                        </span>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                            </tbody>
                     </table>
                 </div>
             </div>
-            </div>
+        </div>
 
-            <!-- Signature section for screen display -->
-            <div class="signature-section">
-                <div style="margin: -1px 0 0 0; padding: 0; display: flex; justify-content: space-between; font-size: 12px; line-height: 1;">
-                    <div style="width: 60%;">
-                        <p style="margin: 0; line-height: 2;"><strong>PREPARED BY:</strong></p>
-                        <p style="margin-bottom: 0; line-height: 1;"><strong style="margin-left: 100px; font-size: 12px; text-decoration: underline; font-size: 14px;">CHERRY MAE E. CAMAYA</strong></p>
-                        <p style="margin-top: 0; margin-left: 145px; font-size: 13px; line-height: 1;">Billing Officer</p>
-                        <p style="margin-bottom: 0; line-height: 1;"><strong style="font-size: 12px; text-decoration: underline; font-size: 14px; color: red;">Kindly settle your account at St. Francis office, or by bank</strong></p>
-                        <p style="margin-top: 0; line-height: 1;"><strong style="font-size: 12px; text-decoration: underline; font-size: 14px; color: red;">transfer using the details below:</strong></p>
-                    </div>
-                    <div style="width: 35%; text-align: left; line-height: 1;">
-                        <p style="margin-bottom: 0; line-height: 2;"><strong>RECEIVED BY:</strong></p>
-                        <p style="margin-bottom: 0; line-height: 1;"><strong style="margin-left: 100px; font-size: 12px; text-decoration: underline; font-size: 14px;">_________________________</strong></p>
-                        <p style="margin-top: 0; margin-left: 100px; font-size: 13px; line-height: 1;">Signature over Printed Name</p>
-                        <p style="margin-bottom: 0; line-height: 0;"><strong>DATE:</strong></p>
-                        <p style="margin-bottom: 0; line-height: 1;"><strong style="margin-left: 100px; font-size: 12px; text-decoration: underline; font-size: 14px;">_________________________</strong></p>
-                        <p style="margin-top: 0; margin-left: 150px; font-size: 13px; line-height: 1;">MM/DD/YR</p>
-                    </div>
+        <!-- Signature section for screen display -->
+        <div class="signature-section">
+            <div style="margin: -1px 0 0 0; padding: 0; display: flex; justify-content: space-between; font-size: 12px; line-height: 1;">
+                <div style="width: 60%;">
+                    <p style="margin: 0; line-height: 2;"><strong>PREPARED BY:</strong></p>
+                    <p style="margin-bottom: 0; line-height: 1;"><strong style="margin-left: 100px; font-size: 12px; text-decoration: underline; font-size: 14px;">CHERRY MAE E. CAMAYA</strong></p>
+                    <p style="margin-top: 0; margin-left: 145px; font-size: 13px; line-height: 1;">Billing Officer</p>
+                    <p style="margin-bottom: 0; line-height: 1;"><strong style="font-size: 12px; text-decoration: underline; font-size: 14px; color: red;">Kindly settle your account at St. Francis office, or by bank</strong></p>
+                    <p style="margin-top: 0; line-height: 1;"><strong style="font-size: 12px; text-decoration: underline; font-size: 14px; color: red;">transfer using the details below:</strong></p>
                 </div>
-                <div style="margin: 0; padding: 0; display: flex; justify-content: space-between; font-size: 12px; line-height: 1;">
-                    <div style="width: 35%;">
-                        <table style="border-collapse: collapse; width: 100%; font-size: 12px; line-height: 1;">
-                            <tr>
-                                <td style="border: 1px solid black; padding: 5px; line-height: 1;"><strong>ACCOUNT NAME:</strong></td>
-                            </tr>
-                            <tr>
-                                <td style="border: 1px solid black; padding: 5px; line-height: 1;">St. Francis Xavier Star Shipping Lines, Inc.</td>
-                            </tr>
-                            <tr>
-                                <td style="border: 1px solid black; padding: 5px; line-height: 1;"><strong>ACCOUNT NUMBER:</strong></td>
-                            </tr>
-                            <tr>
-                                <td style="border: 1px solid black; padding: 5px; line-height: 1;"><strong>PNB:</strong> 2277-7000-1147</td>
-                            </tr>
-                            <tr>
-                                <td style="border: 1px solid black; padding: 5px; line-height: 1;"><strong>LBP:</strong> 1082-1039-76</td>
-                            </tr>
-                        </table>
-                    </div>
-                    <div style="width: 35%; text-align: left; line-height: 1;">
-                        <p style="margin-bottom: 0; line-height: 1;"><strong></strong></p>
-                    </div>
+                <div style="width: 35%; text-align: left; line-height: 1;">
+                    <p style="margin-bottom: 0; line-height: 2;"><strong>RECEIVED BY:</strong></p>
+                    <p style="margin-bottom: 0; line-height: 1;"><strong style="margin-left: 100px; font-size: 12px; text-decoration: underline; font-size: 14px;">_________________________</strong></p>
+                    <p style="margin-top: 0; margin-left: 100px; font-size: 13px; line-height: 1;">Signature over Printed Name</p>
+                    <p style="margin-bottom: 0; line-height: 0;"><strong>DATE:</strong></p>
+                    <p style="margin-bottom: 0; line-height: 1;"><strong style="margin-left: 100px; font-size: 12px; text-decoration: underline; font-size: 14px;">_________________________</strong></p>
+                    <p style="margin-top: 0; margin-left: 150px; font-size: 13px; line-height: 1;">MM/DD/YR</p>
                 </div>
             </div>
-
-            <!-- Print-only signature section that will stick to bottom -->
-            <div class="print-signature" style="display: none;">
-                <div style="margin: -1px 0 0 0; padding: 0; display: flex; justify-content: space-between; font-size: 12px; line-height: 1;">
-                    <div style="width: 60%;">
-                        <p style="margin: 0; line-height: 2;"><strong>PREPARED BY:</strong></p>
-                        <p style="margin-bottom: 0; line-height: 1;"><strong style="margin-left: 100px; font-size: 12px; text-decoration: underline; font-size: 14px;">CHERRY MAE E. CAMAYA</strong></p>
-                        <p style="margin-top: 0; margin-left: 145px; font-size: 13px; line-height: 1;">Billing Officer</p>
-                        <p style="margin-bottom: 0; line-height: 1;"><strong style="font-size: 12px; text-decoration: underline; font-size: 14px; color: red;">Kindly settle your account at St. Francis office, or by bank</strong></p>
-                        <p style="margin-top: 0; line-height: 1;"><strong style="font-size: 12px; text-decoration: underline; font-size: 14px; color: red;">transfer using the details below:</strong></p>
-                    </div>
-                    <div style="width: 35%; text-align: left; line-height: 1;">
-                        <p style="margin-bottom: 0; line-height: 2;"><strong>RECEIVED BY:</strong></p>
-                        <p style="margin-bottom: 0; line-height: 1;"><strong style="margin-left: 100px; font-size: 12px; text-decoration: underline; font-size: 14px;">_________________________</strong></p>
-                        <p style="margin-top: 0; margin-left: 100px; font-size: 13px; line-height: 1;">Signature over Printed Name</p>
-                        <p style="margin-bottom: 0; line-height: 0;"><strong>DATE:</strong></p>
-                        <p style="margin-bottom: 0; line-height: 1;"><strong style="margin-left: 100px; font-size: 12px; text-decoration: underline; font-size: 14px;">_________________________</strong></p>
-                        <p style="margin-top: 0; margin-left: 150px; font-size: 13px; line-height: 1;">MM/DD/YR</p>
-                    </div>
+            <div style="margin: 0; padding: 0; display: flex; justify-content: space-between; font-size: 12px; line-height: 1;">
+                <div style="width: 35%;">
+                    <table style="border-collapse: collapse; width: 100%; font-size: 12px; line-height: 1;">
+                        <tr><td style="border: 1px solid black; padding: 5px; line-height: 1;"><strong>ACCOUNT NAME:</strong></td></tr>
+                        <tr><td style="border: 1px solid black; padding: 5px; line-height: 1;">St. Francis Xavier Star Shipping Lines, Inc.</td></tr>
+                        <tr><td style="border: 1px solid black; padding: 5px; line-height: 1;"><strong>ACCOUNT NUMBER:</strong></td></tr>
+                        <tr><td style="border: 1px solid black; padding: 5px; line-height: 1;"><strong>PNB:</strong> 2277-7000-1147</td></tr>
+                        <tr><td style="border: 1px solid black; padding: 5px; line-height: 1;"><strong>LBP:</strong> 1082-1039-76</td></tr>
+                    </table>
                 </div>
-                <div style="margin: 0; padding: 0; display: flex; justify-content: space-between; font-size: 12px; line-height: 1;">
-                    <div style="width: 35%;">
-                        <table style="border-collapse: collapse; width: 100%; font-size: 12px; line-height: 1;">
-                            <tr>
-                                <td style="border: 1px solid black; padding: 5px; line-height: 1;"><strong>ACCOUNT NAME:</strong></td>
-                            </tr>
-                            <tr>
-                                <td style="border: 1px solid black; padding: 5px; line-height: 1;">St. Francis Xavier Star Shipping Lines, Inc.</td>
-                            </tr>
-                            <tr>
-                                <td style="border: 1px solid black; padding: 5px; line-height: 1;"><strong>ACCOUNT NUMBER:</strong></td>
-                            </tr>
-                            <tr>
-                                <td style="border: 1px solid black; padding: 5px; line-height: 1;"><strong>PNB:</strong> 2277-7000-1147</td>
-                            </tr>
-                            <tr>
-                                <td style="border: 1px solid black; padding: 5px; line-height: 1;"><strong>LBP:</strong> 1082-1039-76</td>
-                            </tr>
-                        </table>
-                    </div>
-                    <div style="width: 35%; text-align: left; line-height: 1;">
-                        <p style="margin-bottom: 0; line-height: 1;"><strong></strong></p>
-                    </div>
+                <div style="width: 35%; text-align: left; line-height: 1;">
+                    <p style="margin-bottom: 0; line-height: 1;"><strong></strong></p>
                 </div>
             </div>
         </div>
+        
+        <!-- Print-only signature section that will stick to bottom -->
+        <div class="print-signature" style="display: none;">
+            <div style="margin: -1px 0 0 0; padding: 0; display: flex; justify-content: space-between; font-size: 12px; line-height: 1;">
+                <div style="width: 60%;">
+                    <p style="margin: 0; line-height: 2;"><strong>PREPARED BY:</strong></p>
+                    <p style="margin-bottom: 0; line-height: 1;"><strong style="margin-left: 100px; font-size: 12px; text-decoration: underline; font-size: 14px;">CHERRY MAE E. CAMAYA</strong></p>
+                    <p style="margin-top: 0; margin-left: 145px; font-size: 13px; line-height: 1;">Billing Officer</p>
+                    <p style="margin-bottom: 0; line-height: 1;"><strong style="font-size: 12px; text-decoration: underline; font-size: 14px; color: red;">Kindly settle your account at St. Francis office, or by bank</strong></p>
+                    <p style="margin-top: 0; line-height: 1;"><strong style="font-size: 12px; text-decoration: underline; font-size: 14px; color: red;">transfer using the details below:</strong></p>
+                </div>
+                <div style="width: 35%; text-align: left; line-height: 1;">
+                    <p style="margin-bottom: 0; line-height: 2;"><strong>RECEIVED BY:</strong></p>
+                    <p style="margin-bottom: 0; line-height: 1;"><strong style="margin-left: 100px; font-size: 12px; text-decoration: underline; font-size: 14px;">_________________________</strong></p>
+                    <p style="margin-top: 0; margin-left: 100px; font-size: 13px; line-height: 1;">Signature over Printed Name</p>
+                    <p style="margin-bottom: 0; line-height: 0;"><strong>DATE:</strong></p>
+                    <p style="margin-bottom: 0; line-height: 1;"><strong style="margin-left: 100px; font-size: 12px; text-decoration: underline; font-size: 14px;">_________________________</strong></p>
+                    <p style="margin-top: 0; margin-left: 150px; font-size: 13px; line-height: 1;">MM/DD/YR</p>
+                </div>
+            </div>
+            <div style="margin: 0; padding: 0; display: flex; justify-content: space-between; font-size: 12px; line-height: 1;">
+                <div style="width: 35%;">
+                    <table style="border-collapse: collapse; width: 100%; font-size: 12px; line-height: 1;">
+                        <tr><td style="border: 1px solid black; padding: 5px; line-height: 1;"><strong>ACCOUNT NAME:</strong></td></tr>
+                        <tr><td style="border: 1px solid black; padding: 5px; line-height: 1;">St. Francis Xavier Star Shipping Lines, Inc.</td></tr>
+                        <tr><td style="border: 1px solid black; padding: 5px; line-height: 1;"><strong>ACCOUNT NUMBER:</strong></td></tr>
+                        <tr><td style="border: 1px solid black; padding: 5px; line-height: 1;"><strong>PNB:</strong> 2277-7000-1147</td></tr>
+                        <tr><td style="border: 1px solid black; padding: 5px; line-height: 1;"><strong>LBP:</strong> 1082-1039-76</td></tr>
+                    </table>
+                </div>
+                <div style="width: 35%; text-align: left; line-height: 1;">
+                    <p style="margin-bottom: 0; line-height: 1;"><strong></strong></p>
+                </div>
+            </div>
+        </div>
+    </div>
     </div><br>
 
-    <!-- For printing -->    <script>
+    <!-- For printing -->
+    <script>
         function printContent(divId) {
             console.log("printContent function called");
             var printContainer = document.getElementById(divId);
@@ -354,7 +336,7 @@
                     input.style.fontSize = "12px";
                 }
                 // Ensure input value is preserved in the value attribute for printing
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             input.setAttribute('value', input.value);
+                input.setAttribute('value', input.value);
             });
 
             // Clone the print container to measure ONLY the main content

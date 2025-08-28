@@ -86,7 +86,7 @@
                                 <th style="width: 375px;" class="px-4 py-2">Description</th>
                                 <th style="width: 100px;" class="px-4 py-2">Freight</th>
                                 <th style="width: 100px;" class="px-4 py-2">Valuation</th>
-                                <th style="width: 100px;" class="px-4 py-2">Padlock Fee</th>
+                                <th style="width: 100px;" class="px-4 py-2">Others</th>
                                 <th style="width: 100px;" class="px-4 py-2">Total Amount</th>
                             </tr>
                         </thead>
@@ -108,7 +108,8 @@
                                         @endforeach
                                     </td>
                                     <td style="width: 100px;" class="px-4 py-2 text-right">{{ number_format($order->freight, 2) }}</td>
-                                    <td style="width: 100px;" class="px-4 py-2 text-right">{{ number_format($order->valuation, 2) }}</td>                                    <td style="width: 100px;" class="px-4 py-2 text-right">{{ number_format($order->padlock_fee ?? 0, 2) }}</td>
+                                    <td style="width: 100px;" class="px-4 py-2 text-right">{{ number_format($order->valuation, 2) }}</td>
+                                    <td style="width: 100px;" class="px-4 py-2 text-right">{{ number_format($order->padlock_fee ?? 0, 2) }}</td>
                                     <td style="width: 100px;" class="px-4 py-2 text-right">{{ number_format($order->totalAmount, 2) }}</td>
                                 </tr>
                                 @php

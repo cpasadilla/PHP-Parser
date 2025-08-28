@@ -50,9 +50,9 @@
                                                     'ship' => $ship, 
                                                     'voyage' => urlencode($voyage),
                                                     'customerId' => request('customer_id')
-                                                ]) }}" 
-                                                class="px-3 py-1 text-white bg-green-500 rounded hover:bg-green-700"
-                                                onclick="event.preventDefault(); openSOATemp('{{ $ship }}', '{{ urlencode($voyage) }}', '{{ request('customer_id') }}')">
+                                                    ]) }}" 
+                                                    class="px-3 py-1 text-white bg-green-500 rounded hover:bg-green-700"
+                                                    onclick="event.preventDefault(); openSOATemp('{{ $ship }}', '{{ urlencode($voyage) }}', '{{ request('customer_id') }}')">
                                                     Print Statement of Account
                                                 </a>
                                                 
@@ -61,9 +61,9 @@
                                                     'ship' => $ship, 
                                                     'voyage' => urlencode($voyage),
                                                     'customerId' => request('customer_id')
-                                                ]) }}" 
-                                                class="px-3 py-1 text-white bg-blue-500 rounded hover:bg-blue-700"
-                                                onclick="event.preventDefault(); openSOACustom('{{ $ship }}', '{{ urlencode($voyage) }}', '{{ request('customer_id') }}')">
+                                                    ]) }}" 
+                                                    class="px-3 py-1 text-white bg-blue-500 rounded hover:bg-blue-700"
+                                                    onclick="event.preventDefault(); openSOACustom('{{ $ship }}', '{{ urlencode($voyage) }}', '{{ request('customer_id') }}')">
                                                     Print SOA for Government
                                                 </a>
                                                 
@@ -99,7 +99,7 @@
                                                         <th class="px-4 py-2">Freight</th>
                                                         <th class="px-4 py-2">Valuation</th>
                                                         <th class="px-4 py-2">Wharfage</th>
-                                                        <th class="px-4 py-2">Padlock Fee</th>
+                                                        <th class="px-4 py-2">Others Fee</th>
                                                         <th class="px-4 py-2">PPA Manila</th>
                                                         <th class="px-4 py-2">Total Amount</th>
                                                     </tr>
