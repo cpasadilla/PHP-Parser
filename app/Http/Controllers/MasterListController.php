@@ -102,7 +102,7 @@ class MasterListController extends Controller
             if (in_array('transferred_from', $original->getFillable())) {
                 $data['transferred_from'] = $original->id;
             } else {
-                $data['remark'] = trim(($original->remark ?? '') . "\nTRANSFERRED FROM ORDER ID: {$original->id} (M/V EVERWIN STAR {$original->shipNum} VOYAGE NO. {$original->voyageNum})");
+                $data['remark'] = trim(($original->remark ?? '') . "\nTRANSFERRED FROM M/V EVERWIN STAR {$original->shipNum} VOYAGE NO. {$original->voyageNum}");
             }
 
             // Clear SOA-related fields so the new copy won't inherit payment associations
@@ -122,7 +122,7 @@ class MasterListController extends Controller
             }
 
             // Update original order to note where it was transferred to
-            $transferToInfo = "TRANSFERRED TO ORDER ID: {$copy->id} (M/V EVERWIN STAR {$copy->shipNum} VOYAGE NO. {$copy->voyageNum})";
+            $transferToInfo = "TRANSFERRED TO M/V EVERWIN STAR {$copy->shipNum} VOYAGE NO. {$copy->voyageNum}";
 
             // Preserve original ship/voyage explicitly to ensure they are not changed
             $originalShip = $original->shipNum;
