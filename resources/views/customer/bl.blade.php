@@ -588,7 +588,7 @@
                         <div class="space-y-2" id="measurementsContainer">
                             <div class="flex justify-between items-center">
                                 <label class="block font-medium text-gray-900 dark:text-gray-200">Measurements (L × W × H):</label>
-                                <button type="button" id="addMeasurementBtn" class="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm">
+                                <button type="button" id="addMeasurementBtn" class="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm mt-2">
                                     + Add Measurement
                                 </button>
                             </div>
@@ -1053,27 +1053,25 @@
         const measurementIndex = measurementsList.children.length;
 
         const measurementDiv = document.createElement('div');
-        measurementDiv.className = 'measurement-entry grid grid-cols-5 gap-2 items-center mb-2 p-2 border rounded';
+        measurementDiv.className = 'measurement-entry flex items-center gap-1 mb-2 p-1 border rounded';
         measurementDiv.innerHTML = `
-            <input type="number" name="measurement_length_${measurementIndex}" 
-                class="p-2 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200"
-                placeholder="Length" min="0" step="0.01" value="${length}">
-            <input type="number" name="measurement_width_${measurementIndex}" 
-                class="p-2 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200"
-                placeholder="Width" min="0" step="0.01" value="${width}">
-            <input type="number" name="measurement_height_${measurementIndex}" 
-                class="p-2 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200"
-                placeholder="Height" min="0" step="0.01" value="${height}">
+            <input type="number" name="measurement_length_${measurementIndex}"
+                class="p-1 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200 h-10"
+                style="width: 80px;" placeholder="L" min="0" step="0.01" value="${length}">
+            <input type="number" name="measurement_width_${measurementIndex}"
+                class="p-1 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200 h-10"
+                style="width: 80px;" placeholder="W" min="0" step="0.01" value="${width}">
+            <input type="number" name="measurement_height_${measurementIndex}"
+                class="p-1 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200 h-10"
+                style="width: 80px;" placeholder="H" min="0" step="0.01" value="${height}">
             <input list="multipliers" name="measurement_multiplier_${measurementIndex}" type="number"
-                class="p-2 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200"
-                placeholder="Multiplier" min="0" step="0.01" value="${multiplier}">
-            <div class="flex items-center gap-1">
-                <input type="number" name="measurement_quantity_${measurementIndex}" 
-                    class="p-2 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200 flex-1"
-                    placeholder="Qty" min="1" value="${quantity || 1}">
-                <button type="button" class="remove-measurement px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600" 
-                    onclick="removeMeasurementEntry(this)">×</button>
-            </div>
+                class="p-1 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200 h-10"
+                style="width: 110px;" placeholder="×" min="0" step="0.01" value="${multiplier}">
+            <input type="number" name="measurement_quantity_${measurementIndex}"
+                class="p-1 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200 h-10"
+                style="width: 50px;" placeholder="Qty" min="1" value="${quantity || 1}">
+            <button type="button" class="remove-measurement px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-sm font-bold h-10"
+                onclick="removeMeasurementEntry(this)">×</button>
         `;
         measurementsList.appendChild(measurementDiv);
     }

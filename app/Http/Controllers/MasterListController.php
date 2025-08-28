@@ -818,22 +818,50 @@ class MasterListController extends Controller
             // Use itemId to find matching item in PriceList since that's what's stored in the parcels table
             $priceListItem = $items[$item->itemId] ?? null;
 
-            return [
-                'itemCode' => $item->itemId ?? "",
-                'itemName' => $item->itemName ?? "",
-                'unit' => $item->unit ?? "",
-                'category' => $priceListItem->category ?? "", // Use category from PriceList
-                'weight' => $item->weight ?? " ",
-                'value' => $item->value ?? " ",
-                'length' => $item->length ?? " ",
-                'width' => $item->width ?? " ",
-                'height' => $item->height ?? " ",
-                'multiplier' => $item->multiplier ?? "N/A",
-                'price' => $item->itemPrice ?? 0,
-                'description' => $item->desc ?? "",
-                'quantity' => $item->quantity ?? 1,
-                'total' => $item->total,
-            ];
+            // Handle both old format (single measurements) and new format (measurements array)
+            if (!empty($item->measurements) && is_array($item->measurements)) {
+                // New format: measurements array - ensure rates and freights are calculated
+                $measurements = array_map(function($measurement) {
+                    if (!isset($measurement['rate']) || !isset($measurement['freight'])) {
+                        $rate = ($measurement['length'] ?? 0) * ($measurement['width'] ?? 0) * ($measurement['height'] ?? 0) * ($measurement['multiplier'] ?? 0);
+                        $measurement['rate'] = $rate;
+                        $measurement['freight'] = $rate * ($measurement['quantity'] ?? 0);
+                    }
+                    return $measurement;
+                }, $item->measurements);
+
+                return [
+                    'itemCode' => $item->itemId ?? "",
+                    'itemName' => $item->itemName ?? "",
+                    'unit' => $item->unit ?? "",
+                    'category' => $priceListItem->category ?? "", // Use category from PriceList
+                    'weight' => $item->weight ?? " ",
+                    'value' => $item->value ?? " ",
+                    'measurements' => $measurements, // Use measurements array with calculated rates/freights
+                    'price' => $item->itemPrice ?? 0,
+                    'description' => $item->desc ?? "",
+                    'quantity' => $item->quantity ?? 1,
+                    'total' => $item->total,
+                ];
+            } else {
+                // Old format: single measurements
+                return [
+                    'itemCode' => $item->itemId ?? "",
+                    'itemName' => $item->itemName ?? "",
+                    'unit' => $item->unit ?? "",
+                    'category' => $priceListItem->category ?? "", // Use category from PriceList
+                    'weight' => $item->weight ?? " ",
+                    'value' => $item->value ?? " ",
+                    'length' => $item->length ?? " ",
+                    'width' => $item->width ?? " ",
+                    'height' => $item->height ?? " ",
+                    'multiplier' => $item->multiplier ?? "N/A",
+                    'price' => $item->itemPrice ?? 0,
+                    'description' => $item->desc ?? "",
+                    'quantity' => $item->quantity ?? 1,
+                    'total' => $item->total,
+                ];
+            }
         });
         $total = $parcels->sum('total'); // Calculate the total of all parcels
         $lists = PriceList::all(); // Fetch all items from the PriceList model
@@ -854,7 +882,7 @@ class MasterListController extends Controller
         
         // Log the incoming request data for debugging
         Log::info('Update BL Request Data:', $data);
-        Log::info('Cart Data:', ['cart' => $cart]);
+        Log::info('Cart Data Count:', ['count' => count($cart)]);
         Log::info('Order ID parameter:', ['orderId' => $orderId]);
 
         // Validate cartTotal and value explicitly
@@ -981,7 +1009,7 @@ class MasterListController extends Controller
             
             foreach ($cart as $item) {
                 // Check if item is not GROCERIES
-                if ($item->category != 'GROCERIES') {
+                if (($item->category ?? '') != 'GROCERIES') {
                     $onlyGroceries = false;
                 }
                 
@@ -1029,7 +1057,7 @@ class MasterListController extends Controller
 
         foreach ($cart as $item) {
             // Items in FROZEN, PARCEL or AGGREGATES categories should have zero valuation
-            if ($item->category == 'FROZEN' || $item->category == 'PARCEL' || $item->category == 'AGGREGATES') {
+            if (($item->category ?? '') == 'FROZEN' || ($item->category ?? '') == 'PARCEL' || ($item->category ?? '') == 'AGGREGATES') {
                 $noValue = true;
             }
         }
@@ -1134,44 +1162,91 @@ class MasterListController extends Controller
             foreach ($cart as $item) {
                 // Handle empty or zero values for weight and measurements
                 $weight = !empty($item->weight) && $item->weight !== '0' && $item->weight !== '0.00' && $item->weight !== ' ' ? $item->weight : null;
-                $length = !empty($item->length) && $item->length !== '0' && $item->length !== '0.00' && $item->length !== ' ' ? $item->length : null;
-                $width = !empty($item->width) && $item->width !== '0' && $item->width !== '0.00' && $item->width !== ' ' ? $item->width : null;
-                $height = !empty($item->height) && $item->height !== '0' && $item->height !== '0.00' && $item->height !== ' ' ? $item->height : null;
-                $multiplier = $item->multiplier === "N/A" || empty($item->multiplier) || $item->multiplier === '0' || $item->multiplier === ' ' ? null : $item->multiplier;
 
-                if ($checks == true){
-                    $parcel = parcel::create([
-                        'orderId' => $order->id,
-                        'itemId' => $item->itemCode,
-                        'itemName' => $item->itemName,
-                        'itemPrice' => is_numeric($item->price) ? floatval($item->price) : 0,
-                        'quantity' => is_numeric($item->quantity) ? floatval($item->quantity) : 0,
-                        'length' => $length,
-                        'width' => $width,
-                        'height' => $height,
-                        'multiplier' => $multiplier,
-                        'desc' => $item->description,
-                        'total' => 0,
-                        'unit' => $item->unit,
-                        'weight' => $weight,
-                    ]);
-                }
-                else{
-                    $parcel = parcel::create([
-                        'orderId' => $order->id,
-                        'itemId' => $item->itemCode,
-                        'itemName' => $item->itemName,
-                        'itemPrice' => is_numeric($item->price) ? floatval($item->price) : 0,
-                        'quantity' => is_numeric($item->quantity) ? floatval($item->quantity) : 0,
-                        'length' => $length,
-                        'width' => $width,
-                        'height' => $height,
-                        'multiplier' => $multiplier,
-                        'desc' => $item->description,
-                        'total' => is_numeric($item->total) ? floatval($item->total) : 0,
-                        'unit' => $item->unit,
-                        'weight' => $weight,
-                    ]);
+                // Check if item has multiple measurements (new format) or single measurements (old format)
+                if (property_exists($item, 'measurements') && isset($item->measurements) && is_array($item->measurements) && !empty($item->measurements)) {
+                    // New format: multiple measurements
+                    $measurements = $item->measurements;
+
+                    if ($checks == true){
+                        $parcel = parcel::create([
+                            'orderId' => $order->id,
+                            'itemId' => $item->itemCode ?? '',
+                            'itemName' => $item->itemName ?? '',
+                            'itemPrice' => is_numeric($item->price ?? 0) ? floatval($item->price) : 0,
+                            'quantity' => is_numeric($item->quantity ?? 0) ? floatval($item->quantity) : 0,
+                            'length' => null, // Not used in new format
+                            'width' => null,  // Not used in new format
+                            'height' => null, // Not used in new format
+                            'multiplier' => null, // Not used in new format
+                            'measurements' => $measurements, // Store measurements array
+                            'desc' => $item->description ?? '',
+                            'total' => 0,
+                            'unit' => $item->unit ?? '',
+                            'weight' => $weight,
+                        ]);
+                    }
+                    else{
+                        $parcel = parcel::create([
+                            'orderId' => $order->id,
+                            'itemId' => $item->itemCode ?? '',
+                            'itemName' => $item->itemName ?? '',
+                            'itemPrice' => is_numeric($item->price ?? 0) ? floatval($item->price) : 0,
+                            'quantity' => is_numeric($item->quantity ?? 0) ? floatval($item->quantity) : 0,
+                            'length' => null, // Not used in new format
+                            'width' => null,  // Not used in new format
+                            'height' => null, // Not used in new format
+                            'multiplier' => null, // Not used in new format
+                            'measurements' => $measurements, // Store measurements array
+                            'desc' => $item->description ?? '',
+                            'total' => is_numeric($item->total ?? 0) ? floatval($item->total) : 0,
+                            'unit' => $item->unit ?? '',
+                            'weight' => $weight,
+                        ]);
+                    }
+                } else {
+                    // Old format: single measurements
+                    $length = !empty($item->length ?? null) && $item->length !== '0' && $item->length !== '0.00' && $item->length !== ' ' ? $item->length : null;
+                    $width = !empty($item->width ?? null) && $item->width !== '0' && $item->width !== '0.00' && $item->width !== ' ' ? $item->width : null;
+                    $height = !empty($item->height ?? null) && $item->height !== '0' && $item->height !== '0.00' && $item->height !== ' ' ? $item->height : null;
+                    $multiplier = property_exists($item, 'multiplier') && isset($item->multiplier) && $item->multiplier !== "N/A" && !empty($item->multiplier) && $item->multiplier !== '0' && $item->multiplier !== ' ' ? $item->multiplier : null;
+
+                    if ($checks == true){
+                        $parcel = parcel::create([
+                            'orderId' => $order->id,
+                            'itemId' => $item->itemCode ?? '',
+                            'itemName' => $item->itemName ?? '',
+                            'itemPrice' => is_numeric($item->price ?? 0) ? floatval($item->price) : 0,
+                            'quantity' => is_numeric($item->quantity ?? 0) ? floatval($item->quantity) : 0,
+                            'length' => $length,
+                            'width' => $width,
+                            'height' => $height,
+                            'multiplier' => $multiplier,
+                            'measurements' => null, // Not used in old format
+                            'desc' => $item->description ?? '',
+                            'total' => 0,
+                            'unit' => $item->unit ?? '',
+                            'weight' => $weight,
+                        ]);
+                    }
+                    else{
+                        $parcel = parcel::create([
+                            'orderId' => $order->id,
+                            'itemId' => $item->itemCode ?? '',
+                            'itemName' => $item->itemName ?? '',
+                            'itemPrice' => is_numeric($item->price ?? 0) ? floatval($item->price) : 0,
+                            'quantity' => is_numeric($item->quantity ?? 0) ? floatval($item->quantity) : 0,
+                            'length' => $length,
+                            'width' => $width,
+                            'height' => $height,
+                            'multiplier' => $multiplier,
+                            'measurements' => null, // Not used in old format
+                            'desc' => $item->description ?? '',
+                            'total' => is_numeric($item->total ?? 0) ? floatval($item->total) : 0,
+                            'unit' => $item->unit ?? '',
+                            'weight' => $weight,
+                        ]);
+                    }
                 }
             }
         }

@@ -92,7 +92,7 @@
                             <th class="p-2" style="font-family: Arial; font-size: 13px;">DESCRIPTION</th>
                             <th class="p-2" style="font-family: Arial; font-size: 13px;">VALUE</th>
                             <th class="p-2" style="font-family: Arial; font-size: 13px;">WEIGHT</th>
-                            <th class="p-2" style="font-family: Arial; font-size: 13px;">MEASUREMENT</th>
+                            <th class="p-2" style="font-family: Arial; font-size: 13px; width: 140px;">MEASUREMENT</th>
                             <th class="p-2" style="font-family: Arial; font-size: 13px;">RATE</th>
                             <th class="p-2" style="font-family: Arial; font-size: 13px;">FREIGHT</th>
                         </tr>
@@ -126,7 +126,7 @@
                             <td class="p-2" style="font-family: Arial; font-size: 13px; text-align: right; width: 100px;">
                                 @if (!empty($parcel->measurements) && is_array($parcel->measurements))
                                     @foreach($parcel->measurements as $measurement)
-                                        {{ number_format($measurement['rate'], 2) }}<br>
+                                        {{ number_format(is_array($measurement) ? $measurement['rate'] : $measurement->rate, 2) }}<br>
                                     @endforeach
                                 @else
                                     {{ number_format($parcel->itemPrice, 2) }}
@@ -135,7 +135,7 @@
                             <td class="p-2" style="font-family: Arial; font-size: 13px; text-align: right; width: 100px;">
                                 @if (!empty($parcel->measurements) && is_array($parcel->measurements))
                                     @foreach($parcel->measurements as $measurement)
-                                        {{ number_format($measurement['freight'], 2) }}<br>
+                                        {{ number_format(is_array($measurement) ? $measurement['freight'] : $measurement->freight, 2) }}<br>
                                     @endforeach
                                 @else
                                     {{ number_format($parcel->total, 2) }}

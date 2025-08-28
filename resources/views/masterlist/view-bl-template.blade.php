@@ -72,20 +72,67 @@
                 </table>
 
                 <!-- Main Table -->
-                <table class="w-full border-collapse text-sm" style="padding: 0 5px; margin-top: 20px;">
+                <table class="w-full border-collapse text-sm main-table" style="padding: 0 5px; margin-top: 20px;">
                     <thead class="text-white border border-gray" style="background-color: #78BF65;">
                         <tr class="border border-gray">
                             <th class="p-2" style="font-family: Arial; font-size: 13px;">QTY</th>
-                            <th class="p-2" style="font-family: Arial; font-size: 13px;">UNIT</th>
+                            <th class="p-2" style="font-family: Arial; font-size: 13px; width: 70px;">UNIT</th>
                             <th class="p-2" style="font-family: Arial; font-size: 13px;">DESCRIPTION</th>
                             <th class="p-2" style="font-family: Arial; font-size: 13px;">VALUE</th>
                             <th class="p-2" style="font-family: Arial; font-size: 13px;">WEIGHT</th>
-                            <th class="p-2" style="font-family: Arial; font-size: 13px;">MEASUREMENT</th>
+                            <th class="p-2" style="font-family: Arial; font-size: 13px; width: 140px;">MEASUREMENT</th>
                             <th class="p-2" style="font-family: Arial; font-size: 13px;">RATE</th>
                             <th class="p-2" style="font-family: Arial; font-size: 13px;">FREIGHT</th>
                         </tr>
                     </thead>
                     <tbody>
+                        @if(isset($parcels) && $parcels->count() > 0)
+                            @foreach ($parcels as $parcel)
+                            <tr class="border-gray" style="border-bottom: 1px solid #cccccc;">
+                                <td class="p-2 text-center" style="font-family: Arial; font-size: 13px; text-align: center;">{{$parcel->quantity}}</td>
+                                <td class="p-2" style="font-family: Arial; font-size: 13px; text-align: center; width: 70px;">{{$parcel->unit}}</td>
+                                <td class="p-2" style="font-family: Arial; font-size: 13px; text-align: left;">
+                                    {{$parcel->itemName}}{{ !empty($parcel->desc) ? ' - '.$parcel->desc : '' }}
+                                </td>
+                                <td class="p-2" style="font-family: Arial; font-size: 13px;"></td>
+                                <td class="p-2" style="font-family: Arial; font-size: 13px; width: 60px;">
+                                    @if ($parcel->weight && $parcel->weight != '0' && $parcel->weight != '0.00')
+                                        {{$parcel->weight}}
+                                    @endif
+                                </td>
+                                <td class="p-2" style="font-family: Arial; font-size: 13px;">
+                                    @if (!empty($parcel->measurements) && is_array($parcel->measurements))
+                                        @foreach($parcel->measurements as $measurement)
+                                            {{is_array($measurement) ? $measurement['length'] : $measurement->length}} × {{is_array($measurement) ? $measurement['width'] : $measurement->width}} × {{is_array($measurement) ? $measurement['height'] : $measurement->height}} ({{is_array($measurement) ? $measurement['quantity'] : $measurement->quantity}})<br>
+                                        @endforeach
+                                    @elseif (!empty($parcel->length) && !empty($parcel->width) && !empty($parcel->height) && 
+                                        $parcel->length != '0' && $parcel->length != '0.00' && 
+                                        $parcel->width != '0' && $parcel->width != '0.00' && 
+                                        $parcel->height != '0' && $parcel->height != '0.00')
+                                        {{$parcel->length}} × {{$parcel->width}} × {{$parcel->height}}
+                                    @endif
+                                </td>
+                                <td class="p-2" style="font-family: Arial; font-size: 13px; text-align: right; width: 100px;">
+                                    @if (!empty($parcel->measurements) && is_array($parcel->measurements))
+                                        @foreach($parcel->measurements as $measurement)
+                                            {{ number_format(is_array($measurement) ? $measurement['rate'] : $measurement->rate, 2) }}<br>
+                                        @endforeach
+                                    @else
+                                        {{ number_format($parcel->itemPrice, 2) }}
+                                    @endif
+                                </td>
+                                <td class="p-2" style="font-family: Arial; font-size: 13px; text-align: right; width: 100px;">
+                                    @if (!empty($parcel->measurements) && is_array($parcel->measurements))
+                                        @foreach($parcel->measurements as $measurement)
+                                            {{ number_format(is_array($measurement) ? $measurement['freight'] : $measurement->freight, 2) }}<br>
+                                        @endforeach
+                                    @else
+                                        {{ number_format($parcel->total, 2) }}
+                                    @endif
+                                </td>
+                            </tr>
+                            @endforeach
+                        @else
                             <tr class="border border-gray">
                                 <td class="p-2 text-center" style="font-family: Arial; font-size: 13px; text-align: center;"></td>
                                 <td class="p-2" style="font-family: Arial; font-size: 13px;"></td>
@@ -96,15 +143,16 @@
                                 <td class="p-2" style="font-family: Arial; font-size: 13px; text-align: right;"></td>
                                 <td class="p-2" style="font-family: Arial; font-size: 13px; text-align: right;"></td>
                             </tr>
-                        <tr class="border border-gray">
+                        @endif
+                        <tr class="border-gray" style="border-bottom: none;">
                             <td class="p-2"></td>
                             <td class="p-2"></td>
                             <td class="p-2"></td>
-                            <td class="p-2" style="font-family: Arial; font-weight: bold; font-size: 13px; height: 30px;">VALUE: </td>
+                            <td class="p-2" style="font-family: Arial; font-weight: bold; font-size: 13px; height: 30px;">VALUE: {{ isset($order) ? number_format($order->value, 2) : '' }}</td>
                             <td class="p-2"></td>
                             <td class="p-2"></td>
                             <td class="p-2" style="font-family: Arial; font-weight: bold; font-size: 13px; text-align: right; height: 30px;">₱</td>
-                            <td class="p-2" style="font-family: Arial; font-weight: bold; font-size: 13px; text-align: right; height: 30px;"></td>
+                            <td class="p-2" style="font-family: Arial; font-weight: bold; font-size: 13px; text-align: right; height: 30px;">{{ isset($order) ? number_format($order->freight, 2) : '' }}</td>
                         </tr>
                     </tbody>
                 </table>

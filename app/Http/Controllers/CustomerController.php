@@ -592,7 +592,7 @@ class CustomerController extends Controller {
                 $hasItems = count($cart) > 0;
                 foreach ($cart as $item) {
                     // Check if item is not GROCERIES
-                    if ($item->category != 'GROCERIES') {
+                    if (($item->category ?? '') != 'GROCERIES') {
                         $onlyGroceries = false;
                     }
                     
@@ -634,7 +634,7 @@ class CustomerController extends Controller {
         if ($cart) {
             foreach ($cart as $item) {
                 // Items in FROZEN, PARCEL or AGGREGATES categories should have zero valuation
-                if ($item->category == 'FROZEN' || $item->category == 'PARCEL' || $item->category == 'AGGREGATES') {
+                if (($item->category ?? '') == 'FROZEN' || ($item->category ?? '') == 'PARCEL' || ($item->category ?? '') == 'AGGREGATES') {
                     $noValue = true;
                 }
             }
@@ -708,36 +708,36 @@ class CustomerController extends Controller {
                 if (isset($checks) && $checks == true) {
                     $parcel = parcel::create([
                         'orderId' => $order->id,
-                        'itemId' => $item->itemCode,
-                        'itemName' => $item->itemName,
-                        'itemPrice' => is_numeric($item->price) ? floatval($item->price) : 0,
-                        'quantity' => is_numeric($item->quantity) ? floatval($item->quantity) : 0,
+                        'itemId' => $item->itemCode ?? '',
+                        'itemName' => $item->itemName ?? '',
+                        'itemPrice' => is_numeric($item->price ?? 0) ? floatval($item->price) : 0,
+                        'quantity' => is_numeric($item->quantity ?? 0) ? floatval($item->quantity) : 0,
                         'length' => $length,
                         'width' => $width,
                         'height' => $height,
                         'multiplier' => $multiplier,
                         'measurements' => isset($item->measurements) ? $item->measurements : null,
-                        'desc' => $item->description,
+                        'desc' => $item->description ?? '',
                         'total' => 0,
-                        'unit' => $item->unit,
+                        'unit' => $item->unit ?? '',
                         'weight' => $weight,
                     ]);
                 }
                 else {
                     $parcel = parcel::create([
                         'orderId' => $order->id,
-                        'itemId' => $item->itemCode,
-                        'itemName' => $item->itemName,
-                        'itemPrice' => is_numeric($item->price) ? floatval($item->price) : 0,
-                        'quantity' => is_numeric($item->quantity) ? floatval($item->quantity) : 0,
+                        'itemId' => $item->itemCode ?? '',
+                        'itemName' => $item->itemName ?? '',
+                        'itemPrice' => is_numeric($item->price ?? 0) ? floatval($item->price) : 0,
+                        'quantity' => is_numeric($item->quantity ?? 0) ? floatval($item->quantity) : 0,
                         'length' => $length,
                         'width' => $width,
                         'height' => $height,
                         'multiplier' => $multiplier,
                         'measurements' => isset($item->measurements) ? $item->measurements : null,
-                        'desc' => $item->description,
-                        'total' => is_numeric($item->total) ? floatval($item->total) : 0,
-                        'unit' => $item->unit,
+                        'desc' => $item->description ?? '',
+                        'total' => is_numeric($item->total ?? 0) ? floatval($item->total) : 0,
+                        'unit' => $item->unit ?? '',
                         'weight' => $weight,
                     ]);
                 }

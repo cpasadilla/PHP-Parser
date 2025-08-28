@@ -401,24 +401,15 @@
                             <input type="text" id="value" name="value"
                                 class="w-full p-2 border rounded-md mb-1 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200"-->
                                 <!-- Measurements -->
-                            <div class="space-y-2" id="measurements">
-                                <label class="block font-medium text-gray-900 dark:text-gray-200">Measurements (L × W × H):</label>
-                                <div class="grid grid-cols-4 gap-2 items-center">
-                                    <input type="number" id="length" name="length"
-                                        class="p-2 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200"
-                                        placeholder="Length" min="0" step="0.01">
-
-                                    <input type="number" id="width" name="width"
-                                        class="p-2 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200"
-                                        placeholder="Width" min="0" step="0.01">
-
-                                    <input type="number" id="height" name="height"
-                                        class="p-2 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200"
-                                        placeholder="Height" min="0" step="0.01">
-
-                                    <input list="multipliers" id="multiplier" name="multiplier" type="number"
-                                        class="p-2 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200"
-                                        placeholder="Multiplier" min="0" step="0.01">
+                            <div class="space-y-2" id="measurementsContainer">
+                                <div class="flex justify-between items-center">
+                                    <label class="block font-medium text-gray-900 dark:text-gray-200">Measurements (L × W × H):</label>
+                                    <button type="button" id="addMeasurementBtn" class="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm mt-2">
+                                        + Add Measurement
+                                    </button>
+                                </div>
+                                <div id="measurementsList">
+                                    <!-- Measurement entries will be added here -->
                                 </div>
                             </div>
 
@@ -579,6 +570,15 @@
             </div>
         </div>
     </div>
+    <datalist id="multipliers">
+        <option value="3256">
+        <option value="3000">
+        <option value="2500">
+        <option value="2000">
+        <option value="1500">
+        <option value="1000">
+        <option value="500">
+    </datalist>
     @include('masterlist.checker-styles')
 </x-app-layout>
 <!-- For date generate and fetching of shipper and consignee -->
@@ -1002,20 +1002,44 @@
             description = "MODEL: \nENGINE NO: \nCHASSIS NO: \nCOLOR: ";
         }
 
-        let l = parseFloat(document.getElementById('length').value) || "";
-        let w = parseFloat(document.getElementById('width').value) || "";
-        let h = parseFloat(document.getElementById('height').value) || "";
-        let m = parseFloat(document.getElementById('multiplier').value) || 'N/A';
-        let price = parseFloat(document.getElementById('price').value.replace(/,/g, '')) || 0; // Handle thousand separators
-        let quantity = parseFloat(document.getElementById('quantity').value) || 1;
-        let total = 0;
+        // Collect all measurements
+        const measurementsList = document.getElementById('measurementsList');
+        const measurementEntries = measurementsList.querySelectorAll('.measurement-entry');
+        const measurements = [];
+        let totalQuantity = 0;
+        let hasValidMeasurements = false;
 
-        if (m === 'N/A' || m === '' || m === 0) {
-            total = price * quantity;
-        } else {
-            price = l * w * h * m;
-            total = price * quantity;
+        measurementEntries.forEach((entry, index) => {
+            const length = parseFloat(entry.querySelector(`[name="measurement_length_${index}"]`).value) || 0;
+            const width = parseFloat(entry.querySelector(`[name="measurement_width_${index}"]`).value) || 0;
+            const height = parseFloat(entry.querySelector(`[name="measurement_height_${index}"]`).value) || 0;
+            const multiplier = parseFloat(entry.querySelector(`[name="measurement_multiplier_${index}"]`).value) || 0;
+            const quantity = parseInt(entry.querySelector(`[name="measurement_quantity_${index}"]`).value) || 0;
+
+            if (length > 0 && width > 0 && height > 0 && multiplier > 0 && quantity > 0) {
+                const rate = length * width * height * multiplier;
+                measurements.push({
+                    length: length,
+                    width: width,
+                    height: height,
+                    multiplier: multiplier,
+                    quantity: quantity,
+                    rate: rate,
+                    freight: rate * quantity
+                });
+                totalQuantity += quantity;
+                hasValidMeasurements = true;
+            }
+        });
+
+        if (!hasValidMeasurements) {
+            alert("Please add at least one valid measurement.");
+            return;
         }
+
+        let weight = document.getElementById('weight').value ? parseFloat(document.getElementById('weight').value) : null;
+        let price = parseFloat(document.getElementById('price').value.replace(/,/g, "")) || 0;
+        let category = document.getElementById('category').value;
 
         const item = {
             itemCode: document.getElementById('itemCode').value,
@@ -1024,23 +1048,20 @@
             category: document.getElementById('category').value || '', // Ensure category is never undefined
             weight: document.getElementById('weight').value || "",
             value: document.getElementById('value').value || "",
-            length: l,
-            width: w,
-            height: h,
-            multiplier: m,
-            price: price.toFixed(2), // Ensure price is formatted to two decimal places
+            measurements: measurements,
+            price: price.toFixed(2), // Keep for backward compatibility
             description: description,
-            quantity: quantity,
-            total: total.toFixed(2) // Ensure total is formatted to two decimal places
+            quantity: totalQuantity,
+            total: measurements.reduce((sum, m) => sum + m.freight, 0).toFixed(2)
         };
-        
+
         console.log('Adding item to cart:', item);
 
         cart.push(item);
-        
+
         // Update the hidden input field with the cart data
         document.getElementById('cartData').value = JSON.stringify(cart);
-        
+
         // Recalculate total from cart items
         recalculateTotalPrice();
         document.getElementById('cartTotal').value = totalPrice.toFixed(2);
@@ -1104,16 +1125,30 @@
                 <td class="p-2 text-center">${item.weight}</td>
             `;
 
-            // Check if multiplier is empty or null
-            if (!item.multiplier || item.multiplier === 'N/A') {
-                row.innerHTML += `<td class="p-2 text-center">${item.length} × ${item.width} × ${item.height}</td>`;
+            // Check if item has multiple measurements
+            if (item.measurements && item.measurements.length > 0) {
+                let measurementHtml = '';
+                let rateHtml = '';
+                let freightHtml = '';
+                item.measurements.forEach(measurement => {
+                    measurementHtml += `${measurement.length} × ${measurement.width} × ${measurement.height} (${measurement.quantity})<br>`;
+                    rateHtml += `${Number(measurement.rate).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>`;
+                    freightHtml += `${Number(measurement.freight).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>`;
+                });
+                row.innerHTML += `<td class="p-2 text-center">${measurementHtml}</td>`;
+                row.innerHTML += `<td class="p-2 text-center">${rateHtml}</td>`;
+                row.innerHTML += `<td class="p-2 text-center">${freightHtml}</td>`;
+            } else if (!item.multiplier || item.multiplier === 'N/A') {
+                row.innerHTML += `<td class="p-2 text-center">${item.length || ''} × ${item.width || ''} × ${item.height || ''}</td>`;
+                row.innerHTML += `<td class="p-2 text-center">${Number(item.price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>`;
+                row.innerHTML += `<td class="p-2 text-center">${Number(item.total).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>`;
             } else {
-                row.innerHTML += `<td class="p-2 text-center">${item.length} × ${item.width} × ${item.height} × ${Number(item.multiplier).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>`;
+                row.innerHTML += `<td class="p-2 text-center">${item.length || ''} × ${item.width || ''} × ${item.height || ''} × ${Number(item.multiplier).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>`;
+                row.innerHTML += `<td class="p-2 text-center">${Number(item.price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>`;
+                row.innerHTML += `<td class="p-2 text-center">${Number(item.total).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>`;
             }
 
             row.innerHTML += `
-                <td class="p-2 text-center">${Number(item.price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                <td class="p-2 text-center">${Number(item.total).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                 <td class="p-2 text-center">
                     <a href="#" class="text-blue-500 text-center" onclick="openEditModal(${index})">
                         <x-button id="eds" variant="warning" class="items-center max-w-xs gap-2" type='button'>
@@ -1208,16 +1243,26 @@
             document.getElementById('unit').value = item.unit;
             document.getElementById('category').value = item.category || ''; // Make sure it's never undefined
             document.getElementById('weight').value = item.weight;
-            document.getElementById('length').value = item.length;
-            document.getElementById('width').value = item.width;
-            document.getElementById('height').value = item.height;
-            document.getElementById('multiplier').value = item.multiplier;
             document.getElementById('price').value = item.price;
             document.getElementById('description').value = item.description;
             document.getElementById('quantity').value = item.quantity;
             edit = item.total;
             // Store the index for updating later
             document.getElementById('saveButton').setAttribute('data-index', index);
+
+            // Handle measurements
+            const measurementsList = document.getElementById('measurementsList');
+            measurementsList.innerHTML = ''; // Clear existing
+
+            if (item.measurements && item.measurements.length > 0) {
+                // Load multiple measurements
+                item.measurements.forEach(measurement => {
+                    addMeasurementEntry(measurement.length, measurement.width, measurement.height, measurement.multiplier, measurement.quantity);
+                });
+            } else {
+                // Load single measurement for backward compatibility
+                addMeasurementEntry(item.length || '', item.width || '', item.height || '', item.multiplier || '', item.quantity || 1);
+            }
 
             // Show the modal
             document.getElementById('addToCartModal').classList.remove('hidden');
@@ -1230,49 +1275,66 @@
             const currentEditIndex = document.getElementById('saveButton').getAttribute('data-index'); // Get stored index
 
             if (currentEditIndex !== null) {
-                let l = parseFloat(document.getElementById('length').value) || "";
-                let w = parseFloat(document.getElementById('width').value) || "";
-                let h = parseFloat(document.getElementById('height').value) || "";
-                let m = parseFloat(document.getElementById('multiplier').value) || 'N/A';
+                // Collect all measurements
+                const measurementsList = document.getElementById('measurementsList');
+                const measurementEntries = measurementsList.querySelectorAll('.measurement-entry');
+                const measurements = [];
+                let totalQuantity = 0;
+                let hasValidMeasurements = false;
+
+                measurementEntries.forEach((entry, index) => {
+                    const length = parseFloat(entry.querySelector(`[name="measurement_length_${index}"]`).value) || 0;
+                    const width = parseFloat(entry.querySelector(`[name="measurement_width_${index}"]`).value) || 0;
+                    const height = parseFloat(entry.querySelector(`[name="measurement_height_${index}"]`).value) || 0;
+                    const multiplier = parseFloat(entry.querySelector(`[name="measurement_multiplier_${index}"]`).value) || 0;
+                    const quantity = parseInt(entry.querySelector(`[name="measurement_quantity_${index}"]`).value) || 0;
+
+                    if (length > 0 && width > 0 && height > 0 && multiplier > 0 && quantity > 0) {
+                        const rate = length * width * height * multiplier;
+                        measurements.push({
+                            length: length,
+                            width: width,
+                            height: height,
+                            multiplier: multiplier,
+                            quantity: quantity,
+                            rate: rate,
+                            freight: rate * quantity
+                        });
+                        totalQuantity += quantity;
+                        hasValidMeasurements = true;
+                    }
+                });
+
+                if (!hasValidMeasurements) {
+                    alert("Please add at least one valid measurement.");
+                    return;
+                }
+
                 let price = parseFloat(document.getElementById('price').value.replace(/,/g, '')) || 0; // Handle thousand separators
-                let quantity = parseFloat(document.getElementById('quantity').value) || 1;
-                let total = 0;
-                if (m == 'N/A' || m == '' || m == 0) {
-                total = price * quantity;
-                }
-                else if (m !=  '' || m != '' || m != 0){
-                    price = l * w * h * m;
-                    total = price * quantity;
-                }
-                else {
-                }
-                
+
                 cart[currentEditIndex] = {
                     itemCode: document.getElementById('itemCode').value,
                     itemName: document.getElementById('itemName').value,
                     unit: document.getElementById('unit').value,
                     category: document.getElementById('category').value || '', // Ensure category is never undefined
                     weight: document.getElementById('weight').value,
-                    length: l,
-                    width: w,
-                    height: h,
-                    multiplier: m,
-                    price: price,
+                    measurements: measurements,
+                    price: price.toFixed(2),
                     description: document.getElementById('description').value,
-                    quantity: quantity,
-                    total: total
+                    quantity: totalQuantity,
+                    total: measurements.reduce((sum, m) => sum + m.freight, 0).toFixed(2)
                 };
-                
+
                 console.log('Updated item in cart:', cart[currentEditIndex]);
 
                 // Update the displayed table with new data
                 updateMainTable();
                 updateTotalPrice(); // Update the displayed total price
-                
+
                 // Recalculate and update cartTotal hidden input
                 recalculateTotalPrice();
                 document.getElementById('cartTotal').value = totalPrice.toFixed(2);
-                
+
                 closeModal();
             }
         }
@@ -1283,14 +1345,11 @@
         document.getElementById('unit').value = "";
         document.getElementById('category').value = "";
         document.getElementById('weight').value = "";
-        document.getElementById('length').value = "";
-        document.getElementById('width').value = "";
-        document.getElementById('height').value = "";
-        document.getElementById('multiplier').value = "";
         document.getElementById('price').value = "";
         document.getElementById('description').value = "";
         document.getElementById('quantity').value = "";
-        document.getElementById('description').value = "";
+        // Clear measurements and reinitialize with one empty entry
+        initializeMeasurements();
     }
 
     // Add this script to your existing JavaScript code
@@ -1836,4 +1895,58 @@ document.addEventListener('DOMContentLoaded', function() {
         // Save the raw numeric value for form submission
         hiddenInput.value = rawValue;
     }
+
+    // Initialize measurements
+    function initializeMeasurements() {
+        const measurementsList = document.getElementById('measurementsList');
+        measurementsList.innerHTML = ''; // Clear existing
+        addMeasurementEntry(); // Add first measurement entry
+    }
+
+    function addMeasurementEntry(length = '', width = '', height = '', multiplier = '', quantity = '') {
+        const measurementsList = document.getElementById('measurementsList');
+        const measurementIndex = measurementsList.children.length;
+
+        const measurementDiv = document.createElement('div');
+        measurementDiv.className = 'measurement-entry flex items-center gap-1 mb-2 p-1 border rounded';
+        measurementDiv.innerHTML = `
+            <input type="number" name="measurement_length_${measurementIndex}"
+                class="p-1 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200 h-10"
+                style="width: 80px;" placeholder="L" min="0" step="0.01" value="${length}">
+            <input type="number" name="measurement_width_${measurementIndex}"
+                class="p-1 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200 h-10"
+                style="width: 80px;" placeholder="W" min="0" step="0.01" value="${width}">
+            <input type="number" name="measurement_height_${measurementIndex}"
+                class="p-1 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200 h-10"
+                style="width: 80px;" placeholder="H" min="0" step="0.01" value="${height}">
+            <input list="multipliers" name="measurement_multiplier_${measurementIndex}" type="number"
+                class="p-1 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200 h-10"
+                style="width: 110px;" placeholder="×" min="0" step="0.01" value="${multiplier}">
+            <input type="number" name="measurement_quantity_${measurementIndex}"
+                class="p-1 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200 h-10"
+                style="width: 50px;" placeholder="Qty" min="1" value="${quantity || 1}">
+            <button type="button" class="remove-measurement px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-sm font-bold h-10"
+                onclick="removeMeasurementEntry(this)">×</button>
+        `;
+        measurementsList.appendChild(measurementDiv);
+    }
+
+    function removeMeasurementEntry(button) {
+        const measurementsList = document.getElementById('measurementsList');
+        if (measurementsList.children.length > 1) {
+            button.closest('.measurement-entry').remove();
+        } else {
+            alert('At least one measurement is required.');
+        }
+    }
+
+    // Add event listener for add measurement button
+    document.getElementById('addMeasurementBtn').addEventListener('click', function() {
+        addMeasurementEntry();
+    });
+
+    // Initialize measurements on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeMeasurements();
+    });
 </script>

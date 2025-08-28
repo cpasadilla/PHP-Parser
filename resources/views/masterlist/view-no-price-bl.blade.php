@@ -92,7 +92,7 @@
                             <th class="p-2" style="font-family: Arial; font-size: 13px;">DESCRIPTION</th>
                             <th class="p-2" style="font-family: Arial; font-size: 13px;">VALUE</th>
                             <th class="p-2" style="font-family: Arial; font-size: 13px;">WEIGHT</th>
-                            <th class="p-2" style="font-family: Arial; font-size: 13px;">MEASUREMENT</th>
+                            <th class="p-2" style="font-family: Arial; font-size: 13px; width: 140px;">MEASUREMENT</th>
                             <th class="p-2" style="font-family: Arial; font-size: 13px;">RATE</th>
                             <th class="p-2" style="font-family: Arial; font-size: 13px;">FREIGHT</th>
                         </tr>
@@ -114,7 +114,7 @@
                             <td class="p-2" style="font-family: Arial; font-size: 13px;">
                                 @if (!empty($parcel->measurements) && is_array($parcel->measurements))
                                     @foreach($parcel->measurements as $measurement)
-                                        {{$measurement['length']}} × {{$measurement['width']}} × {{$measurement['height']}} ({{$measurement['quantity']}})<br>
+                                        {{is_array($measurement) ? $measurement['length'] : $measurement->length}} × {{is_array($measurement) ? $measurement['width'] : $measurement->width}} × {{is_array($measurement) ? $measurement['height'] : $measurement->height}} ({{is_array($measurement) ? $measurement['quantity'] : $measurement->quantity}})<br>
                                     @endforeach
                                 @elseif (!empty($parcel->length) && !empty($parcel->width) && !empty($parcel->height) && 
                                     $parcel->length != '0' && $parcel->length != '0.00' && 
@@ -123,8 +123,12 @@
                                     {{$parcel->length}} × {{$parcel->width}} × {{$parcel->height}}
                                 @endif
                             </td>
-                            <td class="p-2" style="font-family: Arial; font-size: 13px; text-align: right; width: 100px;"></td>
-                            <td class="p-2" style="font-family: Arial; font-size: 13px; text-align: right; width: 100px;"></td>
+                            <td class="p-2" style="font-family: Arial; font-size: 13px; text-align: right; width: 100px;">
+                                <!-- RATE column - kept blank -->
+                            </td>
+                            <td class="p-2" style="font-family: Arial; font-size: 13px; text-align: right; width: 100px;">
+                                <!-- FREIGHT column - kept blank -->
+                            </td>
                         </tr>
                         @endforeach
                         <tr class="border-gray" style="border-bottom: none;">
@@ -134,8 +138,24 @@
                             <td class="p-2" style="font-family: Arial; font-weight: bold; font-size: 13px; height: 30px;">VALUE: {{ number_format($order->value, 2) }}</td>
                             <td class="p-2"></td>
                             <td class="p-2"></td>
-                            <td class="p-2" style="font-family: Arial; font-weight: bold; font-size: 13px; text-align: right; height: 30px;">₱</td>
-                            <td class="p-2" style="font-family: Arial; font-weight: bold; font-size: 13px; text-align: right; height: 30px;"></td>
+                            <td class="p-2" style="font-family: Arial; font-weight: bold; font-size: 13px; text-align: right; height: 30px;">
+                                <!-- VALUATION column - kept blank -->
+                            </td>
+                            <td class="p-2" style="font-family: Arial; font-weight: bold; font-size: 13px; text-align: right; height: 30px;">
+                                <!-- WHARFAGE column - kept blank -->
+                            </td>
+                        </tr>
+                        <tr class="border-gray" style="border-bottom: none;">
+                            <td class="p-2"></td>
+                            <td class="p-2"></td>
+                            <td class="p-2"></td>
+                            <td class="p-2"></td>
+                            <td class="p-2"></td>
+                            <td class="p-2"></td>
+                            <td class="p-2" style="font-family: Arial; font-weight: bold; font-size: 13px; text-align: right; height: 30px;">TOTAL:</td>
+                            <td class="p-2" style="font-family: Arial; font-weight: bold; font-size: 13px; text-align: right; height: 30px;">
+                                <!-- TOTAL column - kept blank -->
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -154,7 +174,7 @@
                 </script>
             </div>
             <footer style="margin-top: auto;">
-                <!-- Your existing footer content here -->
+                <!-- Terms and Conditions -->
                 <table class="w-full text-xs border-collapse">
                     <tr>
                         <td colspan="6" style="text-align: left; font-family: Arial; font-size: 12px; font-weight: bold; padding: 2px;">Terms and Conditions:</td>
@@ -173,13 +193,17 @@
                         <td style="width: 50%;"></td> <!-- Adjusted size -->
                         <td style="width: 20%;">
                         <td style="width: 15%;  text-align: left; font-family: Arial; font-size: 12px;">Freight:</td>
-                        <td style="width: 25%; border-bottom: 1px solid black; font-family: Arial; font-size: 12px;  text-align: center;"></td>
+                        <td style="width: 25%; border-bottom: 1px solid black; font-family: Arial; font-size: 12px;  text-align: center;">
+                            <!-- FREIGHT kept blank -->
+                        </td>
                     </tr>
                     <tr>
                         <td style="text-align: center; font-family: Arial; font-size: 12px;">Received on board vessel in apparent good condition.</td>
                         <td></td>
                         <td style="text-align: left; font-family: Arial; font-size: 12px;">Valuation:</td>
-                        <td style="border-bottom: 1px solid black; font-family: Arial; font-size: 12px;  text-align: center;"></td>
+                        <td style="border-bottom: 1px solid black; font-family: Arial; font-size: 12px;  text-align: center;">
+                            <!-- VALUATION kept blank -->
+                        </td>
                     </tr>
                     <tr>
                         <td></td>
@@ -188,33 +212,39 @@
                             Wharfage:
                         </td>
                         <td style="border-bottom: 1px solid black; font-family: Arial; font-size: 12px; text-align: center;">
-                            
+                            <!-- WHARFAGE kept blank -->
                         </td>
                     </tr>
                     <tr>
                     <td style="text-align: center; font-family: Arial; font-size: 14px; font-weight: bold; border-bottom: 1px solid black;">{{$order->checkName}} </td>
                         <td></td>
                         <td style="text-align: left; font-family: Arial; font-size: 12px;">VAT:</td>
-                        <td style="border-bottom: 1px solid black; text-align: center;"></td>
+                        <td style="border-bottom: 1px solid black; text-align: center;">
+                            <!-- VAT kept blank -->
+                        </td>
                     </tr>
                     <tr>
                         <td style="text-align: center; font-family: Arial; font-size: 12px;">Vessel's Checker or Authorized Representative</td>
                         <td></td>
                         <td style="text-align: left; font-family: Arial; font-size: 12px;">Other Charges:</td>
                         <td style="border-bottom: 1px solid black; font-family: Arial; font-size: 12px; text-align: center;">
+                            <!-- OTHER CHARGES kept blank -->
                         </td>
                     </tr>
                     <tr>
                         <td></td>
                         <td></td>
                         <td style="text-align: left; font-family: Arial; font-size: 12px;">Stuffing/Stippings:</td>
-                        <td style="border-bottom: 1px solid black; text-align: center;"> </td>
+                        <td style="border-bottom: 1px solid black; text-align: center;">
+                            <!-- STUFFING/STRIPINGS kept blank -->
+                        </td>
                     </tr>
                     <tr>
                         <td></td>
                         <td></td>
                         <td style="text-align: left; font-family: Arial; font-size: 12px; font-weight: bold; color: black;">TOTAL:</td>
                         <td style="border-bottom: 1px solid black; font-family: Arial; font-size: 14px; font-weight: bold;  text-align: center; color: black;">
+                            <!-- TOTAL kept blank -->
                         </td>
                     </tr>
                 </table>
