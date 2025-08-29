@@ -231,6 +231,7 @@ class MasterListController extends Controller
 
     public function list(Request $request) {
         // Get all orders with parcels relationship and all necessary fields
+        // Sort transferred orders (those with "TRANSFERRED FROM" in remark) to the top
         $orders = Order::with(['parcels' => function($query) {
             $query->select('id', 'orderId', 'itemName', 'quantity', 'unit', 'desc');
         }])
@@ -241,6 +242,7 @@ class MasterListController extends Controller
             'bir', 'discount', 'originalFreight', 'padlock_fee', 'or_ar_date',
             'OR', 'AR', 'updated_by', 'updated_location', 'image', 'created_at', 'creator'
         ])
+        ->orderByRaw("CASE WHEN remark LIKE '%TRANSFERRED FROM%' THEN 0 ELSE 1 END ASC")
         ->orderBy('orderId', 'asc')
         ->get();
         

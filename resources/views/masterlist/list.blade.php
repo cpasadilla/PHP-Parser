@@ -260,8 +260,13 @@
                 </thead>
                 <tbody>
                     @foreach($orders as $order)
-                        <tr class="border-b">
-                            <td class="p-2" data-column="bl">{{ $order->orderId }}</td>
+                        <tr class="border-b @if(str_contains($order->remark ?? '', 'TRANSFERRED FROM')) transferred-order @endif">
+                            <td class="p-2" data-column="bl">
+                                {{ $order->orderId }}
+                                @if(str_contains($order->remark ?? '', 'TRANSFERRED FROM'))
+                                    <span class="transferred-indicator" title="Transferred Order">↗</span>
+                                @endif
+                            </td>
                             <td class="p-2">{{ \Carbon\Carbon::parse($order->created_at)->format('F d, Y') }}</td>
                             <td class="p-2 container-cell" data-column="container">
                                 @if(Auth::user()->hasSubpagePermission('masterlist', 'list', 'edit'))
@@ -976,7 +981,29 @@
         background-color: #2d3748; /* Dark mode background */
     }
 
+    /* Transferred order indicator */
+    .transferred-indicator {
+        color: #166534;
+        font-weight: bold;
+        margin-left: 5px;
+        font-size: 12px;
+    }
+    
+    .dark .transferred-indicator {
+        color: #bbf7d0;
+    }
+    
     /* Row highlighting styles for different conditions - MAXIMUM specificity to override ALL other styles */
+    table#ordersTable tbody tr.transferred-order,
+    table#ordersTable tbody tr.transferred-order td,
+    table#ordersTable tbody tr.border-b.transferred-order,
+    table#ordersTable tbody tr.border-b.transferred-order td {
+        background-color: #166534 !important; /* Dark green background for transferred orders */
+        background: #166534 !important;
+        border-left: 4px solid #16a34a !important; /* Green left border */
+        color: white !important;
+    }
+    
     table#ordersTable tbody tr.highlight-red,
     table#ordersTable tbody tr.highlight-red td,
     table#ordersTable tbody tr.border-b.highlight-red,
@@ -1061,6 +1088,16 @@
     }
 
     /* Dark mode overrides for highlights */
+    .dark table#ordersTable tbody tr.transferred-order,
+    .dark table#ordersTable tbody tr.transferred-order td,
+    .dark table#ordersTable tbody tr.border-b.transferred-order,
+    .dark table#ordersTable tbody tr.border-b.transferred-order td {
+        background-color: #14532d !important; /* Darker green background for transferred orders in dark mode */
+        background: #14532d !important;
+        border-left: 4px solid #16a34a !important; /* Green left border for dark mode */
+        color: #bbf7d0 !important; /* Light green text for better visibility */
+    }
+    
     .dark table#ordersTable tbody tr.highlight-red,
     .dark table#ordersTable tbody tr.highlight-red td,
     .dark table#ordersTable tbody tr.border-b.highlight-red,
@@ -1606,8 +1643,24 @@
                 columnIndex = 0;
         }
         
-        // Sort the rows
+    // Sort the rows
         rows.sort((a, b) => {
+            // First, check if either row is a transferred order (has "TRANSFERRED FROM" in remark)
+            const remarkIndex = 22; // REMARK column index
+            const aRemark = a.cells[remarkIndex] ? a.cells[remarkIndex].textContent.trim() : '';
+            const bRemark = b.cells[remarkIndex] ? b.cells[remarkIndex].textContent.trim() : '';
+            
+            const aIsTransferred = aRemark.includes('TRANSFERRED FROM');
+            const bIsTransferred = bRemark.includes('TRANSFERRED FROM');
+            
+            // Prioritize transferred orders: transferred orders come first
+            if (aIsTransferred && !bIsTransferred) {
+                return -1; // a comes before b
+            } else if (!aIsTransferred && bIsTransferred) {
+                return 1; // b comes before a
+            }
+            
+            // If both are transferred or both are not transferred, sort by the specified column
             const aValue = a.cells[columnIndex].textContent.trim().toLowerCase();
             const bValue = b.cells[columnIndex].textContent.trim().toLowerCase();
             
@@ -3445,13 +3498,13 @@
                 // Check all other conditions regardless of BL STATUS
                 // (Removed the UNPAID blocking logic)
 
-                // RED - CONTAINER OR REMARK contains "MISSING"
-                const containerHasMissing = containsKeywords(containerText, ['MISSING']);
-                const remarkHasMissing = containsKeywords(remarkText, ['MISSING']);
-                console.log(`Row ${index + 1}: Checking RED - Container has MISSING: ${containerHasMissing}, Remark has MISSING: ${remarkHasMissing}`);
-                if (containerHasMissing || remarkHasMissing) {
+                // RED - CONTAINER OR REMARK contains "TRANSFERRED TO"
+                const containerHasTransferredTo = containsKeywords(containerText, ['TRANSFERRED TO']);
+                const remarkHasTransferredTo = containsKeywords(remarkText, ['TRANSFERRED TO']);
+                console.log(`Row ${index + 1}: Checking RED - Container has TRANSFERRED TO: ${containerHasTransferredTo}, Remark has TRANSFERRED TO: ${remarkHasTransferredTo}`);
+                if (containerHasTransferredTo || remarkHasTransferredTo) {
                     row.classList.add('highlight-red');
-                    console.log(`Row ${index + 1}: Applied RED highlight (MISSING in CONTAINER or REMARK)`);
+                    console.log(`Row ${index + 1}: Applied RED highlight (TRANSFERRED TO in CONTAINER or REMARK)`);
                     return;
                 }
 
@@ -3484,12 +3537,12 @@
                     return;
                 }
 
-                // DARK GREEN - REMARK contains "TRANSFER"
-                const remarkHasTransfer = containsKeywords(remarkText, ['TRANSFER']);
-                console.log(`Row ${index + 1}: Checking DARK GREEN - Remark has TRANSFER: ${remarkHasTransfer}`);
-                if (remarkHasTransfer) {
+                // DARK GREEN - REMARK contains "TRANSFERRED FROM"
+                const remarkHasTransferredFrom = containsKeywords(remarkText, ['TRANSFERRED FROM']);
+                console.log(`Row ${index + 1}: Checking DARK GREEN - Remark has TRANSFERRED FROM: ${remarkHasTransferredFrom}`);
+                if (remarkHasTransferredFrom) {
                     row.classList.add('highlight-dark-green');
-                    console.log(`Row ${index + 1}: Applied DARK GREEN highlight (TRANSFER in REMARK)`);
+                    console.log(`Row ${index + 1}: Applied DARK GREEN highlight (TRANSFERRED FROM in REMARK)`);
                     return;
                 }
 
