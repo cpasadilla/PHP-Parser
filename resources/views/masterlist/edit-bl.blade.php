@@ -973,7 +973,7 @@
 
                 // Get item code more reliably
                 const cells = row.querySelectorAll('td');
-                if (cells.length < 3) {
+                if (cells.length < 4) { // Updated to check for at least 4 cells (including hidden price column)
                     console.log('Row does not have enough cells');
                     return;
                 }
@@ -981,18 +981,21 @@
                 const itemCode = cells[0].textContent.trim();
                 const itemName = cells[1].textContent.trim();
                 const category = cells[2].textContent.trim();
+                const price = cells[3].textContent.trim(); // Get the price from the hidden column
 
-                console.log('Selected item:', itemCode, itemName, category);
+                console.log('Selected item:', itemCode, itemName, category, 'Price:', price);
 
                 // Populate the input fields
                 const itemCodeField = document.getElementById('itemCode');
                 const itemNameField = document.getElementById('itemName');
                 const categoryField = document.getElementById('category');
+                const priceField = document.getElementById('price'); // Get the price input field
                 const descriptionField = document.getElementById('description');
 
                 if (itemCodeField) itemCodeField.value = itemCode;
                 if (itemNameField) itemNameField.value = itemName;
                 if (categoryField) categoryField.value = category;
+                if (priceField) priceField.value = price; // Populate the price field
 
                 // Auto-populate description for motorcycle items
                 const motorcycleCodes = ["VHC-011", "VHC-012", "VHC-013", "VOL-013"];
