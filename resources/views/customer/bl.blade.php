@@ -1011,34 +1011,117 @@
 
     // Ensure the event listener is attached after the DOM is fully loaded
     document.addEventListener('DOMContentLoaded', () => {
-        const tableBody = document.getElementById('itemTableBody');
-
-        tableBody.addEventListener('click', (event) => {
-            const row = event.target.closest('tr');
-            if (!row) return;
-
-            const itemCode = row.children[0].textContent;
-            const itemName = row.children[1].textContent;
-            const category = row.children[2].textContent;
-            const price = row.children[3].textContent;
-            const multiplier = row.children[4].textContent;
-            console.log('Selected item:', itemCode, itemName, category, price, multiplier);
-
-            // Populate the input fields
-            document.getElementById('itemCode').value = itemCode;
-            document.getElementById('itemName').value = itemName;
-            document.getElementById('category').value = category;
-            document.getElementById('price').value = price;
-            document.getElementById('multiplier').value = multiplier;
-            
-            // Auto-populate description for motorcycle items
-            const motorcycleCodes = ["VHC-011", "VHC-012", "VHC-013", "VOL-013"];
-            if (motorcycleCodes.includes(itemCode.trim())) {
-                document.getElementById('description').value = "MODEL: \nENGINE NO: \nCHASSIS NO: \nCOLOR: ";
-            } else {
-                document.getElementById('description').value = "";
+        // Function to attach table click handler
+        function attachTableClickHandler() {
+            const tableBody = document.getElementById('itemTableBody');
+            if (!tableBody) {
+                console.log('Table body not found, will retry...');
+                setTimeout(attachTableClickHandler, 500);
+                return;
             }
+
+            console.log('Attaching table click handler...');
+
+            tableBody.addEventListener('click', (event) => {
+                console.log('Table row clicked!'); // Simple test to see if handler is triggered
+                const row = event.target.closest('tr');
+                if (!row || !row.classList.contains('item-row')) {
+                    console.log('Not a valid item row');
+                    return;
+                }
+
+                // Get item code more reliably
+                const cells = row.querySelectorAll('td');
+                if (cells.length < 3) {
+                    console.log('Row does not have enough cells');
+                    return;
+                }
+
+                const itemCode = cells[0].textContent.trim();
+                const itemName = cells[1].textContent.trim();
+                const category = cells[2].textContent.trim();
+
+                console.log('Selected item:', itemCode, itemName, category);
+
+                // Populate the input fields
+                const itemCodeField = document.getElementById('itemCode');
+                const itemNameField = document.getElementById('itemName');
+                const categoryField = document.getElementById('category');
+                const descriptionField = document.getElementById('description');
+
+                if (itemCodeField) itemCodeField.value = itemCode;
+                if (itemNameField) itemNameField.value = itemName;
+                if (categoryField) categoryField.value = category;
+
+                // Auto-populate description for motorcycle items
+                const motorcycleCodes = ["VHC-011", "VHC-012", "VHC-013", "VOL-013"];
+                const trimmedItemCode = itemCode.trim().toUpperCase();
+
+                console.log('Checking motorcycle codes:', trimmedItemCode, motorcycleCodes);
+
+                // Check for exact match first
+                if (motorcycleCodes.includes(trimmedItemCode)) {
+                    console.log('Motorcycle item detected (exact match), setting description');
+                    if (descriptionField) {
+                        descriptionField.value = "MODEL: \nENGINE NO: \nCHASSIS NO: \nCOLOR: ";
+                        console.log('Description field updated successfully');
+                        // Trigger input event to ensure any listeners are notified
+                        descriptionField.dispatchEvent(new Event('input', { bubbles: true }));
+                    } else {
+                        console.error('Description field not found!');
+                    }
+                } else {
+                    // Check for partial matches (in case of extra spaces or characters)
+                    const partialMatch = motorcycleCodes.some(code => trimmedItemCode.includes(code) || code.includes(trimmedItemCode));
+                    if (partialMatch) {
+                        console.log('Motorcycle item detected (partial match), setting description');
+                        if (descriptionField) {
+                            descriptionField.value = "MODEL: \nENGINE NO: \nCHASSIS NO: \nCOLOR: ";
+                            console.log('Description field updated successfully');
+                            // Trigger input event to ensure any listeners are notified
+                            descriptionField.dispatchEvent(new Event('input', { bubbles: true }));
+                        } else {
+                            console.error('Description field not found!');
+                        }
+                    } else {
+                        console.log('Not a motorcycle item, clearing description');
+                        if (descriptionField) {
+                            descriptionField.value = "";
+                            // Trigger input event to ensure any listeners are notified
+                            descriptionField.dispatchEvent(new Event('input', { bubbles: true }));
+                        }
+                    }
+                }
+            });
+
+            console.log('Table click handler attached successfully');
+        }
+
+        // Attach the handler
+        attachTableClickHandler();
+
+        // Also watch for dynamically added content
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                    // Check if new table rows were added
+                    const hasNewRows = Array.from(mutation.addedNodes).some(node =>
+                        node.nodeType === Node.ELEMENT_NODE &&
+                        (node.tagName === 'TR' || node.querySelector('tr'))
+                    );
+                    if (hasNewRows) {
+                        console.log('New table rows detected, ensuring click handler is attached');
+                        attachTableClickHandler();
+                    }
+                }
+            });
         });
+
+        // Observe changes to the table container
+        const tableContainer = document.getElementById('tableContainer');
+        if (tableContainer) {
+            observer.observe(tableContainer, { childList: true, subtree: true });
+        }
     });
 
     // Initialize measurements
@@ -1090,10 +1173,57 @@
         addMeasurementEntry();
     });
 
-    // Initialize measurements on page load
-    document.addEventListener('DOMContentLoaded', function() {
-        initializeMeasurements();
-    });
+    // Test function for debugging motorcycle item detection
+    window.testMotorcycleItems = function() {
+        console.log('=== MOTORCYCLE ITEM TEST ===');
+
+        // Check if description field exists
+        const descField = document.getElementById('description');
+        console.log('Description field found:', !!descField);
+
+        // Check table body
+        const tableBody = document.getElementById('itemTableBody');
+        console.log('Table body found:', !!tableBody);
+
+        if (tableBody) {
+            const rows = tableBody.querySelectorAll('tr.item-row');
+            console.log('Number of item rows found:', rows.length);
+
+            // Check for motorcycle items
+            const motorcycleCodes = ["VHC-011", "VHC-012", "VHC-013", "VOL-013"];
+            let motorcycleItemsFound = [];
+
+            rows.forEach((row, index) => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length > 0) {
+                    const itemCode = cells[0].textContent.trim();
+                    const trimmedItemCode = itemCode.trim().toUpperCase();
+
+                    if (motorcycleCodes.includes(trimmedItemCode)) {
+                        motorcycleItemsFound.push({
+                            rowIndex: index,
+                            itemCode: itemCode,
+                            trimmed: trimmedItemCode
+                        });
+                    }
+                }
+            });
+
+            console.log('Motorcycle items found in table:', motorcycleItemsFound);
+
+            if (motorcycleItemsFound.length > 0) {
+                console.log('✅ Motorcycle items are present in the table!');
+                console.log('Try clicking on row index:', motorcycleItemsFound[0].rowIndex);
+            } else {
+                console.log('❌ No motorcycle items found in the current table view');
+                console.log('Make sure the table is loaded and contains items with codes:', motorcycleCodes);
+            }
+        }
+
+        console.log('=== END TEST ===');
+    };
+
+    console.log('Motorcycle item test function loaded. Run testMotorcycleItems() in console to debug.');
 
     function addToCart() {
         // Plus
@@ -1111,6 +1241,8 @@
         if (motorcycleCodes.includes(itemCode.trim()) && !description.includes("MODEL:")) {
             description = "MODEL: \nENGINE NO: \nCHASSIS NO: \nCOLOR: ";
         }
+        // Update the description input field
+        document.getElementById("description").value = description;
 
         // Collect all measurements
         const measurementsList = document.getElementById('measurementsList');
