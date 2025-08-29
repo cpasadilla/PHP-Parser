@@ -1090,18 +1090,44 @@ class CustomerController extends Controller {
     }
 
     public function orderId($voyageNum, $ship) {
-        // Get the highest orderId for this ship and voyage number, regardless of when it was updated
-        $lastOrder = order::where('shipNum', $ship)
-                       ->where('voyageNum', $voyageNum)
-                       ->orderByRaw('CAST(orderId AS UNSIGNED) DESC')
-                       ->first();
+        // Get all existing orderIds for this ship and voyage number, excluding transferred orders
+        $existingOrders = order::where('shipNum', $ship)
+                             ->where('voyageNum', $voyageNum)
+                             ->where(function($query) {
+                                 // Exclude orders that have been transferred from other voyages
+                                 $query->whereNull('remark')
+                                       ->orWhere('remark', 'NOT LIKE', '%TRANSFERRED FROM%');
+                             })
+                             ->where(function($query) {
+                                 // Also exclude orders that have a transferred_from field if it exists
+                                 if (\Schema::hasColumn('orders', 'transferred_from')) {
+                                     $query->whereNull('transferred_from');
+                                 }
+                             })
+                             ->pluck('orderId')
+                             ->map(function($id) {
+                                 return intval($id); // Convert to integer for proper sorting
+                             })
+                             ->sort()
+                             ->values()
+                             ->toArray();
 
-        if (!$lastOrder) {
-            $orderId = 001;
+        if (empty($existingOrders)) {
+            $orderId = 1;
         } else {
-            $orderId = intval($lastOrder->orderId) + 1;
+            // Find the first gap in the sequence (starting from 1)
+            $orderId = 1;
+            foreach ($existingOrders as $existingId) {
+                if ($existingId == $orderId) {
+                    $orderId++;
+                } else {
+                    // Found a gap, use this number
+                    break;
+                }
+            }
         }
 
+        // Format the orderId with leading zeros
         if ($orderId < 10) {
             $orderId = '00'.$orderId;
         } elseif ($orderId < 100) {
