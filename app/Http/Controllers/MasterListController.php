@@ -109,8 +109,11 @@ class MasterListController extends Controller
             $data['OR'] = null;
             $data['AR'] = null;
             $data['or_ar_date'] = null;
-            $data['updated_by'] = Auth::user()->fName . ' ' . Auth::user()->lName;
-            $data['updated_location'] = $request->input('target_ship') . ' ' . $request->input('target_voyage');
+            $data['updated_by'] = null;
+            $data['updated_location'] = null;
+            // Don't set updated_by and updated_location during transfer - these should only be set when OR/AR are provided
+            // $data['updated_by'] = Auth::user()->fName . ' ' . Auth::user()->lName;
+            // $data['updated_location'] = $request->input('target_ship') . ' ' . $request->input('target_voyage');
 
             $copy = Order::create($data);
 
