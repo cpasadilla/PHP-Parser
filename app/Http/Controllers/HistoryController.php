@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\OrderUpdateLog;
 use App\Models\OrderDeleteLog;
-use App\Models\InventoryLog;
 use App\Models\Order;
 use Illuminate\Pagination\Paginator;
 use App\Models\User; // Add this import
@@ -21,11 +20,14 @@ class HistoryController extends Controller
         $restoreStatusFilter = $request->input('restore_status');
         $fieldNameFilter = $request->input('field_name');
         $actionTypeFilter = $request->input('action_type');
-        $inventoryUpdatedByFilter = $request->input('inventory_updated_by');
-        $inventoryActionTypeFilter = $request->input('inventory_action_type');
-        $inventoryFieldNameFilter = $request->input('inventory_field_name');
+        $searchFilter = $request->input('search');
+        $shipFilter = $request->input('ship');
+        $voyageFilter = $request->input('voyage');
 
         // Fetch user activity logs from the sessions table with pagination and filtering
+        $perPage = request('per_page', 10);
+        if ($perPage == '999999') $perPage = 999999; // For "all"
+        $sort = request('sort', 'desc'); // Default sort for timestamps
         $userActivities = DB::table('sessions')
             ->join('users', 'sessions.user_id', '=', 'users.id')
             ->select(DB::raw("CONCAT(users.fName, ' ', users.lName) as name"), 'sessions.ip_address', 'sessions.last_activity')
@@ -33,7 +35,7 @@ class HistoryController extends Controller
                 return $query->where(DB::raw("CONCAT(users.fName, ' ', users.lName)"), 'like', "%$nameFilter%");
             })
             ->orderBy('sessions.last_activity', 'desc')
-            ->paginate(10, ['*'], 'userActivitiesPage');
+            ->paginate($perPage, ['*'], 'userActivitiesPage');
 
         // Fetch order update logs with pagination and filtering
         $orderUpdateLogs = OrderUpdateLog::select('order_update_logs.*')
@@ -53,8 +55,20 @@ class HistoryController extends Controller
             ->when($actionTypeFilter, function ($query, $actionTypeFilter) {
                 return $query->where('order_update_logs.action_type', $actionTypeFilter);
             })
+            ->when($searchFilter, function ($query, $searchFilter) {
+                return $query->where('orders.orderId', 'like', "%$searchFilter%");
+            })
+            ->when($shipFilter, function ($query, $shipFilter) {
+                return $query->where('orders.shipNum', $shipFilter);
+            })
+            ->when($voyageFilter, function ($query, $voyageFilter) {
+                return $query->where('orders.voyageNum', $voyageFilter);
+            })
+            ->when($sort === 'bl_asc' || $sort === 'bl_desc', function ($query) use ($sort) {
+                return $query->orderBy('orders.orderId', $sort === 'bl_asc' ? 'asc' : 'desc');
+            })
             ->orderBy('order_update_logs.updated_at', 'desc')
-            ->paginate(10, ['*'], 'orderUpdateLogsPage');
+            ->paginate($perPage, ['*'], 'orderUpdateLogsPage');
 
         // Fetch order delete logs with pagination and filtering
         $orderDeleteLogs = OrderDeleteLog::query()
@@ -71,33 +85,26 @@ class HistoryController extends Controller
                     return $query->whereNotNull('restored_at');
                 }
             })
-            ->orderBy('created_at', 'desc')
-            ->paginate(10, ['*'], 'orderDeleteLogsPage');
-
-        // Fetch inventory logs with pagination and filtering
-        $inventoryLogs = InventoryLog::query()
-            ->with(['inventoryEntry'])
-            ->when($inventoryUpdatedByFilter, function ($query, $inventoryUpdatedByFilter) {
-                return $query->where('updated_by', 'like', "%$inventoryUpdatedByFilter%");
-            })
-            ->when($inventoryActionTypeFilter, function ($query, $inventoryActionTypeFilter) {
-                return $query->where('action_type', $inventoryActionTypeFilter);
-            })
-            ->when($inventoryFieldNameFilter, function ($query, $inventoryFieldNameFilter) {
-                return $query->where('field_name', $inventoryFieldNameFilter);
+            ->when($sort === 'bl_asc' || $sort === 'bl_desc', function ($query) use ($sort) {
+                return $query->orderBy('bl_number', $sort === 'bl_asc' ? 'asc' : 'desc');
             })
             ->orderBy('created_at', 'desc')
-            ->paginate(10, ['*'], 'inventoryLogsPage');
+            ->paginate($perPage, ['*'], 'orderDeleteLogsPage');
 
         // Fetch all users for the filter dropdown
         $allUsers = User::select(DB::raw("CONCAT(fName, ' ', lName) as name"))->get();
+
+        // Fetch all ships and voyages for the filter dropdowns
+        $allShips = Order::distinct('shipNum')->pluck('shipNum');
+        $allVoyages = Order::distinct('voyageNum')->pluck('voyageNum');
 
         return view('history.index', [
             'userActivities' => $userActivities,
             'orderUpdateLogs' => $orderUpdateLogs,
             'orderDeleteLogs' => $orderDeleteLogs,
-            'inventoryLogs' => $inventoryLogs,
             'allUsers' => $allUsers, // Pass all users to the view
+            'allShips' => $allShips,
+            'allVoyages' => $allVoyages,
         ]);
     }
 }
