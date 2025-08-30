@@ -361,7 +361,7 @@
                                     <th class="p-2" style="font-family: Arial; font-size: 13px;">FREIGHT</th>
                                     <th></th>
                                     <th class="p-2" style="font-family: Arial; font-size: 13px;">
-                                        <button id="buts" type="button" onclick="openModal(event)" style="background: none; border: none; font-size: 20px; line-height: 1;">+</button>
+                                        <button id="buts" type="button" onclick="openModal()" style="background: none; border: none; font-size: 20px; line-height: 1;">+</button>
                                     </th>
                                 </tr>
                             </thead>
@@ -653,7 +653,7 @@
 
                     <!-- Right Side: Other Buttons -->
                     <div class="flex space-x-2">
-                        <button type="button" onclick="closeModal(event); clearFields()" class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-700 dark:bg-gray-600 dark:hover:bg-gray-500">
+                        <button type="button" onclick="closeModal(); clearFields()" class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-700 dark:bg-gray-600 dark:hover:bg-gray-500">
                             Cancel
                         </button>
                         <button id="addToCart" type="button" onclick="addToCart()" class="px-4 py-2 bg-emerald-500 text-white rounded-md
@@ -981,8 +981,8 @@
     // For add to cart modal
     document.getElementById("myForm").addEventListener("click", function (event) {
         // Check if the clicked element has one of the target IDs or is an ancestor of these elements
-        if (event.target.id === "eds" || event.target.id === "dels" || event.target.id === "buts" || 
-            event.target.closest("#eds") || event.target.closest("#dels") || event.target.closest("#buts")) {
+        if (event.target.id === "eds" || event.target.id === "dels" || event.target.id === "buts" || event.target.id === "addToCart" ||
+            event.target.closest("#eds") || event.target.closest("#dels") || event.target.closest("#buts") || event.target.closest("#addToCart")) {
             event.preventDefault(); // Prevent default behavior
             event.stopPropagation(); // Stop event from bubbling up
         }
@@ -991,20 +991,20 @@
     let cart = [];
     let totalPrice = 0;
 
-    function openModal(e) {
-        if (e) {
-            e.preventDefault(); // Prevent default form submission
-            e.stopPropagation(); // Stop event from bubbling up
-        }
+    function openModal() {
+        // Reset button visibility for adding new items
+        document.getElementById('addToCart').classList.remove('hidden'); // Show Add to Cart
+        document.getElementById('saveButton').classList.add('hidden'); // Hide Save Button
+        // Clear fields when opening the modal for adding new items
+        clearFields();
         document.getElementById('addToCartModal').classList.remove('hidden');
         return false; // Prevent form submission
     }
 
-    function closeModal(e) {
-        if (e) {
-            e.preventDefault(); // Prevent default form submission
-            e.stopPropagation(); // Stop event from bubbling up
-        }
+    function closeModal() {
+        // Reset button visibility when closing modal
+        document.getElementById('addToCart').classList.remove('hidden'); // Show Add to Cart
+        document.getElementById('saveButton').classList.add('hidden'); // Hide Save Button
         document.getElementById('addToCartModal').classList.add('hidden');
         return false; // Prevent form submission
     }
@@ -1367,7 +1367,7 @@
                 <td class="p-2 text-center">${item.measurements && item.measurements.length > 0 ? item.measurements.map(m => Number(m.rate).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).join('<br>') : Number(item.price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                 <td class="p-2 text-center">${item.measurements && item.measurements.length > 0 ? item.measurements.map(m => Number(m.freight).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).join('<br>') : Number(item.total).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                 <td class="p-2 text-center">
-                    <a href="#" class="text-blue-500 text-center" onclick="openEditModal(${index}, event)">
+                    <a href="#" class="text-blue-500 text-center" onclick="openEditModal(${index})">
                         <button id="eds" type="button" variant="warning" class="bg-yellow-500 hover:bg-yellow-600 text-white rounded p-2">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
                                 <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
@@ -1376,7 +1376,7 @@
                     </a>
                 </td>
                 <td class="p-2 text-center">
-                    <a href="#" class="text-blue-500 text-center" onclick="deleteItem(${index}, event)">
+                    <a href="#" class="text-blue-500 text-center" onclick="deleteItem(${index})">
                         <button id="dels" type="button" variant="danger" class="bg-red-500 hover:bg-red-600 text-white rounded p-2">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
                                 <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
@@ -1422,10 +1422,7 @@
         toggleButtonsVisibility();
     }
 
-    function deleteItem(index, e) {
-        e.preventDefault(); // Prevent default form submission
-        e.stopPropagation(); // Stop event from bubbling up
-        
+    function deleteItem(index) {
         totalPrice -= cart[index].total;
         cart.splice(index, 1);
         updateMainTable();
@@ -1442,36 +1439,58 @@
         deleteButtons.forEach(btn => btn.style.visibility = visibility);
     }
 
-    function openEditModal(index, e) {
-        e.preventDefault(); // Prevent default form submission
-        e.stopPropagation(); // Stop event from bubbling up
-        
+    function openEditModal(index) {
         document.getElementById('addToCart').classList.add('hidden'); // Hide Add to Cart
         document.getElementById('saveButton').classList.remove('hidden'); // Show Save Button
 
         const item = cart[index];
+        
+        // Debug log the item and its properties
+        console.log('Editing item:', item);
+        console.log('Item category:', item.category);
+        
+        // If the category is missing or empty, try to fetch it from the price list
+        if (!item.category || item.category === '') {
+            // Try to find the category from the itemTableBody
+            const tableRows = document.querySelectorAll('#itemTableBody tr.item-row');
+            for (let row of tableRows) {
+                if (row.cells[0].textContent.trim() === item.itemCode) {
+                    item.category = row.cells[2].textContent.trim();
+                    console.log('Found category from price list:', item.category);
+                    break;
+                }
+            }
+        }
 
         document.getElementById('itemCode').value = item.itemCode;
         document.getElementById('itemName').value = item.itemName;
         document.getElementById('unit').value = item.unit;
-        document.getElementById('category').value = item.category;
+        document.getElementById('category').value = item.category || ''; // Make sure it's never undefined
         document.getElementById('weight').value = item.weight;
-        document.getElementById('length').value = item.length;
-        document.getElementById('width').value = item.width;
-        document.getElementById('height').value = item.height;
-        document.getElementById('multiplier').value = item.multiplier;
         document.getElementById('price').value = item.price;
         document.getElementById('description').value = item.description;
         document.getElementById('quantity').value = item.quantity;
         edit = item.total;
-
         // Store the index for updating later
         document.getElementById('saveButton').setAttribute('data-index', index);
 
+        // Handle measurements
+        const measurementsList = document.getElementById('measurementsList');
+        measurementsList.innerHTML = ''; // Clear existing
+
+        if (item.measurements && item.measurements.length > 0) {
+            // Load multiple measurements
+            item.measurements.forEach(measurement => {
+                addMeasurementEntry(measurement.length, measurement.width, measurement.height, measurement.multiplier, measurement.quantity);
+            });
+        } else {
+            // Load single measurement for backward compatibility
+            // For items without measurements, just add an empty measurement entry
+            addMeasurementEntry('', '', '', '', item.quantity || 1);
+        }
+
         // Show the modal
         document.getElementById('addToCartModal').classList.remove('hidden');
-        
-        return false; // Prevent form submission
     }
 
     // Function to save the updated data
@@ -1481,60 +1500,93 @@
         const currentEditIndex = document.getElementById('saveButton').getAttribute('data-index'); // Get stored index
 
         if (currentEditIndex !== null) {
-            // Handle empty or zero values to be null/empty for database
-            let l = parseFloat(document.getElementById('length').value) || null;
-            let w = parseFloat(document.getElementById('width').value) || null;
-            let h = parseFloat(document.getElementById('height').value) || null;
-            let weight = document.getElementById('weight').value ? parseFloat(document.getElementById('weight').value) : null;
-            
-            // Handle multiplier - convert 'N/A' or empty string to null
-            let m = document.getElementById('multiplier').value;
-            if (m === 'N/A' || m === '' || m === '0') {
-                m = null;
-            } else {
-                m = parseFloat(m);
-            }
-            
-            let price = parseFloat(document.getElementById('price').value.replace(/,/g, '')) || 0; // Handle thousand separators
-            let quantity = parseFloat(document.getElementById('quantity').value) || 1;
-            let total = 0;
+            // Collect all measurements
+            const measurementsList = document.getElementById('measurementsList');
+            const measurementEntries = measurementsList.querySelectorAll('.measurement-entry');
+            const measurements = [];
+            let totalQuantity = 0;
+            let hasValidMeasurements = false;
 
-            if (m === null) {
-                total = price * quantity;
-            } else {
-                // Only calculate if all dimensions are provided
-                if (l !== null && w !== null && h !== null) {
-                    price = l * w * h * m;
-                    total = price * quantity;
-                } else {
-                    total = price * quantity;
+            measurementEntries.forEach((entry, index) => {
+                const length = parseFloat(entry.querySelector(`[name="measurement_length_${index}"]`).value) || 0;
+                const width = parseFloat(entry.querySelector(`[name="measurement_width_${index}"]`).value) || 0;
+                const height = parseFloat(entry.querySelector(`[name="measurement_height_${index}"]`).value) || 0;
+                const multiplier = parseFloat(entry.querySelector(`[name="measurement_multiplier_${index}"]`).value) || 0;
+                const quantity = parseInt(entry.querySelector(`[name="measurement_quantity_${index}"]`).value) || 0;
+
+                if (length > 0 && width > 0 && height > 0 && multiplier > 0 && quantity > 0) {
+                    const rate = length * width * height * multiplier;
+                    measurements.push({
+                        length: length,
+                        width: width,
+                        height: height,
+                        multiplier: multiplier,
+                        quantity: quantity,
+                        rate: rate,
+                        freight: rate * quantity
+                    });
+                    totalQuantity += quantity;
+                    hasValidMeasurements = true;
                 }
+            });
+
+            if (!hasValidMeasurements) {
+                // If no valid measurements, use the input quantity and price like addToCart does
+                let quantity = parseFloat(document.getElementById('quantity').value) || 1;
+                totalQuantity = quantity;
+                let itemPrice = parseFloat(document.getElementById('price').value.replace(/,/g, '')) || 0;
+                const newTotal = itemPrice * quantity;
+                
+                // Update total price: subtract old total and add new total
+                totalPrice -= parseFloat(cart[currentEditIndex].total);
+                totalPrice += newTotal;
+
+                cart[currentEditIndex] = {
+                    itemCode: document.getElementById('itemCode').value,
+                    itemName: document.getElementById('itemName').value,
+                    unit: document.getElementById('unit').value,
+                    category: document.getElementById('category').value || '', // Ensure category is never undefined
+                    weight: document.getElementById('weight').value,
+                    price: itemPrice.toFixed(2),
+                    description: document.getElementById('description').value,
+                    quantity: quantity,
+                    total: newTotal.toFixed(2)
+                };
+
+                console.log('Updated item in cart (no measurements):', cart[currentEditIndex]);
+
+                // Update the displayed table with new data
+                updateMainTable();
+
+                closeModal();
+                return;
             }
 
+            let price = parseFloat(document.getElementById('price').value.replace(/,/g, '')) || 0; // Handle thousand separators
+
+            // Update total price: subtract old total and add new total
             totalPrice -= parseFloat(cart[currentEditIndex].total);
-            totalPrice += total;
+            const newTotal = measurements.reduce((sum, m) => sum + m.freight, 0);
+            totalPrice += newTotal;
 
             cart[currentEditIndex] = {
                 itemCode: document.getElementById('itemCode').value,
                 itemName: document.getElementById('itemName').value,
                 unit: document.getElementById('unit').value,
-                category: document.getElementById('category').value,
-                weight: weight,
-                length: l,
-                width: w,
-                height: h,
-                multiplier: m,
+                category: document.getElementById('category').value || '', // Ensure category is never undefined
+                weight: document.getElementById('weight').value,
+                measurements: measurements,
                 price: price.toFixed(2),
-                description: document.getElementById('description').value || "",
-                quantity: quantity,
-                total: total.toFixed(2)
+                description: document.getElementById('description').value,
+                quantity: totalQuantity,
+                total: newTotal.toFixed(2)
             };
 
-            // Update the hidden input field with the cart data
-            document.getElementById('cartData').value = JSON.stringify(cart);
+            console.log('Updated item in cart (with measurements):', cart[currentEditIndex]);
 
             // Update the displayed table with new data
             updateMainTable();
+
             closeModal();
         }
     }
