@@ -749,6 +749,14 @@
             var isAdmin = @json(auth()->user()->roles && in_array(strtoupper(trim(auth()->user()->roles->roles)), ['ADMIN', 'ADMINISTRATOR']));
             var found = entry.find(e => e.id === id);
             if (!found) return;
+            
+            // Calculate previous onsite balance for this item
+            var allEntries = @json($entries);
+            var itemEntries = allEntries.filter(e => e.item === found.item).sort((a, b) => new Date(a.date) - new Date(b.date) || new Date(a.created_at) - new Date(b.created_at));
+            var currentIndex = itemEntries.findIndex(e => e.id === id);
+            var previousOnsiteBalance = currentIndex > 0 ? itemEntries[currentIndex - 1].onsite_balance : 0;
+            window.previousOnsiteBalance = previousOnsiteBalance;
+            
             var form = document.getElementById('editInventoryForm');
             form.action = '/inventory/' + id;
             var fields = `<div class='mb-2'>
@@ -860,6 +868,11 @@
             document.getElementById('editInventoryModal').classList.remove('hidden');
             // Initialize edit amount state based on pickup_delivery_type or existing manual toggle
             updateEditAmountCalculation();
+            // Add event listeners for onsite balance calculation
+            document.querySelector('#editInventoryModal input[name="onsite_in"]').addEventListener('input', updateOnsiteBalance);
+            document.querySelector('#editInventoryModal input[name="actual_out"]').addEventListener('input', updateOnsiteBalance);
+            // Initial calculation
+            updateOnsiteBalance();
         }
 
         function updateEditAmountCalculation() {
@@ -974,6 +987,21 @@
             
             var calculatedAmount = outValue * priceMultiplier;
             amountInput.value = calculatedAmount.toFixed(2);
+        }
+
+        function updateOnsiteBalance() {
+            var onsiteInInput = document.querySelector('#editInventoryModal input[name="onsite_in"]');
+            var actualOutInput = document.querySelector('#editInventoryModal input[name="actual_out"]');
+            var onsiteBalanceInput = document.querySelector('#editInventoryModal input[name="onsite_balance"]');
+            
+            if (!onsiteInInput || !actualOutInput || !onsiteBalanceInput) return;
+            
+            var onsiteIn = parseFloat(onsiteInInput.value) || 0;
+            var actualOut = parseFloat(actualOutInput.value) || 0;
+            var previousBalance = window.previousOnsiteBalance || 0;
+            var onsiteBalance = previousBalance + onsiteIn - actualOut;
+            
+            onsiteBalanceInput.value = onsiteBalance.toFixed(4);
         }
 
         // Delete confirmation function
