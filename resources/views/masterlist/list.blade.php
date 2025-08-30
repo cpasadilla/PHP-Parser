@@ -218,7 +218,7 @@
                         <th>
                             <select class="filter-dropdown" data-column="updated_location">
                                 <option value="">All</option>
-                                @foreach($orders->pluck('updated_location')->unique()->sort() as $updated_location)
+                                @foreach(($filterData['uniqueUpdatedLocation'] ?? []) as $updated_location)
                                     <option value="{{ $updated_location }}">{{ $updated_location }}</option>
                                 @endforeach
                             </select>
@@ -260,7 +260,7 @@
                 </thead>
                 <tbody>
                     @foreach($orders as $order)
-                        <tr class="border-b @if(str_contains($order->remark ?? '', 'TRANSFERRED FROM')) transferred-order @endif">
+                        <tr class="border-b @if(str_contains($order->remark ?? '', 'TRANSFERRED FROM')) transferred-order @endif" data-order-id="{{ $order->id }}">
                             <td class="p-2" data-column="bl">
                                 {{ $order->orderId }}
                                 @if(str_contains($order->remark ?? '', 'TRANSFERRED FROM'))
@@ -2092,14 +2092,28 @@
                 if (data.success) {
                     console.log(`${field} updated successfully`);
 
-                    // Update BL STATUS and DATE PAID dynamically
-                    const row = document.querySelector(`tr[data-order-id="${orderId}"]`);
-                    if (row) {
-                        const blStatusCell = row.querySelector('[data-column="bl_status"]');
-                        const datePaidCell = row.querySelector('[data-column="dp"]');
+                    // Update related fields dynamically if they are provided in the response
+                    if (data.blStatus !== undefined || data.or_ar_date !== undefined || data.updated_by !== undefined || data.updated_location !== undefined) {
+                        const row = document.querySelector(`tr[data-order-id="${orderId}"]`);
+                        if (row) {
+                            const blStatusCell = row.querySelector('[data-column="bl_status"]');
+                            const datePaidCell = row.querySelector('[data-column="dp"]');
+                            const notedByCell = row.querySelector('[data-column="updated_by"]');
+                            const paidInCell = row.querySelector('[data-column="updated_location"]');
 
-                        if (blStatusCell) blStatusCell.textContent = data.blStatus;
-                        if (datePaidCell) datePaidCell.textContent = data.or_ar_date || '';
+                            if (blStatusCell && data.blStatus !== undefined) {
+                                blStatusCell.textContent = data.blStatus;
+                            }
+                            if (datePaidCell && data.or_ar_date !== undefined) {
+                                datePaidCell.textContent = data.or_ar_date || ' ';
+                            }
+                            if (notedByCell && data.updated_by !== undefined) {
+                                notedByCell.textContent = data.updated_by || ' ';
+                            }
+                            if (paidInCell && data.updated_location !== undefined) {
+                                paidInCell.textContent = data.updated_location || ' ';
+                            }
+                        }
                     }
                 } else {
                     console.error(`Failed to update ${field}`);

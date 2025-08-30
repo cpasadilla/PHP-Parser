@@ -1324,6 +1324,7 @@ class MasterListController extends Controller
             'uniqueORs' => $allOrdersForFilters->pluck('OR')->filter()->unique()->sort()->values(),
             'uniqueARs' => $allOrdersForFilters->pluck('AR')->filter()->unique()->sort()->values(),
             'uniqueUpdatedBy' => $allOrdersForFilters->pluck('updated_by')->filter()->unique()->sort()->values(),
+            'uniqueUpdatedLocation' => $allOrdersForFilters->pluck('updated_location')->filter()->unique()->sort()->values(),
         ];
 
         // Get unique item names from parcels - use all orders for parcels
@@ -1375,6 +1376,7 @@ class MasterListController extends Controller
             'uniqueORs' => $allOrdersForFilters->pluck('OR')->filter()->unique()->sort()->values(),
             'uniqueARs' => $allOrdersForFilters->pluck('AR')->filter()->unique()->sort()->values(),
             'uniqueUpdatedBy' => $allOrdersForFilters->pluck('updated_by')->filter()->unique()->sort()->values(),
+            'uniqueUpdatedLocation' => $allOrdersForFilters->pluck('updated_location')->filter()->unique()->sort()->values(),
         ];
 
         // Get unique item names from parcels - use all orders for parcels
@@ -1948,7 +1950,7 @@ class MasterListController extends Controller
 
                 // Log the OR/AR field change
                 $logFieldUpdate($field, $oldFieldValue, $order->$field);
-                
+
                 // Log changes to related fields if they changed
                 if ($oldBlStatus != $order->blStatus) {
                     $logFieldUpdate('blStatus', $oldBlStatus, $order->blStatus);
@@ -1971,11 +1973,11 @@ class MasterListController extends Controller
         // Clear updated_by and updated_location if blStatus is UNPAID
         $oldUpdatedByBeforeClear = $order->updated_by;
         $oldUpdatedLocationBeforeClear = $order->updated_location;
-        
+
         if ($order->blStatus === 'UNPAID') {
             $order->updated_by = null;
             $order->updated_location = null;
-            
+
             // Log these changes only if they actually changed
             if ($oldUpdatedByBeforeClear !== null && $oldUpdatedByBeforeClear !== '') {
                 $logFieldUpdate('updated_by', $oldUpdatedByBeforeClear, null);
@@ -1988,6 +1990,18 @@ class MasterListController extends Controller
         $order->save();
 
         Log::info('Order After Update:', $order->toArray());
+
+        // Return updated values for OR/AR fields
+        if (in_array($field, ['OR', 'AR'])) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Order field updated successfully!',
+                'blStatus' => $order->blStatus,
+                'or_ar_date' => $order->or_ar_date ? \Carbon\Carbon::parse($order->or_ar_date)->format('F d, Y h:i A') : '',
+                'updated_by' => $order->updated_by ?? '',
+                'updated_location' => $order->updated_location ?? ''
+            ]);
+        }
 
         return response()->json(['success' => true, 'message' => 'Order field updated successfully!']);
     }
