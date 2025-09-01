@@ -11,6 +11,7 @@ use Illuminate\Pagination\LengthAwarePaginator; // Add this for custom paginatio
 use App\Models\Ship;
 use App\Models\Customer; // Import the Customer model
 use App\Models\SubAccount; // Import the SubAccount model
+use App\Models\User; // Import the User model
 use App\Models\order as Order; // Import the order model (lowercase) with alias
 use App\Models\PriceList;
 use App\Models\voyage;
@@ -248,6 +249,16 @@ class MasterListController extends Controller
         ->orderByRaw("CASE WHEN remark LIKE '%TRANSFERRED FROM%' THEN 0 ELSE 1 END ASC")
         ->orderBy('orderId', 'asc')
         ->get();
+
+        // Enhance each order with proper AR/OR display information
+        $orders = $orders->map(function ($order) {
+            $displayInfo = $this->getArOrDisplayInfo($order);
+            $order->display_updated_by = $displayInfo['updated_by'];
+            $order->display_updated_location = $displayInfo['updated_location'];
+            $order->display_or_ar_date = $displayInfo['or_ar_date'];
+            $order->last_updated_field = $displayInfo['last_updated_field'];
+            return $order;
+        });
         
         // Create filter data
         $filterData = [
@@ -259,7 +270,7 @@ class MasterListController extends Controller
             'uniqueCheckers' => $orders->pluck('checkName')->filter()->unique()->sort()->values(),
             'uniqueORs' => $orders->pluck('OR')->filter()->unique()->sort()->values(),
             'uniqueARs' => $orders->pluck('AR')->filter()->unique()->sort()->values(),
-            'uniqueUpdatedBy' => $orders->pluck('updated_by')->filter()->unique()->sort()->values(),
+            'uniqueUpdatedBy' => $orders->pluck('display_updated_by')->filter()->unique()->sort()->values(),
         ];
         
         return view('masterlist.list', compact('orders', 'filterData'));
@@ -1010,22 +1021,13 @@ class MasterListController extends Controller
         } else {
             // Calculate wharfage based on parcel categories
             $onlyGroceries = true;
-            $hasGM019orGM020 = false;
             
             foreach ($cart as $item) {
-                // Check if item is not GROCERIES
-                if (($item->category ?? '') != 'GROCERIES') {
+                // Check if item is not GROCERIES (including empty/undefined categories)
+                // Only consider it as GROCERIES if explicitly set to 'GROCERIES'
+                $category = trim(strtoupper($item->category ?? ''));
+                if ($category !== 'GROCERIES') {
                     $onlyGroceries = false;
-                }
-                
-                // Check if the item is GM-019 or GM-020 (safely check if item_code property exists)
-                if (isset($item->item_code) && ($item->item_code == 'GM-019' || $item->item_code == 'GM-020')) {
-                    $hasGM019orGM020 = true;
-                }
-                
-                // Also check itemCode property which might be used instead of item_code
-                if (isset($item->itemCode) && ($item->itemCode == 'GM-019' || $item->itemCode == 'GM-020')) {
-                    $hasGM019orGM020 = true;
                 }
             }
 
@@ -1034,11 +1036,11 @@ class MasterListController extends Controller
                 $wharfage = 0;
             } else {
                 // Calculate wharfage based on whether parcels contain only groceries or not
-                // Also check if the order contains GM-019 or GM-020 items
-                if ($onlyGroceries || $hasGM019orGM020) {
-                    $wharfage = $freight / 800 * 23; // Formula for GROCERIES only or when contains GM-019/GM-020
+                // Default to 1200 formula unless ALL items are GROCERIES
+                if ($onlyGroceries) {
+                    $wharfage = $freight / 800 * 23; // Only when ALL items are GROCERIES
                 } else {
-                    $wharfage = $freight / 1200 * 23; // Formula for other items
+                    $wharfage = $freight / 1200 * 23; // Default formula for mixed or non-grocery items
                 }
                 // If FREIGHT is 0 (but VALUE is not 0), set wharfage to 11.20
                 if ($freight == 0 && $value > 0) {
@@ -1311,6 +1313,16 @@ class MasterListController extends Controller
             ->orderBy('orderId', 'asc')
             ->get(); // Load ALL orders (removed pagination limit)
 
+        // Enhance each order with proper AR/OR display information
+        $orders = $orders->map(function ($order) {
+            $displayInfo = $this->getArOrDisplayInfo($order);
+            $order->display_updated_by = $displayInfo['updated_by'];
+            $order->display_updated_location = $displayInfo['updated_location'];
+            $order->display_or_ar_date = $displayInfo['or_ar_date'];
+            $order->last_updated_field = $displayInfo['last_updated_field'];
+            return $order;
+        });
+
         // Use the same orders for filter data (no need for separate query)
         $allOrdersForFilters = $orders;
 
@@ -1323,8 +1335,8 @@ class MasterListController extends Controller
             'uniqueCheckers' => $allOrdersForFilters->pluck('checkName')->filter()->unique()->sort()->values(),
             'uniqueORs' => $allOrdersForFilters->pluck('OR')->filter()->unique()->sort()->values(),
             'uniqueARs' => $allOrdersForFilters->pluck('AR')->filter()->unique()->sort()->values(),
-            'uniqueUpdatedBy' => $allOrdersForFilters->pluck('updated_by')->filter()->unique()->sort()->values(),
-            'uniqueUpdatedLocation' => $allOrdersForFilters->pluck('updated_location')->filter()->unique()->sort()->values(),
+            'uniqueUpdatedBy' => $allOrdersForFilters->pluck('display_updated_by')->filter()->unique()->sort()->values(),
+            'uniqueUpdatedLocation' => $allOrdersForFilters->pluck('display_updated_location')->filter()->unique()->sort()->values(),
         ];
 
         // Get unique item names from parcels - use all orders for parcels
@@ -1391,6 +1403,79 @@ class MasterListController extends Controller
         ]);
     }
 
+    /**
+     * Get the appropriate display information for AR/OR based on the last update
+     */
+    private function getArOrDisplayInfo($order)
+    {
+        // Get the latest AR update from the logs (only non-empty values)
+        $latestArUpdate = OrderUpdateLog::where('order_id', $order->id)
+            ->where('field_name', 'AR')
+            ->whereNotNull('new_value')
+            ->where('new_value', '!=', '')
+            ->latest('updated_at')
+            ->first();
+            
+        $latestOrUpdate = OrderUpdateLog::where('order_id', $order->id)
+            ->where('field_name', 'OR')
+            ->whereNotNull('new_value')
+            ->where('new_value', '!=', '')
+            ->latest('updated_at')
+            ->first();
+
+        // Determine which update was more recent
+        $latestUpdate = null;
+        
+        if ($latestArUpdate && $latestOrUpdate) {
+            $latestUpdate = $latestArUpdate->updated_at > $latestOrUpdate->updated_at ? $latestArUpdate : $latestOrUpdate;
+        } elseif ($latestArUpdate) {
+            $latestUpdate = $latestArUpdate;
+        } elseif ($latestOrUpdate) {
+            $latestUpdate = $latestOrUpdate;
+        }
+
+        // Return display information based on the latest update
+        if ($latestUpdate) {
+            // Extract location from the stored value if it contains location info
+            $location = '';
+            $actualValue = $latestUpdate->new_value;
+            
+            if (strpos($latestUpdate->new_value, '|LOCATION:') !== false) {
+                $parts = explode('|LOCATION:', $latestUpdate->new_value);
+                $actualValue = $parts[0] ?? '';
+                $location = $parts[1] ?? '';
+            } else {
+                $location = $this->extractLocationFromUser($latestUpdate->updated_by);
+            }
+
+            return [
+                'updated_by' => $latestUpdate->updated_by,
+                'updated_location' => $location,
+                'or_ar_date' => $latestUpdate->updated_at,
+                'last_updated_field' => $latestUpdate->field_name
+            ];
+        }
+
+        // Fallback to order's stored values if no logs found
+        return [
+            'updated_by' => $order->updated_by,
+            'updated_location' => $order->updated_location,
+            'or_ar_date' => $order->or_ar_date,
+            'last_updated_field' => null
+        ];
+    }
+
+    /**
+     * Extract location from user (temporary helper method)
+     */
+    private function extractLocationFromUser($updatedBy)
+    {
+        // This is a temporary solution. Ideally, you'd store location separately
+        // For now, we'll try to get the location from the current user record
+        $user = User::whereRaw("CONCAT(fName, ' ', lName) = ?", [$updatedBy])->first();
+        return $user ? $user->location : '';
+    }
+
     public function updateOrderField(Request $request, $orderId) {
         $field = $request->field;
         
@@ -1433,14 +1518,21 @@ class MasterListController extends Controller
             
             // Only log if the values are actually different
             if ($oldValStr !== $newValStr) {
-                OrderUpdateLog::create([
+                $logData = [
                     'order_id' => $orderId,
                     'updated_by' => Auth::user()->fName . ' ' . Auth::user()->lName,
                     'field_name' => $fieldName,
                     'old_value' => $oldVal,
                     'new_value' => $newVal,
                     'action_type' => 'update'
-                ]);
+                ];
+
+                // For AR/OR updates, store location info in the new_value field
+                if (in_array($fieldName, ['AR', 'OR']) && !empty($newVal)) {
+                    $logData['new_value'] = $newVal . '|LOCATION:' . Auth::user()->location;
+                }
+
+                OrderUpdateLog::create($logData);
             }
         };
 
@@ -1937,15 +2029,36 @@ class MasterListController extends Controller
             $order->$field = $request->value;
 
             if (in_array($field, ['OR', 'AR'])) {
-                $order->or_ar_date = $request->date ?? now();
-                $order->updated_by = Auth::user()->fName . ' ' . Auth::user()->lName; // Set the updated_by field
-                $order->updated_location = Auth::user()->location; // Use the user's actual location
+                // Only update the shared fields if this specific field (AR or OR) has a value
+                if (!empty($request->value)) {
+                    $order->or_ar_date = $request->date ?? now();
+                    $order->updated_by = Auth::user()->fName . ' ' . Auth::user()->lName;
+                    $order->updated_location = Auth::user()->location;
+                }
 
+                // Determine the BL status based on whether either OR or AR has a value
                 if (empty($order->OR) && empty($order->AR)) {
                     $order->or_ar_date = null;
+                    $order->updated_by = null;
+                    $order->updated_location = null;
                     $order->blStatus = 'UNPAID';
                 } else {
                     $order->blStatus = 'PAID';
+                    // If we're clearing a field but the other field still has a value,
+                    // keep the existing metadata unless we're updating with a new value
+                    if (empty($request->value)) {
+                        // We're clearing this field, but keep existing metadata if the other field has a value
+                        $otherField = $field === 'OR' ? 'AR' : 'OR';
+                        if (!empty($order->$otherField)) {
+                            // Keep existing metadata since the other field still has a value
+                            // The metadata should reflect the last actual update, not the clearing
+                        } else {
+                            // Both fields are now empty, clear all metadata
+                            $order->or_ar_date = null;
+                            $order->updated_by = null;
+                            $order->updated_location = null;
+                        }
+                    }
                 }
 
                 // Log the OR/AR field change
@@ -1993,13 +2106,16 @@ class MasterListController extends Controller
 
         // Return updated values for OR/AR fields
         if (in_array($field, ['OR', 'AR'])) {
+            // Get the appropriate display information based on the latest update
+            $displayInfo = $this->getArOrDisplayInfo($order);
+            
             return response()->json([
                 'success' => true,
                 'message' => 'Order field updated successfully!',
                 'blStatus' => $order->blStatus,
-                'or_ar_date' => $order->or_ar_date ? \Carbon\Carbon::parse($order->or_ar_date)->format('F d, Y h:i A') : '',
-                'updated_by' => $order->updated_by ?? '',
-                'updated_location' => $order->updated_location ?? ''
+                'or_ar_date' => $displayInfo['or_ar_date'] ? \Carbon\Carbon::parse($displayInfo['or_ar_date'])->format('F d, Y h:i A') : '',
+                'updated_by' => $displayInfo['updated_by'] ?? '',
+                'updated_location' => $displayInfo['updated_location'] ?? ''
             ]);
         }
 

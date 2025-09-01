@@ -18,5 +18,12 @@ class OrderUpdateLog extends Model
         'action_type',
     ];
 
-    public $timestamps = false; // Disable timestamps
+    public $timestamps = false; // Disable automatic timestamps
+    
+    // Define which columns should be treated as dates
+    protected $dates = ['updated_at'];
+    
+    // Override the created_at column name since we only have updated_at
+    const CREATED_AT = 'updated_at';
+    const UPDATED_AT = null;
 }

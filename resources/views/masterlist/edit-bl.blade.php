@@ -850,36 +850,32 @@
                 return;
             }
 
-            // Check if the cart contains only GROCERIES or contains special codes
+            // Check if the cart contains only GROCERIES
             let onlyGroceries = true;
             let hasNonGroceries = false;
-            let hasGM019orGM020 = false;
 
             if (Array.isArray(cart)) {
                 cart.forEach(function(item) {
-                    const code = (item.itemCode || '').toString().trim();
-                    const category = (item.category || '').toString().toUpperCase();
+                    const category = (item.category || '').toString().toUpperCase().trim();
 
-                    if (code === 'GM-019' || code === 'GM-020') {
-                        hasGM019orGM020 = true;
+                    // Check if category is not GROCERIES (including empty/undefined categories)
+                    // Only consider it as GROCERIES if explicitly set to 'GROCERIES'
+                    if (category !== 'GROCERIES') {
+                        onlyGroceries = false;
                     }
 
                     if (category !== 'GROCERIES' && category !== '') {
                         hasNonGroceries = true;
                     }
-
-                    if (category !== 'GROCERIES') {
-                        onlyGroceries = false;
-                    }
                 });
             }
 
-            // Calculate wharfage based on rules
+            // Calculate wharfage based on rules - default to 1200 formula unless ALL items are GROCERIES
             let wharfage = 0;
-            if (onlyGroceries || hasGM019orGM020) {
-                wharfage = (freight / 800) * 23;
+            if (onlyGroceries) {
+                wharfage = (freight / 800) * 23; // Only when ALL items are GROCERIES
             } else {
-                wharfage = (freight / 1200) * 23;
+                wharfage = (freight / 1200) * 23; // Default formula for mixed or non-grocery items
             }
 
             // Set minimum wharfage to 11.20 if not zero
@@ -1071,6 +1067,9 @@
     function updateTotalPrice() {
         const totalPriceElement = document.querySelector("td[style*='font-family: Arial; font-weight: bold; font-size: 13px; text-align: right; height: 30px;']");
         totalPriceElement.innerHTML = `₱ ${Number(totalPrice).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        
+        // Also update the hidden cartTotal input
+        document.getElementById('cartTotal').value = totalPrice.toFixed(2);
     }
 
     function addToCart() {
@@ -1121,32 +1120,60 @@
             }
         });
 
-        if (!hasValidMeasurements) {
-            alert("Please add at least one valid measurement.");
-            return;
-        }
-
         let weight = document.getElementById('weight').value ? parseFloat(document.getElementById('weight').value) : null;
         let price = parseFloat(document.getElementById('price').value.replace(/,/g, "")) || 0;
         let category = document.getElementById('category').value;
+        let manualQuantity = parseInt(document.getElementById('quantity').value);
+        let priceValue = document.getElementById('price').value;
 
-        const item = {
-            itemCode: document.getElementById('itemCode').value,
-            itemName: document.getElementById('itemName').value,
-            unit: document.getElementById('unit').value,
-            category: document.getElementById('category').value || '', // Ensure category is never undefined
-            weight: document.getElementById('weight').value || "",
-            value: document.getElementById('value').value || "",
-            measurements: measurements,
-            price: price.toFixed(2), // Keep for backward compatibility
-            description: description,
-            quantity: totalQuantity,
-            total: measurements.reduce((sum, m) => sum + m.freight, 0).toFixed(2)
-        };
+        // Check if manual quantity and price are provided (allowing zero values)
+        const hasManualValues = !isNaN(manualQuantity) && manualQuantity >= 0 && 
+                               priceValue !== '' && priceValue !== null && priceValue !== undefined;
 
-        console.log('Adding item to cart:', item);
+        // If no valid measurements but we have manual quantity and price, use those values
+        if (!hasValidMeasurements && hasManualValues) {
+            totalQuantity = manualQuantity;
+            const manualTotal = price * manualQuantity;
+            
+            const item = {
+                itemCode: document.getElementById('itemCode').value,
+                itemName: document.getElementById('itemName').value,
+                unit: document.getElementById('unit').value,
+                category: document.getElementById('category').value || '',
+                weight: document.getElementById('weight').value || "",
+                value: document.getElementById('value').value || "",
+                measurements: [], // Empty measurements array for manual items
+                price: price.toFixed(2),
+                description: description,
+                quantity: totalQuantity,
+                total: manualTotal.toFixed(2)
+            };
 
-        cart.push(item);
+            console.log('Adding manual item to cart:', item);
+            cart.push(item);
+        } else if (hasValidMeasurements) {
+            // Use measurement-based calculations
+            const item = {
+                itemCode: document.getElementById('itemCode').value,
+                itemName: document.getElementById('itemName').value,
+                unit: document.getElementById('unit').value,
+                category: document.getElementById('category').value || '',
+                weight: document.getElementById('weight').value || "",
+                value: document.getElementById('value').value || "",
+                measurements: measurements,
+                price: price.toFixed(2),
+                description: description,
+                quantity: totalQuantity,
+                total: measurements.reduce((sum, m) => sum + m.freight, 0).toFixed(2)
+            };
+
+            console.log('Adding measurement-based item to cart:', item);
+            cart.push(item);
+        } else {
+            // No valid measurements and no manual quantity/price
+            alert("Please either add measurements or enter both quantity and price.");
+            return;
+        }
 
         // Update the hidden input field with the cart data
         document.getElementById('cartData').value = JSON.stringify(cart);
@@ -1227,6 +1254,11 @@
                 row.innerHTML += `<td class="p-2 text-center">${measurementHtml}</td>`;
                 row.innerHTML += `<td class="p-2 text-center">${rateHtml}</td>`;
                 row.innerHTML += `<td class="p-2 text-center">${freightHtml}</td>`;
+            } else if (item.measurements && item.measurements.length === 0) {
+                // Manual item with no measurements - show price as rate and total as freight
+                row.innerHTML += `<td class="p-2 text-center">Manual Entry</td>`;
+                row.innerHTML += `<td class="p-2 text-center">${Number(item.price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>`;
+                row.innerHTML += `<td class="p-2 text-center">${Number(item.total).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>`;
             } else if (!item.multiplier || item.multiplier === 'N/A') {
                 row.innerHTML += `<td class="p-2 text-center">${item.length || ''} × ${item.width || ''} × ${item.height || ''}</td>`;
                 row.innerHTML += `<td class="p-2 text-center">${Number(item.price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>`;
@@ -1280,6 +1312,9 @@
         `;
 
         mainTableBody.appendChild(summaryRow);
+
+        // Recalculate total price to ensure it's up to date
+        recalculateTotalPrice();
 
         toggleButtonsVisibility();
     }
@@ -1394,25 +1429,50 @@
                     }
                 });
 
-                if (!hasValidMeasurements) {
-                    alert("Please add at least one valid measurement.");
+                let price = parseFloat(document.getElementById('price').value.replace(/,/g, '')) || 0; // Handle thousand separators
+                let manualQuantity = parseInt(document.getElementById('quantity').value);
+                let priceValue = document.getElementById('price').value;
+
+                // Check if manual quantity and price are provided (allowing zero values)
+                const hasManualValues = !isNaN(manualQuantity) && manualQuantity >= 0 && 
+                                       priceValue !== '' && priceValue !== null && priceValue !== undefined;
+
+                // If no valid measurements but we have manual quantity and price, use those values
+                if (!hasValidMeasurements && hasManualValues) {
+                    totalQuantity = manualQuantity;
+                    const manualTotal = price * manualQuantity;
+                    
+                    cart[currentEditIndex] = {
+                        itemCode: document.getElementById('itemCode').value,
+                        itemName: document.getElementById('itemName').value,
+                        unit: document.getElementById('unit').value,
+                        category: document.getElementById('category').value || '',
+                        weight: document.getElementById('weight').value,
+                        measurements: [], // Empty measurements array for manual items
+                        price: price.toFixed(2),
+                        description: document.getElementById('description').value,
+                        quantity: totalQuantity,
+                        total: manualTotal.toFixed(2)
+                    };
+                } else if (hasValidMeasurements) {
+                    // Use measurement-based calculations
+                    cart[currentEditIndex] = {
+                        itemCode: document.getElementById('itemCode').value,
+                        itemName: document.getElementById('itemName').value,
+                        unit: document.getElementById('unit').value,
+                        category: document.getElementById('category').value || '',
+                        weight: document.getElementById('weight').value,
+                        measurements: measurements,
+                        price: price.toFixed(2),
+                        description: document.getElementById('description').value,
+                        quantity: totalQuantity,
+                        total: measurements.reduce((sum, m) => sum + m.freight, 0).toFixed(2)
+                    };
+                } else {
+                    // No valid measurements and no manual quantity/price
+                    alert("Please either add measurements or enter both quantity and price.");
                     return;
                 }
-
-                let price = parseFloat(document.getElementById('price').value.replace(/,/g, '')) || 0; // Handle thousand separators
-
-                cart[currentEditIndex] = {
-                    itemCode: document.getElementById('itemCode').value,
-                    itemName: document.getElementById('itemName').value,
-                    unit: document.getElementById('unit').value,
-                    category: document.getElementById('category').value || '', // Ensure category is never undefined
-                    weight: document.getElementById('weight').value,
-                    measurements: measurements,
-                    price: price.toFixed(2),
-                    description: document.getElementById('description').value,
-                    quantity: totalQuantity,
-                    total: measurements.reduce((sum, m) => sum + m.freight, 0).toFixed(2)
-                };
 
                 console.log('Updated item in cart:', cart[currentEditIndex]);
 

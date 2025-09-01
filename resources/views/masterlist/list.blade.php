@@ -432,9 +432,9 @@
                                 </div>
                                 @endif
                             </td>
-                            <td class="p-2" data-column="dp">{{ $order->or_ar_date ? \Carbon\Carbon::parse($order->or_ar_date)->format('F d, Y h:i A') : ' ' }}</td>
-                            <td class="p-2" data-column="updated_by">{{ $order->updated_by ?? ' ' }}</td>
-                            <td class="p-2" data-column="updated_location">{{ $order->updated_location ?? ' ' }}</td>
+                            <td class="p-2" data-column="dp">{{ ($order->display_or_ar_date ?? $order->or_ar_date) ? \Carbon\Carbon::parse($order->display_or_ar_date ?? $order->or_ar_date)->format('F d, Y h:i A') : ' ' }}</td>
+                            <td class="p-2" data-column="updated_by">{{ $order->display_updated_by ?? $order->updated_by ?? ' ' }}</td>
+                            <td class="p-2" data-column="updated_location">{{ $order->display_updated_location ?? $order->updated_location ?? ' ' }}</td>
                             <td class="p-2" data-column="bl_status">{{ $order->blStatus }}</td>
                             <td class="p-2 remark-cell" data-column="bl_remark">
                                 @if(Auth::user()->hasSubpagePermission('masterlist', 'list', 'edit'))
