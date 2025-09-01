@@ -179,6 +179,8 @@
                     <input type="hidden" id="cartTotal" name="cartTotal">
                     <input type="hidden" id="shipperId" name="shipperId" value="{{ $order->shipperId }}">
                     <input type="hidden" id="consigneeId" name="consigneeId" value="{{ $order->recId }}">
+                    <input type="hidden" id="wharfage_manual" name="wharfage_manual" value="{{ $order->wharfage_manual ?? 0 }}">
+                    <input type="hidden" id="freight_manual" name="freight_manual" value="{{ $order->freight_manual ?? 0 }}">
 
                     <!-- Main Table -->
                     <table class="w-full border-collapse text-sm" style="padding: 0 5px; margin-top: 20px;">
@@ -223,7 +225,11 @@
                         <td style="width: 50%;"></td> <!-- Adjusted size -->
                         <td style="width: 20%;">
                         <td style="width: 15%;  text-align: left; font-family: Arial; font-size: 12px;">Freight:</td>
-                        <td style="width: 25%; border-bottom: 1px solid black; font-family: Arial; font-size: 12px;  text-align: center;">{{ number_format($order->freight, 2) }}</td>
+                        <td style="width: 25%; border-bottom: 1px solid black; font-family: Arial; font-size: 12px; text-align: center; position: relative;">
+                            <input id="freight" name="freight" value="{{ $order->freight }}" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');"
+                                class="freight-input"
+                                style="font-family: Arial; font-size: 11px; width: 100%; height: 18px; border: none; outline: none; padding: 0px 72px 0px 0px; text-align: center; line-height: 1; background: transparent; display: block;"/>
+                        </td>
                     </tr>
                     <tr>
                         <td style="text-align: center; font-family: Arial; font-size: 12px;">Received on board vessel in apparent good condition.</td>
@@ -615,6 +621,17 @@
         recalculateTotalPrice();
         document.getElementById('cartTotal').value = totalPrice.toFixed(2);
         
+        // Calculate freight and wharfage after initial total calculation (only if not manual)
+        const freightManualFlag = document.getElementById('freight_manual')?.value === '1';
+        const wharfageManualFlag = document.getElementById('wharfage_manual')?.value === '1';
+        
+        if (typeof calculateFreight === 'function' && !freightManualFlag) {
+            calculateFreight();
+        }
+        if (typeof calculateWharfage === 'function' && !wharfageManualFlag) {
+            calculateWharfage();
+        }
+        
         // Debug: Check if hidden inputs are properly set
         console.log("Initial cart data:", document.getElementById('cartData').value);
         console.log("Initial cart total:", document.getElementById('cartTotal').value);
@@ -735,6 +752,15 @@
         // Local flag that determines whether automatic calculation should overwrite the field
         let manualWharfage = manualFlagInput.value === '1';
 
+        // Initialize wharfage controls based on database value
+        if (manualWharfage) {
+            // If this is a manual wharfage from database, set the UI to manual mode
+            try { wharfageInput.readOnly = false; } catch (e) {}
+        } else {
+            // Auto mode - input might be readonly for display
+            try { wharfageInput.readOnly = true; } catch (e) {}
+        }
+
         // Add a small icon button inside the existing TD so user can toggle manual/auto without breaking layout
         if (wharfageInput && wharfageInput.parentNode) {
             const btn = document.createElement('button');
@@ -836,17 +862,183 @@
                 try { wharfageInput.readOnly = false; } catch (e) {}
             });
         }
+
+        // ========== FREIGHT MANUAL/AUTO FUNCTIONALITY ==========
+        // Ensure there's a hidden input to tell server whether freight was manually overridden
+        let freightManualFlagInput = document.getElementById('freight_manual');
+        if (!freightManualFlagInput) {
+            freightManualFlagInput = document.createElement('input');
+            freightManualFlagInput.type = 'hidden';
+            freightManualFlagInput.name = 'freight_manual';
+            freightManualFlagInput.id = 'freight_manual';
+            freightManualFlagInput.value = '0';
+            const formEl = document.getElementById('myForm');
+            if (formEl) formEl.appendChild(freightManualFlagInput);
+        }
+
+        // Local flag that determines whether automatic calculation should overwrite the freight field
+        let manualFreight = freightManualFlagInput.value === '1';
+
+        // Initialize freight controls based on database value
+        if (manualFreight) {
+            // If this is a manual freight from database, set the UI to manual mode
+            try { freightInput.readOnly = false; } catch (e) {}
+        } else {
+            // Auto mode - input might be readonly for display
+            try { freightInput.readOnly = true; } catch (e) {}
+        }
+
+        // Add manual/auto toggle for freight
+        if (freightInput && freightInput.parentNode) {
+            const freightBtn = document.createElement('button');
+            freightBtn.type = 'button';
+            freightBtn.id = 'manualFreightToggle';
+            freightBtn.className = 'btn manual-freight-btn';
+            freightBtn.title = manualFreight ? 'Using manual freight (click to reset to auto)' : 'Use manual freight (click to edit)';
+
+            freightBtn.innerHTML = `
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z" fill="currentColor"/>
+                    <path d="M20.71 7.04a1.003 1.003 0 0 0 0-1.42l-2.34-2.34a1.003 1.003 0 0 0-1.42 0l-1.83 1.83 3.75 3.75 1.84-1.82z" fill="currentColor"/>
+                </svg>
+            `;
+
+            // Append button into the parent TD
+            const freightTd = freightInput.parentNode;
+            freightTd.appendChild(freightBtn);
+
+            // Create a small status badge to show current mode (Auto / Manual)
+            const freightStatus = document.createElement('span');
+            freightStatus.id = 'freightStatus';
+            freightStatus.style.position = 'absolute';
+            freightStatus.style.right = '34px';
+            freightStatus.style.top = '50%';
+            freightStatus.style.transform = 'translateY(-50%)';
+            freightStatus.style.fontSize = '10px';
+            freightStatus.style.padding = '2px 6px';
+            freightStatus.style.borderRadius = '10px';
+            freightStatus.style.color = '#ffffff';
+            freightStatus.style.background = manualFreight ? '#e11d48' : '#10b981'; // red for manual, green for auto
+            freightStatus.style.cursor = 'default';
+            freightStatus.setAttribute('aria-live', 'polite');
+            freightStatus.textContent = manualFreight ? 'Manual' : 'Auto';
+            freightTd.appendChild(freightStatus);
+
+            // Style the button to appear on the right side of the TD
+            freightBtn.style.position = 'absolute';
+            freightBtn.style.right = '6px';
+            freightBtn.style.top = '50%';
+            freightBtn.style.transform = 'translateY(-50%)';
+            freightBtn.style.border = 'none';
+            freightBtn.style.background = 'transparent';
+            freightBtn.style.cursor = 'pointer';
+            freightBtn.style.padding = '2px';
+            freightBtn.style.color = manualFreight ? '#e11d48' : '#374151'; // red when manual, gray otherwise
+
+            // Make sure the input has enough right padding so text doesn't go under the icon
+            freightInput.style.paddingRight = '66px';
+
+            // Set initial editable state: if automatic, prevent typing; if manual, allow typing
+            try {
+                freightInput.readOnly = !manualFreight;
+            } catch (e) {
+                // ignore if element doesn't support readOnly
+            }
+
+            // When clicked: toggle manual/auto and update the status badge and input editability
+            freightBtn.addEventListener('click', function () {
+                const freightStatusEl = document.getElementById('freightStatus');
+                if (manualFreight) {
+                    // Switch back to automatic
+                    manualFreight = false;
+                    freightManualFlagInput.value = '0';
+                    freightBtn.style.color = '#374151';
+                    if (freightStatusEl) {
+                        freightStatusEl.style.background = '#10b981';
+                        freightStatusEl.textContent = 'Auto';
+                    }
+                    // Make input readonly and recalc value
+                    try { freightInput.readOnly = true; } catch (e) {}
+                    calculateFreight();
+                } else {
+                    // Enable manual edit
+                    manualFreight = true;
+                    freightManualFlagInput.value = '1';
+                    freightBtn.style.color = '#e11d48';
+                    if (freightStatusEl) {
+                        freightStatusEl.style.background = '#e11d48';
+                        freightStatusEl.textContent = 'Manual';
+                    }
+                    try { freightInput.readOnly = false; } catch (e) {}
+                    freightInput.focus();
+                }
+                freightBtn.title = manualFreight ? 'Using manual freight (click to reset to auto)' : 'Use manual freight (click to edit)';
+            });
+
+            // If user types into freight, treat it as manual override and update status
+            freightInput.addEventListener('input', function () {
+                manualFreight = true;
+                freightManualFlagInput.value = '1';
+                const freightBtnEl = document.getElementById('manualFreightToggle');
+                const freightStatusEl = document.getElementById('freightStatus');
+                if (freightBtnEl) freightBtnEl.style.color = '#e11d48';
+                if (freightStatusEl) {
+                    freightStatusEl.textContent = 'Manual';
+                    freightStatusEl.style.background = '#e11d48';
+                }
+                try { freightInput.readOnly = false; } catch (e) {}
+                
+                // Only recalculate wharfage if it's in auto mode
+                if (!manualWharfage) {
+                    calculateWharfage();
+                }
+            });
+        }
+
+        // Function to calculate freight. It will NOT overwrite user-entered freight when manualFreight==true
+        function calculateFreight() {
+            if (manualFreight) return; // Respect manual override
+
+            // Calculate freight from cart total
+            const cartTotal = parseFloat(document.getElementById('cartTotal')?.value || 0);
+            
+            // Format and set the freight value if element exists
+            if (freightInput) {
+                freightInput.value = cartTotal.toFixed(2);
+            }
+            
+            // Only recalculate wharfage if it's in auto mode
+            if (!manualWharfage) {
+                calculateWharfage();
+            }
+        }
+
         // Function to calculate wharfage. It will NOT overwrite user-entered wharfage when manualWharfage==true
         function calculateWharfage() {
-            if (manualWharfage) return; // Respect manual override
+            console.log('calculateWharfage() called from:', new Error().stack.split('\n')[1]);
+            
+            if (manualWharfage) {
+                console.log('Wharfage calculation skipped - manual mode');
+                return; // Respect manual override
+            }
 
-            // Get current values
-            const freight = parseFloat(freightInput ? freightInput.value : 0) || 0;
+            // Get current values - always read from input fields regardless of manual/auto mode
+            let freight = parseFloat(freightInput ? freightInput.value : 0) || 0;
             const value = parseFloat(valueInput ? valueInput.value.replace(/,/g,'') : 0) || 0;
+
+            // CRITICAL DEBUG: Log all the important values
+            console.log('=== WHARFAGE CALCULATION DEBUG ===');
+            console.log('manualFreight flag:', manualFreight);
+            console.log('manualWharfage flag:', manualWharfage);
+            console.log('freightInput.value (raw):', freightInput ? freightInput.value : 'no input');
+            console.log('freight (parsed):', freight);
+            console.log('value (parsed):', value);
+            console.log('cartTotal:', document.getElementById('cartTotal')?.value);
 
             // Skip wharfage calculation if both value and freight are 0
             if (value <= 0 && freight <= 0) {
                 if (wharfageInput) wharfageInput.value = '0.00';
+                console.log('Wharfage set to 0.00 - both value and freight are 0');
                 return;
             }
 
@@ -870,18 +1062,35 @@
                 });
             }
 
-            // Calculate wharfage based on rules - default to 1200 formula unless ALL items are GROCERIES
+            // Calculate wharfage based on rules
             let wharfage = 0;
-            if (onlyGroceries) {
-                wharfage = (freight / 800) * 23; // Only when ALL items are GROCERIES
-            } else {
-                wharfage = (freight / 1200) * 23; // Default formula for mixed or non-grocery items
+            
+            // Set wharfage to zero if both VALUE and FREIGHT are zero
+            if (value <= 0 && freight <= 0) {
+                wharfage = 0;
+                console.log('Wharfage set to 0 - both value and freight are 0');
+            } else if (freight == 0 && value > 0) {
+                // If FREIGHT is 0 (but VALUE is not 0), set wharfage to 11.20
+                wharfage = 11.20;
+                console.log('Wharfage set to 11.20 - freight is 0 but value > 0');
+            } else if (freight > 0) {
+                // Calculate wharfage based on rules - default to 1200 formula unless ALL items are GROCERIES
+                if (onlyGroceries) {
+                    wharfage = (freight / 800) * 23; // Only when ALL items are GROCERIES
+                    console.log('Wharfage calculated using GROCERIES formula (800):', wharfage);
+                } else {
+                    wharfage = (freight / 1200) * 23; // Default formula for mixed or non-grocery items
+                    console.log('Wharfage calculated using default formula (1200):', wharfage);
+                }
+                
+                // Set minimum wharfage to 11.20 if not zero
+                if (wharfage > 0 && wharfage < 11.20) {
+                    wharfage = 11.20;
+                    console.log('Wharfage adjusted to minimum 11.20');
+                }
             }
 
-            // Set minimum wharfage to 11.20 if not zero
-            if (wharfage > 0 && wharfage < 11.20) {
-                wharfage = 11.20;
-            }
+            console.log('Final wharfage value:', wharfage);
 
             // Format and set the wharfage value if element exists
             if (wharfageInput) {
@@ -892,16 +1101,35 @@
         // Add event listeners to recalculate wharfage when freight or value changes
         if (freightInput) {
             freightInput.addEventListener('change', calculateWharfage);
-            freightInput.addEventListener('input', calculateWharfage);
+            // Note: freight input events are handled in the manual freight setup above
         }
         
         if (valueInput) {
-            valueInput.addEventListener('change', calculateWharfage);
-            valueInput.addEventListener('input', calculateWharfage);
+            valueInput.addEventListener('change', function() {
+                if (!manualWharfage) {
+                    calculateWharfage();
+                }
+                if (!manualFreight) {
+                    calculateFreight();
+                }
+            });
+            valueInput.addEventListener('input', function() {
+                if (!manualWharfage) {
+                    calculateWharfage();
+                }
+                if (!manualFreight) {
+                    calculateFreight();
+                }
+            });
         }
         
-        // Calculate initial wharfage when the page loads
-        calculateWharfage();
+        // Calculate initial freight and wharfage when the page loads (only if not manual)
+        if (!manualFreight) {
+            calculateFreight();
+        }
+        if (!manualWharfage) {
+            calculateWharfage();
+        }
     });
 </script>
 
@@ -1070,6 +1298,11 @@
         
         // Also update the hidden cartTotal input
         document.getElementById('cartTotal').value = totalPrice.toFixed(2);
+        
+        // Calculate freight when cart total changes (if in auto mode)
+        if (typeof calculateFreight === 'function') {
+            calculateFreight();
+        }
     }
 
     function addToCart() {
@@ -1135,40 +1368,95 @@
             totalQuantity = manualQuantity;
             const manualTotal = price * manualQuantity;
             
-            const item = {
+            // Check if an item with the same itemCode, itemName, and unit already exists
+            const existingItemIndex = cart.findIndex(item => 
+                item.itemCode === document.getElementById('itemCode').value &&
+                item.itemName === document.getElementById('itemName').value &&
+                item.unit === document.getElementById('unit').value
+            );
+
+            console.log('Checking for existing manual item with:', {
                 itemCode: document.getElementById('itemCode').value,
                 itemName: document.getElementById('itemName').value,
                 unit: document.getElementById('unit').value,
-                category: document.getElementById('category').value || '',
-                weight: document.getElementById('weight').value || "",
-                value: document.getElementById('value').value || "",
-                measurements: [], // Empty measurements array for manual items
-                price: price.toFixed(2),
-                description: description,
-                quantity: totalQuantity,
-                total: manualTotal.toFixed(2)
-            };
+                foundIndex: existingItemIndex
+            });
 
-            console.log('Adding manual item to cart:', item);
-            cart.push(item);
+            if (existingItemIndex !== -1) {
+                // Item exists, update the existing item
+                const existingItem = cart[existingItemIndex];
+                existingItem.quantity += totalQuantity;
+                existingItem.total = (parseFloat(existingItem.total) + manualTotal).toFixed(2);
+                // Update description if new one has more content
+                if (description && description.length > existingItem.description.length) {
+                    existingItem.description = description;
+                }
+                console.log('Updated existing manual item in cart:', existingItem);
+            } else {
+                // Item doesn't exist, create new item
+                const item = {
+                    itemCode: document.getElementById('itemCode').value,
+                    itemName: document.getElementById('itemName').value,
+                    unit: document.getElementById('unit').value,
+                    category: document.getElementById('category').value || '',
+                    weight: document.getElementById('weight').value || "",
+                    value: document.getElementById('value').value || "",
+                    measurements: [], // Empty measurements array for manual items
+                    price: price.toFixed(2),
+                    description: description,
+                    quantity: totalQuantity,
+                    total: manualTotal.toFixed(2)
+                };
+
+                console.log('Adding new manual item to cart:', item);
+                cart.push(item);
+            }
         } else if (hasValidMeasurements) {
-            // Use measurement-based calculations
-            const item = {
+            // Check if an item with the same itemCode, itemName, and unit already exists
+            const existingItemIndex = cart.findIndex(item => 
+                item.itemCode === document.getElementById('itemCode').value &&
+                item.itemName === document.getElementById('itemName').value &&
+                item.unit === document.getElementById('unit').value
+            );
+
+            console.log('Checking for existing measurement item with:', {
                 itemCode: document.getElementById('itemCode').value,
                 itemName: document.getElementById('itemName').value,
                 unit: document.getElementById('unit').value,
-                category: document.getElementById('category').value || '',
-                weight: document.getElementById('weight').value || "",
-                value: document.getElementById('value').value || "",
-                measurements: measurements,
-                price: price.toFixed(2),
-                description: description,
-                quantity: totalQuantity,
-                total: measurements.reduce((sum, m) => sum + m.freight, 0).toFixed(2)
-            };
+                foundIndex: existingItemIndex,
+                newMeasurements: measurements.length
+            });
 
-            console.log('Adding measurement-based item to cart:', item);
-            cart.push(item);
+            if (existingItemIndex !== -1) {
+                // Item exists, append measurements to existing item
+                const existingItem = cart[existingItemIndex];
+                existingItem.measurements = existingItem.measurements.concat(measurements);
+                existingItem.quantity += totalQuantity;
+                existingItem.total = (parseFloat(existingItem.total) + measurements.reduce((sum, m) => sum + m.freight, 0)).toFixed(2);
+                // Update description if new one has more content
+                if (description && description.length > existingItem.description.length) {
+                    existingItem.description = description;
+                }
+                console.log('Updated existing measurement-based item in cart:', existingItem);
+            } else {
+                // Item doesn't exist, create new item
+                const item = {
+                    itemCode: document.getElementById('itemCode').value,
+                    itemName: document.getElementById('itemName').value,
+                    unit: document.getElementById('unit').value,
+                    category: document.getElementById('category').value || '',
+                    weight: document.getElementById('weight').value || "",
+                    value: document.getElementById('value').value || "",
+                    measurements: measurements,
+                    price: price.toFixed(2),
+                    description: description,
+                    quantity: totalQuantity,
+                    total: measurements.reduce((sum, m) => sum + m.freight, 0).toFixed(2)
+                };
+
+                console.log('Adding new measurement-based item to cart:', item);
+                cart.push(item);
+            }
         } else {
             // No valid measurements and no manual quantity/price
             alert("Please either add measurements or enter both quantity and price.");
@@ -1183,7 +1471,7 @@
         document.getElementById('cartTotal').value = totalPrice.toFixed(2);
 
         updateMainTable();
-        updateTotalPrice(); // Update the displayed total price
+        updateTotalPrice(); // Update the displayed total price (this will also call calculateFreight)
         clearFields(); // Clear all fields after adding to cart
         closeModal();
     }

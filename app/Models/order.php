@@ -58,6 +58,8 @@ class order extends Model
         'value',
         'other',
         'wharfage',
+        'wharfage_manual',
+        'freight_manual',
         'cargoType',
         'blStatus',
         'discount',

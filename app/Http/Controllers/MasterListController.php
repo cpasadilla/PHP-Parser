@@ -1007,6 +1007,15 @@ class MasterListController extends Controller
         $other = $this->formatNumber($data['other']);
         $discount = 0; // Initialize discount
 
+        // Apply manual overrides BEFORE calculating wharfage
+        // If front-end set a freight manual override, use that value instead of the computed one
+        if (isset($data['freight_manual']) && $data['freight_manual'] == '1') {
+            // Use provided freight (validate/format it)
+            $manualFreight = isset($data['freight']) ? $data['freight'] : 0;
+            $freight = $this->formatNumber($manualFreight);
+            Log::info('Freight manual override detected. Using user value:', ['freight' => $freight]);
+        }
+
         // Check if the container is in the reservation list and if there's another order with this container
         $skipWharfage = false;
         
@@ -1053,7 +1062,7 @@ class MasterListController extends Controller
             $wharfage = $this->formatNumber($wharfage);
         }
 
-        // If front-end set a manual override, use that value instead of the computed one
+        // If front-end set a wharfage manual override, use that value instead of the computed one
         // (the front-end sets a hidden input named 'wharfage_manual' = '1' when user edits wharfage)
         if (isset($data['wharfage_manual']) && $data['wharfage_manual'] == '1') {
             // Use provided wharfage (validate/format it)
@@ -1103,7 +1112,9 @@ class MasterListController extends Controller
             "value" => $value,
             "other" => $other,
             "wharfage" => $wharfage,
+            "wharfage_manual" => isset($data['wharfage_manual']) && $data['wharfage_manual'] == '1',
             "freight" => $freight,
+            "freight_manual" => isset($data['freight_manual']) && $data['freight_manual'] == '1',
             "originalFreight" => $this->formatNumber($data['cartTotal']),
             "discount" => $discount,
             "valuation" => $valuation,

@@ -111,7 +111,7 @@
                                     {{$parcel->weight}}
                                 @endif
                             </td>
-                            <td class="p-2" style="font-family: Arial; font-size: 13px;">
+                            <td class="p-2" style="font-family: Arial; font-size: 13px;  width: 150px;">
                                 @if (!empty($parcel->measurements) && is_array($parcel->measurements))
                                     @foreach($parcel->measurements as $measurement)
                                         {{$measurement['length']}} × {{$measurement['width']}} × {{$measurement['height']}} ({{$measurement['quantity']}})<br>
