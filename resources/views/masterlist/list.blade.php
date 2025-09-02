@@ -2071,6 +2071,25 @@
         const orTextareas = document.querySelectorAll('.or-textarea');
         const arTextareas = document.querySelectorAll('.ar-textarea');
 
+        // Initialize AR/OR info data for each row
+        document.querySelectorAll('tr[data-order-id]').forEach(row => {
+            const orderId = row.dataset.orderId;
+            @foreach($orders as $order)
+                @if(isset($order->ar_display_info) || isset($order->or_display_info))
+                    if (orderId === '{{ $order->id }}') {
+                        let arOrInfo = {};
+                        @if(isset($order->ar_display_info))
+                            arOrInfo.ar = {!! json_encode($order->ar_display_info) !!};
+                        @endif
+                        @if(isset($order->or_display_info))
+                            arOrInfo.or = {!! json_encode($order->or_display_info) !!};
+                        @endif
+                        row.dataset.arOrInfo = JSON.stringify(arOrInfo);
+                    }
+                @endif
+            @endforeach
+        });
+
         // Function to auto-resize textarea
         function autoResize(textarea) {
             textarea.style.height = 'auto';
@@ -2101,17 +2120,72 @@
                             const notedByCell = row.querySelector('[data-column="updated_by"]');
                             const paidInCell = row.querySelector('[data-column="updated_location"]');
 
+                            // Always update BL status
                             if (blStatusCell && data.blStatus !== undefined) {
                                 blStatusCell.textContent = data.blStatus;
                             }
-                            if (datePaidCell && data.or_ar_date !== undefined) {
-                                datePaidCell.textContent = data.or_ar_date || ' ';
+
+                            // Store the field-specific information for later use
+                            if (data.ar_display_info || data.or_display_info) {
+                                if (!row.dataset.arOrInfo) {
+                                    row.dataset.arOrInfo = '{}';
+                                }
+                                let arOrInfo = JSON.parse(row.dataset.arOrInfo);
+                                
+                                if (data.ar_display_info) {
+                                    arOrInfo.ar = data.ar_display_info;
+                                } else if (data.field_type === 'AR' && (!value || value.trim() === '')) {
+                                    // If AR field is being cleared, remove AR display info
+                                    arOrInfo.ar = null;
+                                }
+                                
+                                if (data.or_display_info) {
+                                    arOrInfo.or = data.or_display_info;
+                                } else if (data.field_type === 'OR' && (!value || value.trim() === '')) {
+                                    // If OR field is being cleared, remove OR display info
+                                    arOrInfo.or = null;
+                                }
+                                
+                                row.dataset.arOrInfo = JSON.stringify(arOrInfo);
                             }
-                            if (notedByCell && data.updated_by !== undefined) {
-                                notedByCell.textContent = data.updated_by || ' ';
-                            }
-                            if (paidInCell && data.updated_location !== undefined) {
-                                paidInCell.textContent = data.updated_location || ' ';
+
+                            // For AR/OR fields, handle clearing logic
+                            if (data.field_type && (data.field_type === 'AR' || data.field_type === 'OR')) {
+                                // Check if we're clearing the field
+                                if (!value || value.trim() === '') {
+                                    // Field is being cleared - clear the display information
+                                    if (datePaidCell) {
+                                        datePaidCell.textContent = ' ';
+                                    }
+                                    if (notedByCell) {
+                                        notedByCell.textContent = ' ';
+                                    }
+                                    if (paidInCell) {
+                                        paidInCell.textContent = ' ';
+                                    }
+                                } else {
+                                    // Field has value - show the update information
+                                    if (datePaidCell && data.or_ar_date !== undefined) {
+                                        datePaidCell.textContent = data.or_ar_date || ' ';
+                                    }
+                                    if (notedByCell && data.updated_by !== undefined) {
+                                        notedByCell.textContent = data.updated_by || ' ';
+                                    }
+                                    if (paidInCell && data.updated_location !== undefined) {
+                                        paidInCell.textContent = data.updated_location || ' ';
+                                    }
+                                }
+                            } else {
+                                // Fallback for non-AR/OR fields or when field_type is not specified
+                                if (datePaidCell && data.or_ar_date !== undefined) {
+                                    datePaidCell.textContent = data.or_ar_date || ' ';
+                                }
+                                if (notedByCell && data.updated_by !== undefined) {
+                                    notedByCell.textContent = data.updated_by || ' ';
+                                }
+                                if (paidInCell && data.updated_location !== undefined) {
+                                    paidInCell.textContent = data.updated_location || ' ';
+                                }
                             }
                         }
                     }
@@ -2141,6 +2215,18 @@
             // Initial auto-resize
             autoResize(textarea);
 
+            // Show OR-specific information when focused
+            textarea.addEventListener('focus', function() {
+                showFieldSpecificInfo(this, 'OR');
+            });
+
+            // Restore general information when blurred (after a delay)
+            textarea.addEventListener('blur', function() {
+                setTimeout(() => {
+                    restoreGeneralInfo(this);
+                }, 500);
+            });
+
             // Debounced update function
             const debouncedUpdate = debounce(function () {
                 const orderId = textarea.getAttribute('data-order-id');
@@ -2162,6 +2248,18 @@
             // Initial auto-resize
             autoResize(textarea);
 
+            // Show AR-specific information when focused
+            textarea.addEventListener('focus', function() {
+                showFieldSpecificInfo(this, 'AR');
+            });
+
+            // Restore general information when blurred (after a delay)
+            textarea.addEventListener('blur', function() {
+                setTimeout(() => {
+                    restoreGeneralInfo(this);
+                }, 500);
+            });
+
             // Debounced update function
             const debouncedUpdate = debounce(function () {
                 const orderId = textarea.getAttribute('data-order-id');
@@ -2172,6 +2270,88 @@
             // Add update listener
             textarea.addEventListener('input', debouncedUpdate);
         });
+
+        // Function to show field-specific information
+        function showFieldSpecificInfo(textarea, fieldType) {
+            const row = textarea.closest('tr');
+            if (!row || !row.dataset.arOrInfo) return;
+
+            // Check if the field actually has a value
+            const fieldValue = textarea.value;
+            if (!fieldValue || fieldValue.trim() === '') {
+                // Field is empty, don't show any specific information
+                return;
+            }
+
+            try {
+                const arOrInfo = JSON.parse(row.dataset.arOrInfo);
+                const fieldInfo = fieldType === 'AR' ? arOrInfo.ar : arOrInfo.or;
+                
+                if (fieldInfo) {
+                    const datePaidCell = row.querySelector('[data-column="dp"]');
+                    const notedByCell = row.querySelector('[data-column="updated_by"]');
+                    const paidInCell = row.querySelector('[data-column="updated_location"]');
+
+                    // Store original values if not already stored
+                    if (!row.dataset.originalInfo) {
+                        row.dataset.originalInfo = JSON.stringify({
+                            datePaid: datePaidCell ? datePaidCell.textContent : '',
+                            notedBy: notedByCell ? notedByCell.textContent : '',
+                            paidIn: paidInCell ? paidInCell.textContent : ''
+                        });
+                    }
+
+                    // Update cells with field-specific information
+                    if (datePaidCell && fieldInfo.or_ar_date) {
+                        const formattedDate = new Date(fieldInfo.or_ar_date).toLocaleDateString('en-US', {
+                            year: 'numeric', month: 'long', day: 'numeric',
+                            hour: 'numeric', minute: '2-digit', hour12: true
+                        });
+                        datePaidCell.textContent = formattedDate;
+                        datePaidCell.style.backgroundColor = fieldType === 'AR' ? '#e0f2fe' : '#f3e5f5';
+                    }
+                    if (notedByCell && fieldInfo.updated_by) {
+                        notedByCell.textContent = fieldInfo.updated_by;
+                        notedByCell.style.backgroundColor = fieldType === 'AR' ? '#e0f2fe' : '#f3e5f5';
+                    }
+                    if (paidInCell && fieldInfo.updated_location) {
+                        paidInCell.textContent = fieldInfo.updated_location;
+                        paidInCell.style.backgroundColor = fieldType === 'AR' ? '#e0f2fe' : '#f3e5f5';
+                    }
+                }
+            } catch (e) {
+                console.error('Error parsing AR/OR info:', e);
+            }
+        }
+
+        // Function to restore general information
+        function restoreGeneralInfo(textarea) {
+            const row = textarea.closest('tr');
+            if (!row || !row.dataset.originalInfo) return;
+
+            try {
+                const originalInfo = JSON.parse(row.dataset.originalInfo);
+                const datePaidCell = row.querySelector('[data-column="dp"]');
+                const notedByCell = row.querySelector('[data-column="updated_by"]');
+                const paidInCell = row.querySelector('[data-column="updated_location"]');
+
+                // Restore original values and remove highlighting
+                if (datePaidCell) {
+                    datePaidCell.textContent = originalInfo.datePaid;
+                    datePaidCell.style.backgroundColor = '';
+                }
+                if (notedByCell) {
+                    notedByCell.textContent = originalInfo.notedBy;
+                    notedByCell.style.backgroundColor = '';
+                }
+                if (paidInCell) {
+                    paidInCell.textContent = originalInfo.paidIn;
+                    paidInCell.style.backgroundColor = '';
+                }
+            } catch (e) {
+                console.error('Error restoring original info:', e);
+            }
+        }
     });
 </script>
 

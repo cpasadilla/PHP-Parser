@@ -257,6 +257,11 @@ class MasterListController extends Controller
             $order->display_updated_location = $displayInfo['updated_location'];
             $order->display_or_ar_date = $displayInfo['or_ar_date'];
             $order->last_updated_field = $displayInfo['last_updated_field'];
+            
+            // Add separate AR and OR display information
+            $order->ar_display_info = $displayInfo['ar_display_info'];
+            $order->or_display_info = $displayInfo['or_display_info'];
+            
             return $order;
         });
         
@@ -1331,6 +1336,11 @@ class MasterListController extends Controller
             $order->display_updated_location = $displayInfo['updated_location'];
             $order->display_or_ar_date = $displayInfo['or_ar_date'];
             $order->last_updated_field = $displayInfo['last_updated_field'];
+            
+            // Add separate AR and OR display information
+            $order->ar_display_info = $displayInfo['ar_display_info'];
+            $order->or_display_info = $displayInfo['or_display_info'];
+            
             return $order;
         });
 
@@ -1386,6 +1396,21 @@ class MasterListController extends Controller
             ->orderBy('orderId', 'asc')
             ->get(); // Load ALL orders (removed pagination limit)
 
+        // Enhance each order with proper AR/OR display information
+        $orders = $orders->map(function ($order) {
+            $displayInfo = $this->getArOrDisplayInfo($order);
+            $order->display_updated_by = $displayInfo['updated_by'];
+            $order->display_updated_location = $displayInfo['updated_location'];
+            $order->display_or_ar_date = $displayInfo['or_ar_date'];
+            $order->last_updated_field = $displayInfo['last_updated_field'];
+            
+            // Add separate AR and OR display information
+            $order->ar_display_info = $displayInfo['ar_display_info'];
+            $order->or_display_info = $displayInfo['or_display_info'];
+            
+            return $order;
+        });
+
         // Use the same orders for filter data (no need for separate query)
         $allOrdersForFilters = $orders;
 
@@ -1415,7 +1440,7 @@ class MasterListController extends Controller
     }
 
     /**
-     * Get the appropriate display information for AR/OR based on the last update
+     * Get the appropriate display information for AR/OR separately for each field
      */
     private function getArOrDisplayInfo($order)
     {
@@ -1434,26 +1459,71 @@ class MasterListController extends Controller
             ->latest('updated_at')
             ->first();
 
-        // Determine which update was more recent
-        $latestUpdate = null;
-        
-        if ($latestArUpdate && $latestOrUpdate) {
-            $latestUpdate = $latestArUpdate->updated_at > $latestOrUpdate->updated_at ? $latestArUpdate : $latestOrUpdate;
-        } elseif ($latestArUpdate) {
-            $latestUpdate = $latestArUpdate;
-        } elseif ($latestOrUpdate) {
-            $latestUpdate = $latestOrUpdate;
+        // Prepare separate display info for AR and OR
+        $arDisplayInfo = null;
+        $orDisplayInfo = null;
+
+        // Process AR display info - only if AR field has a value
+        if ($latestArUpdate && !empty(trim($order->AR))) {
+            $location = '';
+            $actualValue = $latestArUpdate->new_value;
+            
+            if (strpos($latestArUpdate->new_value, '|LOCATION:') !== false) {
+                $parts = explode('|LOCATION:', $latestArUpdate->new_value);
+                $actualValue = $parts[0] ?? '';
+                $location = $parts[1] ?? '';
+            } else {
+                $location = $this->extractLocationFromUser($latestArUpdate->updated_by);
+            }
+
+            $arDisplayInfo = [
+                'updated_by' => $latestArUpdate->updated_by,
+                'updated_location' => $location,
+                'or_ar_date' => $latestArUpdate->updated_at,
+                'field_name' => 'AR'
+            ];
         }
 
-        // Return display information based on the latest update
-        if ($latestUpdate) {
-            // Extract location from the stored value if it contains location info
+        // Process OR display info - only if OR field has a value
+        if ($latestOrUpdate && !empty(trim($order->OR))) {
             $location = '';
-            $actualValue = $latestUpdate->new_value;
+            $actualValue = $latestOrUpdate->new_value;
             
+            if (strpos($latestOrUpdate->new_value, '|LOCATION:') !== false) {
+                $parts = explode('|LOCATION:', $latestOrUpdate->new_value);
+                $actualValue = $parts[0] ?? '';
+                $location = $parts[1] ?? '';
+            } else {
+                $location = $this->extractLocationFromUser($latestOrUpdate->updated_by);
+            }
+
+            $orDisplayInfo = [
+                'updated_by' => $latestOrUpdate->updated_by,
+                'updated_location' => $location,
+                'or_ar_date' => $latestOrUpdate->updated_at,
+                'field_name' => 'OR'
+            ];
+        }
+
+        // Determine overall display based on which field was updated more recently
+        // Only consider updates where the corresponding field actually has a value
+        $validArUpdate = $latestArUpdate && !empty(trim($order->AR)) ? $latestArUpdate : null;
+        $validOrUpdate = $latestOrUpdate && !empty(trim($order->OR)) ? $latestOrUpdate : null;
+        
+        $latestUpdate = null;
+        if ($validArUpdate && $validOrUpdate) {
+            $latestUpdate = $validArUpdate->updated_at > $validOrUpdate->updated_at ? $validArUpdate : $validOrUpdate;
+        } elseif ($validArUpdate) {
+            $latestUpdate = $validArUpdate;
+        } elseif ($validOrUpdate) {
+            $latestUpdate = $validOrUpdate;
+        }
+
+        // Return comprehensive display information
+        if ($latestUpdate) {
+            $location = '';
             if (strpos($latestUpdate->new_value, '|LOCATION:') !== false) {
                 $parts = explode('|LOCATION:', $latestUpdate->new_value);
-                $actualValue = $parts[0] ?? '';
                 $location = $parts[1] ?? '';
             } else {
                 $location = $this->extractLocationFromUser($latestUpdate->updated_by);
@@ -1463,16 +1533,20 @@ class MasterListController extends Controller
                 'updated_by' => $latestUpdate->updated_by,
                 'updated_location' => $location,
                 'or_ar_date' => $latestUpdate->updated_at,
-                'last_updated_field' => $latestUpdate->field_name
+                'last_updated_field' => $latestUpdate->field_name,
+                'ar_display_info' => $arDisplayInfo,
+                'or_display_info' => $orDisplayInfo
             ];
         }
 
-        // Fallback to order's stored values if no logs found
+        // If no valid updates found (both fields are empty), return empty display
         return [
-            'updated_by' => $order->updated_by,
-            'updated_location' => $order->updated_location,
-            'or_ar_date' => $order->or_ar_date,
-            'last_updated_field' => null
+            'updated_by' => null,
+            'updated_location' => null,
+            'or_ar_date' => null,
+            'last_updated_field' => null,
+            'ar_display_info' => null,
+            'or_display_info' => null
         ];
     }
 
@@ -2033,81 +2107,27 @@ class MasterListController extends Controller
         } else {
             $oldFieldValue = $order->$field;
             $oldBlStatus = $order->blStatus;
-            $oldUpdatedBy = $order->updated_by;
-            $oldUpdatedLocation = $order->updated_location;
-            $oldOrArDate = $order->or_ar_date;
 
             $order->$field = $request->value;
 
             if (in_array($field, ['OR', 'AR'])) {
-                // Only update the shared fields if this specific field (AR or OR) has a value
-                if (!empty($request->value)) {
-                    $order->or_ar_date = $request->date ?? now();
-                    $order->updated_by = Auth::user()->fName . ' ' . Auth::user()->lName;
-                    $order->updated_location = Auth::user()->location;
-                }
-
                 // Determine the BL status based on whether either OR or AR has a value
                 if (empty($order->OR) && empty($order->AR)) {
-                    $order->or_ar_date = null;
-                    $order->updated_by = null;
-                    $order->updated_location = null;
                     $order->blStatus = 'UNPAID';
                 } else {
                     $order->blStatus = 'PAID';
-                    // If we're clearing a field but the other field still has a value,
-                    // keep the existing metadata unless we're updating with a new value
-                    if (empty($request->value)) {
-                        // We're clearing this field, but keep existing metadata if the other field has a value
-                        $otherField = $field === 'OR' ? 'AR' : 'OR';
-                        if (!empty($order->$otherField)) {
-                            // Keep existing metadata since the other field still has a value
-                            // The metadata should reflect the last actual update, not the clearing
-                        } else {
-                            // Both fields are now empty, clear all metadata
-                            $order->or_ar_date = null;
-                            $order->updated_by = null;
-                            $order->updated_location = null;
-                        }
-                    }
                 }
 
-                // Log the OR/AR field change
+                // Log the OR/AR field change (this is what we'll use for display information)
                 $logFieldUpdate($field, $oldFieldValue, $order->$field);
 
-                // Log changes to related fields if they changed
+                // Log BL status change if it changed
                 if ($oldBlStatus != $order->blStatus) {
                     $logFieldUpdate('blStatus', $oldBlStatus, $order->blStatus);
-                }
-                if ($oldUpdatedBy != $order->updated_by) {
-                    $logFieldUpdate('updated_by', $oldUpdatedBy, $order->updated_by);
-                }
-                if ($oldUpdatedLocation != $order->updated_location) {
-                    $logFieldUpdate('updated_location', $oldUpdatedLocation, $order->updated_location);
-                }
-                if ($oldOrArDate != $order->or_ar_date) {
-                    $logFieldUpdate('or_ar_date', $oldOrArDate, $order->or_ar_date);
                 }
             } else {
                 // For other fields, just log the primary field change
                 $logFieldUpdate($field, $oldFieldValue, $order->$field);
-            }
-        }
-
-        // Clear updated_by and updated_location if blStatus is UNPAID
-        $oldUpdatedByBeforeClear = $order->updated_by;
-        $oldUpdatedLocationBeforeClear = $order->updated_location;
-
-        if ($order->blStatus === 'UNPAID') {
-            $order->updated_by = null;
-            $order->updated_location = null;
-
-            // Log these changes only if they actually changed
-            if ($oldUpdatedByBeforeClear !== null && $oldUpdatedByBeforeClear !== '') {
-                $logFieldUpdate('updated_by', $oldUpdatedByBeforeClear, null);
-            }
-            if ($oldUpdatedLocationBeforeClear !== null && $oldUpdatedLocationBeforeClear !== '') {
-                $logFieldUpdate('updated_location', $oldUpdatedLocationBeforeClear, null);
             }
         }
 
@@ -2120,13 +2140,32 @@ class MasterListController extends Controller
             // Get the appropriate display information based on the latest update
             $displayInfo = $this->getArOrDisplayInfo($order);
             
+            // Get field-specific display info
+            $fieldSpecificInfo = null;
+            if ($field === 'AR' && $displayInfo['ar_display_info']) {
+                $fieldSpecificInfo = $displayInfo['ar_display_info'];
+            } elseif ($field === 'OR' && $displayInfo['or_display_info']) {
+                $fieldSpecificInfo = $displayInfo['or_display_info'];
+            }
+            
             return response()->json([
                 'success' => true,
                 'message' => 'Order field updated successfully!',
                 'blStatus' => $order->blStatus,
-                'or_ar_date' => $displayInfo['or_ar_date'] ? \Carbon\Carbon::parse($displayInfo['or_ar_date'])->format('F d, Y h:i A') : '',
-                'updated_by' => $displayInfo['updated_by'] ?? '',
-                'updated_location' => $displayInfo['updated_location'] ?? ''
+                'field_type' => $field,
+                // Return field-specific information if available, otherwise use general info
+                'or_ar_date' => $fieldSpecificInfo ? 
+                    \Carbon\Carbon::parse($fieldSpecificInfo['or_ar_date'])->format('F d, Y h:i A') : 
+                    ($displayInfo['or_ar_date'] ? \Carbon\Carbon::parse($displayInfo['or_ar_date'])->format('F d, Y h:i A') : ''),
+                'updated_by' => $fieldSpecificInfo ? 
+                    $fieldSpecificInfo['updated_by'] : 
+                    ($displayInfo['updated_by'] ?? ''),
+                'updated_location' => $fieldSpecificInfo ? 
+                    $fieldSpecificInfo['updated_location'] : 
+                    ($displayInfo['updated_location'] ?? ''),
+                // Include separate AR and OR display info for client-side handling
+                'ar_display_info' => $displayInfo['ar_display_info'],
+                'or_display_info' => $displayInfo['or_display_info']
             ]);
         }
 

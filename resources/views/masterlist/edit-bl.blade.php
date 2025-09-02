@@ -2349,23 +2349,47 @@ document.addEventListener('DOMContentLoaded', function() {
         measurementDiv.innerHTML = `
             <input type="number" name="measurement_length_${measurementIndex}"
                 class="p-1 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200 h-10"
-                style="width: 80px;" placeholder="L" min="0" step="0.01" value="${length}">
+                style="width: 80px;" placeholder="L" min="0" step="0.01" value="${length}" onchange="updateMeasurementRate(${measurementIndex})" oninput="updateMeasurementRate(${measurementIndex})">
             <input type="number" name="measurement_width_${measurementIndex}"
                 class="p-1 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200 h-10"
-                style="width: 80px;" placeholder="W" min="0" step="0.01" value="${width}">
+                style="width: 80px;" placeholder="W" min="0" step="0.01" value="${width}" onchange="updateMeasurementRate(${measurementIndex})" oninput="updateMeasurementRate(${measurementIndex})">
             <input type="number" name="measurement_height_${measurementIndex}"
                 class="p-1 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200 h-10"
-                style="width: 80px;" placeholder="H" min="0" step="0.01" value="${height}">
+                style="width: 80px;" placeholder="H" min="0" step="0.01" value="${height}" onchange="updateMeasurementRate(${measurementIndex})" oninput="updateMeasurementRate(${measurementIndex})">
             <input list="multipliers" name="measurement_multiplier_${measurementIndex}" type="number"
                 class="p-1 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200 h-10"
-                style="width: 110px;" placeholder="×" min="0" step="0.01" value="${multiplier}">
+                style="width: 110px;" placeholder="×" min="0" step="0.01" value="${multiplier}" onchange="updateMeasurementRate(${measurementIndex})" oninput="updateMeasurementRate(${measurementIndex})">
             <input type="number" name="measurement_quantity_${measurementIndex}"
                 class="p-1 border rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200 h-10"
                 style="width: 50px;" placeholder="Qty" min="1" value="${quantity || 1}">
+            <span id="rate_display_${measurementIndex}" class="text-sm font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900 px-2 py-1 rounded" style="min-width: 80px; text-align: center;">Rate: 0.00</span>
             <button type="button" class="remove-measurement px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-sm font-bold h-10"
                 onclick="removeMeasurementEntry(this)">×</button>
         `;
         measurementsList.appendChild(measurementDiv);
+        
+        // Calculate initial rate if values are provided
+        if (length && width && height && multiplier) {
+            updateMeasurementRate(measurementIndex);
+        }
+    }
+
+    function updateMeasurementRate(measurementIndex) {
+        const lengthInput = document.querySelector(`[name="measurement_length_${measurementIndex}"]`);
+        const widthInput = document.querySelector(`[name="measurement_width_${measurementIndex}"]`);
+        const heightInput = document.querySelector(`[name="measurement_height_${measurementIndex}"]`);
+        const multiplierInput = document.querySelector(`[name="measurement_multiplier_${measurementIndex}"]`);
+        const rateDisplay = document.getElementById(`rate_display_${measurementIndex}`);
+
+        if (lengthInput && widthInput && heightInput && multiplierInput && rateDisplay) {
+            const length = parseFloat(lengthInput.value) || 0;
+            const width = parseFloat(widthInput.value) || 0;
+            const height = parseFloat(heightInput.value) || 0;
+            const multiplier = parseFloat(multiplierInput.value) || 0;
+
+            const rate = length * width * height * multiplier;
+            rateDisplay.textContent = `Rate: ${rate.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        }
     }
 
     function removeMeasurementEntry(button) {
