@@ -123,15 +123,203 @@
     @endif
 
     @if(Auth::user()->hasPagePermission('accounting'))
-    <x-sidebar.link
+    <x-sidebar.dropdown
         title="Accounting"
-        href="{{ route('accounting') }}"
-        :isActive="request()->routeIs('accounting')"
+        :active="Str::startsWith(request()->route()->uri(), 'accounting')"
         >
             <x-slot name="icon">
                 <x-heroicon-o-calculator class="flex-shrink-0 w-6 h-6" aria-hidden="true" />
             </x-slot>
-    </x-sidebar.link>
+            
+            <!-- Daily Cash Collection Reports -->
+            @if (Auth::user()->hasSubpagePermission('accounting', 'daily-cash-collection'))
+            <x-sidebar.sublink
+                title="Daily Cash Collection Report (Trading)"
+                href="{{ route('accounting.daily-cash-collection.trading') }}"
+                :active="request()->routeIs('accounting.daily-cash-collection.trading')"
+            />
+            <x-sidebar.sublink
+                title="Daily Cash Collection Report (Shipping)"
+                href="{{ route('accounting.daily-cash-collection.shipping') }}"
+                :active="request()->routeIs('accounting.daily-cash-collection.shipping')"
+            />
+            @endif
+
+            <!-- Monthly Cash Receipt Journals -->
+            @if (Auth::user()->hasSubpagePermission('accounting', 'monthly-cash-receipt'))
+            <x-sidebar.sublink
+                title="Monthly Cash Receipt Journal (Trading)"
+                href="{{ route('accounting.monthly-cash-receipt.trading') }}"
+                :active="request()->routeIs('accounting.monthly-cash-receipt.trading')"
+            />
+            <x-sidebar.sublink
+                title="Monthly Cash Receipt Journal (Shipping)"
+                href="{{ route('accounting.monthly-cash-receipt.shipping') }}"
+                :active="request()->routeIs('accounting.monthly-cash-receipt.shipping')"
+            />
+            @endif
+
+            <!-- Financial Statements Trading -->
+            @if (Auth::user()->hasSubpagePermission('accounting', 'financial-statement-trading'))
+            <x-sidebar.subdropdown
+                title="Financial Statement (Trading)"
+                :active="Str::contains(request()->route()->uri(), 'financial-statement/trading')"
+                >
+                <x-sidebar.subsublink
+                    title="Pre-Trial Balance"
+                    href="{{ route('accounting.financial-statement.trading.pre-trial-balance') }}"
+                    :active="request()->routeIs('accounting.financial-statement.trading.pre-trial-balance')"
+                />
+                <x-sidebar.subsublink
+                    title="Trial Balance"
+                    href="{{ route('accounting.financial-statement.trading.trial-balance') }}"
+                    :active="request()->routeIs('accounting.financial-statement.trading.trial-balance')"
+                />
+                <x-sidebar.subsublink
+                    title="Balance Sheet"
+                    href="{{ route('accounting.financial-statement.trading.balance-sheet') }}"
+                    :active="request()->routeIs('accounting.financial-statement.trading.balance-sheet')"
+                />
+                <x-sidebar.subsublink
+                    title="Statement of Income and Expenses"
+                    href="{{ route('accounting.financial-statement.trading.income-statement') }}"
+                    :active="request()->routeIs('accounting.financial-statement.trading.income-statement')"
+                />
+                <x-sidebar.subsublink
+                    title="Work Sheet"
+                    href="{{ route('accounting.financial-statement.trading.work-sheet') }}"
+                    :active="request()->routeIs('accounting.financial-statement.trading.work-sheet')"
+                />
+                <x-sidebar.subsublink
+                    title="Working Trial Balance"
+                    href="{{ route('accounting.financial-statement.trading.working-trial-balance') }}"
+                    :active="request()->routeIs('accounting.financial-statement.trading.working-trial-balance')"
+                />
+            </x-sidebar.subdropdown>
+            @endif
+
+            <!-- Financial Statements Shipping -->
+            @if (Auth::user()->hasSubpagePermission('accounting', 'financial-statement-shipping'))
+            <x-sidebar.subdropdown
+                title="Financial Statement (Shipping)"
+                :active="Str::contains(request()->route()->uri(), 'financial-statement/shipping')"
+                >
+                <x-sidebar.subsublink
+                    title="Pre-Trial Balance"
+                    href="{{ route('accounting.financial-statement.shipping.pre-trial-balance') }}"
+                    :active="request()->routeIs('accounting.financial-statement.shipping.pre-trial-balance')"
+                />
+                <x-sidebar.subsublink
+                    title="Trial Balance"
+                    href="{{ route('accounting.financial-statement.shipping.trial-balance') }}"
+                    :active="request()->routeIs('accounting.financial-statement.shipping.trial-balance')"
+                />
+                <x-sidebar.subsublink
+                    title="Balance Sheet"
+                    href="{{ route('accounting.financial-statement.shipping.balance-sheet') }}"
+                    :active="request()->routeIs('accounting.financial-statement.shipping.balance-sheet')"
+                />
+                <x-sidebar.subsublink
+                    title="Statement of Income and Expenses"
+                    href="{{ route('accounting.financial-statement.shipping.income-statement') }}"
+                    :active="request()->routeIs('accounting.financial-statement.shipping.income-statement')"
+                />
+                <x-sidebar.subsublink
+                    title="Administrative Expenses"
+                    href="{{ route('accounting.financial-statement.shipping.admin-expenses') }}"
+                    :active="request()->routeIs('accounting.financial-statement.shipping.admin-expenses')"
+                />
+                <x-sidebar.subsublink
+                    title="Everwin Star I"
+                    href="{{ route('accounting.financial-statement.shipping.everwin-star-1') }}"
+                    :active="request()->routeIs('accounting.financial-statement.shipping.everwin-star-1')"
+                />
+                <x-sidebar.subsublink
+                    title="Everwin Star II"
+                    href="{{ route('accounting.financial-statement.shipping.everwin-star-2') }}"
+                    :active="request()->routeIs('accounting.financial-statement.shipping.everwin-star-2')"
+                />
+                <x-sidebar.subsublink
+                    title="Everwin Star III"
+                    href="{{ route('accounting.financial-statement.shipping.everwin-star-3') }}"
+                    :active="request()->routeIs('accounting.financial-statement.shipping.everwin-star-3')"
+                />
+                <x-sidebar.subsublink
+                    title="Everwin Star IV"
+                    href="{{ route('accounting.financial-statement.shipping.everwin-star-4') }}"
+                    :active="request()->routeIs('accounting.financial-statement.shipping.everwin-star-4')"
+                />
+                <x-sidebar.subsublink
+                    title="Everwin Star V"
+                    href="{{ route('accounting.financial-statement.shipping.everwin-star-5') }}"
+                    :active="request()->routeIs('accounting.financial-statement.shipping.everwin-star-5')"
+                />
+                <x-sidebar.subsublink
+                    title="Work Sheet"
+                    href="{{ route('accounting.financial-statement.shipping.work-sheet') }}"
+                    :active="request()->routeIs('accounting.financial-statement.shipping.work-sheet')"
+                />
+                <x-sidebar.subsublink
+                    title="Working Trial Balance"
+                    href="{{ route('accounting.financial-statement.shipping.working-trial-balance') }}"
+                    :active="request()->routeIs('accounting.financial-statement.shipping.working-trial-balance')"
+                />
+            </x-sidebar.subdropdown>
+            @endif
+
+            <!-- General Journal -->
+            @if (Auth::user()->hasSubpagePermission('accounting', 'general-journal'))
+            <x-sidebar.subdropdown
+                title="General Journal"
+                :active="Str::contains(request()->route()->uri(), 'general-journal')"
+                >
+                <x-sidebar.subsublink
+                    title="Fully Depreciated PPE"
+                    href="{{ route('accounting.general-journal.fully-depreciated-ppe') }}"
+                    :active="request()->routeIs('accounting.general-journal.fully-depreciated-ppe')"
+                />
+                <x-sidebar.subsublink
+                    title="Schedule of Depreciation Expenses"
+                    href="{{ route('accounting.general-journal.schedule-depreciation') }}"
+                    :active="request()->routeIs('accounting.general-journal.schedule-depreciation')"
+                />
+                <x-sidebar.subsublink
+                    title="General Journal"
+                    href="{{ route('accounting.general-journal.index') }}"
+                    :active="request()->routeIs('accounting.general-journal.index')"
+                />
+                <x-sidebar.subsublink
+                    title="Check Disbursement Journal (Trading)"
+                    href="{{ route('accounting.general-journal.check-disbursement.trading') }}"
+                    :active="request()->routeIs('accounting.general-journal.check-disbursement.trading')"
+                />
+                <x-sidebar.subsublink
+                    title="Check Disbursement Journal (Shipping)"
+                    href="{{ route('accounting.general-journal.check-disbursement.shipping') }}"
+                    :active="request()->routeIs('accounting.general-journal.check-disbursement.shipping')"
+                />
+                <x-sidebar.subsublink
+                    title="Cash Disbursement Journal"
+                    href="{{ route('accounting.general-journal.cash-disbursement') }}"
+                    :active="request()->routeIs('accounting.general-journal.cash-disbursement')"
+                />
+            </x-sidebar.subdropdown>
+            @endif
+
+            <!-- Additional Accounting Reports -->
+            @if (Auth::user()->hasSubpagePermission('accounting', 'additional-reports'))
+            <x-sidebar.sublink
+                title="Breakdown of Receivables"
+                href="{{ route('accounting.breakdown-of-receivables') }}"
+                :active="request()->routeIs('accounting.breakdown-of-receivables')"
+            />
+            <x-sidebar.sublink
+                title="Cash on Hand Register"
+                href="{{ route('accounting.cash-on-hand-register') }}"
+                :active="request()->routeIs('accounting.cash-on-hand-register')"
+            />
+            @endif
+    </x-sidebar.dropdown>
     @endif
 
     @if(Auth::user()->hasPagePermission('inventory'))

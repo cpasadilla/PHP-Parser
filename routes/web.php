@@ -74,6 +74,60 @@ Route::middleware('auth')->group(function () {
     // Accounting routes
     Route::middleware('page.permission:accounting')->group(function () {
         Route::get('/accounting', [AccountingController::class, 'index'])->name('accounting');
+        
+        // Daily Cash Collection Reports
+        Route::middleware('subpage.permission:accounting,daily-cash-collection')->group(function () {
+            Route::get('/accounting/daily-cash-collection/trading', [AccountingController::class, 'dailyCashCollectionTrading'])->name('accounting.daily-cash-collection.trading');
+            Route::get('/accounting/daily-cash-collection/shipping', [AccountingController::class, 'dailyCashCollectionShipping'])->name('accounting.daily-cash-collection.shipping');
+        });
+
+        // Monthly Cash Receipt Journals
+        Route::middleware('subpage.permission:accounting,monthly-cash-receipt')->group(function () {
+            Route::get('/accounting/monthly-cash-receipt/trading', [AccountingController::class, 'monthlyCashReceiptTrading'])->name('accounting.monthly-cash-receipt.trading');
+            Route::get('/accounting/monthly-cash-receipt/shipping', [AccountingController::class, 'monthlyCashReceiptShipping'])->name('accounting.monthly-cash-receipt.shipping');
+        });
+
+        // Financial Statement Trading
+        Route::middleware('subpage.permission:accounting,financial-statement-trading')->group(function () {
+            Route::get('/accounting/financial-statement/trading/pre-trial-balance', [AccountingController::class, 'financialStatementTradingPreTrialBalance'])->name('accounting.financial-statement.trading.pre-trial-balance');
+            Route::get('/accounting/financial-statement/trading/trial-balance', [AccountingController::class, 'financialStatementTradingTrialBalance'])->name('accounting.financial-statement.trading.trial-balance');
+            Route::get('/accounting/financial-statement/trading/balance-sheet', [AccountingController::class, 'financialStatementTradingBalanceSheet'])->name('accounting.financial-statement.trading.balance-sheet');
+            Route::get('/accounting/financial-statement/trading/income-statement', [AccountingController::class, 'financialStatementTradingIncomeStatement'])->name('accounting.financial-statement.trading.income-statement');
+            Route::get('/accounting/financial-statement/trading/work-sheet', [AccountingController::class, 'financialStatementTradingWorkSheet'])->name('accounting.financial-statement.trading.work-sheet');
+            Route::get('/accounting/financial-statement/trading/working-trial-balance', [AccountingController::class, 'financialStatementTradingWorkingTrialBalance'])->name('accounting.financial-statement.trading.working-trial-balance');
+        });
+
+        // Financial Statement Shipping
+        Route::middleware('subpage.permission:accounting,financial-statement-shipping')->group(function () {
+            Route::get('/accounting/financial-statement/shipping/pre-trial-balance', [AccountingController::class, 'financialStatementShippingPreTrialBalance'])->name('accounting.financial-statement.shipping.pre-trial-balance');
+            Route::get('/accounting/financial-statement/shipping/trial-balance', [AccountingController::class, 'financialStatementShippingTrialBalance'])->name('accounting.financial-statement.shipping.trial-balance');
+            Route::get('/accounting/financial-statement/shipping/balance-sheet', [AccountingController::class, 'financialStatementShippingBalanceSheet'])->name('accounting.financial-statement.shipping.balance-sheet');
+            Route::get('/accounting/financial-statement/shipping/income-statement', [AccountingController::class, 'financialStatementShippingIncomeStatement'])->name('accounting.financial-statement.shipping.income-statement');
+            Route::get('/accounting/financial-statement/shipping/admin-expenses', [AccountingController::class, 'financialStatementShippingAdminExpenses'])->name('accounting.financial-statement.shipping.admin-expenses');
+            Route::get('/accounting/financial-statement/shipping/everwin-star-1', [AccountingController::class, 'financialStatementShippingEverwinStar1'])->name('accounting.financial-statement.shipping.everwin-star-1');
+            Route::get('/accounting/financial-statement/shipping/everwin-star-2', [AccountingController::class, 'financialStatementShippingEverwinStar2'])->name('accounting.financial-statement.shipping.everwin-star-2');
+            Route::get('/accounting/financial-statement/shipping/everwin-star-3', [AccountingController::class, 'financialStatementShippingEverwinStar3'])->name('accounting.financial-statement.shipping.everwin-star-3');
+            Route::get('/accounting/financial-statement/shipping/everwin-star-4', [AccountingController::class, 'financialStatementShippingEverwinStar4'])->name('accounting.financial-statement.shipping.everwin-star-4');
+            Route::get('/accounting/financial-statement/shipping/everwin-star-5', [AccountingController::class, 'financialStatementShippingEverwinStar5'])->name('accounting.financial-statement.shipping.everwin-star-5');
+            Route::get('/accounting/financial-statement/shipping/work-sheet', [AccountingController::class, 'financialStatementShippingWorkSheet'])->name('accounting.financial-statement.shipping.work-sheet');
+            Route::get('/accounting/financial-statement/shipping/working-trial-balance', [AccountingController::class, 'financialStatementShippingWorkingTrialBalance'])->name('accounting.financial-statement.shipping.working-trial-balance');
+        });
+
+        // General Journal
+        Route::middleware('subpage.permission:accounting,general-journal')->group(function () {
+            Route::get('/accounting/general-journal/fully-depreciated-ppe', [AccountingController::class, 'generalJournalFullyDepreciatedPpe'])->name('accounting.general-journal.fully-depreciated-ppe');
+            Route::get('/accounting/general-journal/schedule-depreciation', [AccountingController::class, 'generalJournalScheduleDepreciation'])->name('accounting.general-journal.schedule-depreciation');
+            Route::get('/accounting/general-journal', [AccountingController::class, 'generalJournalIndex'])->name('accounting.general-journal.index');
+            Route::get('/accounting/general-journal/check-disbursement/trading', [AccountingController::class, 'generalJournalCheckDisbursementTrading'])->name('accounting.general-journal.check-disbursement.trading');
+            Route::get('/accounting/general-journal/check-disbursement/shipping', [AccountingController::class, 'generalJournalCheckDisbursementShipping'])->name('accounting.general-journal.check-disbursement.shipping');
+            Route::get('/accounting/general-journal/cash-disbursement', [AccountingController::class, 'generalJournalCashDisbursement'])->name('accounting.general-journal.cash-disbursement');
+        });
+
+        // Additional Accounting Reports
+        Route::middleware('subpage.permission:accounting,additional-reports')->group(function () {
+            Route::get('/accounting/breakdown-of-receivables', [AccountingController::class, 'breakdownOfReceivables'])->name('accounting.breakdown-of-receivables');
+            Route::get('/accounting/cash-on-hand-register', [AccountingController::class, 'cashOnHandRegister'])->name('accounting.cash-on-hand-register');
+        });
     });
 
     // Inventory routes (permission-gated)
