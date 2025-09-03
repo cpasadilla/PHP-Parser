@@ -1008,8 +1008,8 @@
     table#ordersTable tbody tr.highlight-red td,
     table#ordersTable tbody tr.border-b.highlight-red,
     table#ordersTable tbody tr.border-b.highlight-red td {
-        background-color: #fee2e2 !important; /* Light red */
-        background: #fee2e2 !important;
+        background-color: #fca5a5 !important; /* Darker red - more visible */
+        background: #fca5a5 !important;
     }
     
     table#ordersTable tbody tr.highlight-dark-blue,
@@ -1025,16 +1025,16 @@
     table#ordersTable tbody tr.highlight-sky-blue td,
     table#ordersTable tbody tr.border-b.highlight-sky-blue,
     table#ordersTable tbody tr.border-b.highlight-sky-blue td {
-        background-color: #bae6fd !important; /* Sky blue */
-        background: #bae6fd !important;
+        background-color: #7dd3fc !important; /* Darker sky blue - more visible */
+        background: #7dd3fc !important;
     }
     
     table#ordersTable tbody tr.highlight-light-green,
     table#ordersTable tbody tr.highlight-light-green td,
     table#ordersTable tbody tr.border-b.highlight-light-green,
     table#ordersTable tbody tr.border-b.highlight-light-green td {
-        background-color: #dcfce7 !important; /* Light green */
-        background: #dcfce7 !important;
+        background-color: #bbf7d0 !important; /* Darker light green - more visible */
+        background: #bbf7d0 !important;
     }
     
     table#ordersTable tbody tr.highlight-dark-green,
@@ -1050,16 +1050,16 @@
     table#ordersTable tbody tr.highlight-pink-violet td,
     table#ordersTable tbody tr.border-b.highlight-pink-violet,
     table#ordersTable tbody tr.border-b.highlight-pink-violet td {
-        background-color: #f3e8ff !important; /* Pink violet */
-        background: #f3e8ff !important;
+        background-color: #e9d5ff !important; /* Darker pink violet - more visible */
+        background: #e9d5ff !important;
     }
     
     table#ordersTable tbody tr.highlight-light-orange,
     table#ordersTable tbody tr.highlight-light-orange td,
     table#ordersTable tbody tr.border-b.highlight-light-orange,
     table#ordersTable tbody tr.border-b.highlight-light-orange td {
-        background-color: #fed7aa !important; /* Light orange */
-        background: #fed7aa !important;
+        background-color: #fdba74 !important; /* Darker light orange - more visible */
+        background: #fdba74 !important;
     }
     
     table#ordersTable tbody tr.highlight-dark-orange,
@@ -1075,16 +1075,16 @@
     table#ordersTable tbody tr.highlight-blue-green td,
     table#ordersTable tbody tr.border-b.highlight-blue-green,
     table#ordersTable tbody tr.border-b.highlight-blue-green td {
-        background-color: #67e8f9 !important; /* Blue green */
-        background: #67e8f9 !important;
+        background-color: #22d3ee !important; /* Darker blue green - more visible */
+        background: #22d3ee !important;
     }
     
     table#ordersTable tbody tr.highlight-yellow,
     table#ordersTable tbody tr.highlight-yellow td,
     table#ordersTable tbody tr.border-b.highlight-yellow,
     table#ordersTable tbody tr.border-b.highlight-yellow td {
-        background-color: #fef3c7 !important; /* Yellow (highest priority) */
-        background: #fef3c7 !important;
+        background-color: #fde047 !important; /* Darker yellow - more visible */
+        background: #fde047 !important;
     }
 
     /* Dark mode overrides for highlights */
@@ -3624,6 +3624,31 @@
             return keywords.some(keyword => lowerText.includes(keyword.toLowerCase()));
         }
 
+        // Function to check if text contains any of the keywords as whole words (case insensitive)
+        function containsWholeWords(text, keywords) {
+            if (!text) return false;
+            const lowerText = text.toLowerCase();
+            return keywords.some(keyword => {
+                const regex = new RegExp(`\\b${keyword.toLowerCase()}\\b`, 'i');
+                return regex.test(lowerText);
+            });
+        }
+
+        // Function to check for specific motorcycle types (MOTORCYCLE followed by SMALL/MEDIUM/LARGE)
+        function containsSpecificMotorcycles(text) {
+            if (!text) return false;
+            const lowerText = text.toLowerCase();
+            
+            // Check for "MOTORCYCLE" followed by "SMALL", "MEDIUM", or "LARGE"
+            const motorcyclePatterns = [
+                /\bmotorcycle\s+small\b/i,
+                /\bmotorcycle\s+medium\b/i,
+                /\bmotorcycle\s+large\b/i
+            ];
+            
+            return motorcyclePatterns.some(pattern => pattern.test(lowerText));
+        }
+
         // Function to extract text from cells that might contain textareas or divs
         function extractCellText(cell) {
             if (!cell) return '';
@@ -3693,8 +3718,8 @@
                 // (Removed the UNPAID blocking logic)
 
                 // RED - CONTAINER OR REMARK contains "TRANSFERRED TO"
-                const containerHasTransferredTo = containsKeywords(containerText, ['TRANSFERRED TO']);
-                const remarkHasTransferredTo = containsKeywords(remarkText, ['TRANSFERRED TO']);
+                const containerHasTransferredTo = containsWholeWords(containerText, ['TRANSFERRED TO']);
+                const remarkHasTransferredTo = containsWholeWords(remarkText, ['TRANSFERRED TO']);
                 console.log(`Row ${index + 1}: Checking RED - Container has TRANSFERRED TO: ${containerHasTransferredTo}, Remark has TRANSFERRED TO: ${remarkHasTransferredTo}`);
                 if (containerHasTransferredTo || remarkHasTransferredTo) {
                     row.classList.add('highlight-red');
@@ -3703,8 +3728,8 @@
                 }
 
                 // DARK BLUE - CONTAINER OR REMARK contains "DOUBLE BL"
-                const containerHasDoubleBL = containsKeywords(containerText, ['DOUBLE BL']);
-                const remarkHasDoubleBL = containsKeywords(remarkText, ['DOUBLE BL']);
+                const containerHasDoubleBL = containsWholeWords(containerText, ['DOUBLE BL']);
+                const remarkHasDoubleBL = containsWholeWords(remarkText, ['DOUBLE BL']);
                 console.log(`Row ${index + 1}: Checking DARK BLUE - Container has DOUBLE BL: ${containerHasDoubleBL}, Remark has DOUBLE BL: ${remarkHasDoubleBL}`);
                 if (containerHasDoubleBL || remarkHasDoubleBL) {
                     row.classList.add('highlight-dark-blue');
@@ -3712,8 +3737,8 @@
                     return;
                 }
 
-                // SKY BLUE - DESCRIPTION contains "CEMENT"
-                const descHasCement = containsKeywords(descriptionText, ['CEMENT']);
+                // SKY BLUE - DESCRIPTION contains "CEMENT" (whole word match)
+                const descHasCement = containsWholeWords(descriptionText, ['CEMENT']);
                 console.log(`Row ${index + 1}: Checking SKY BLUE - Description has CEMENT: ${descHasCement}`);
                 if (descHasCement) {
                     row.classList.add('highlight-sky-blue');
@@ -3721,9 +3746,9 @@
                     return;
                 }
 
-                // LIGHT GREEN - DESCRIPTION OR REMARK contains "PARCEL" or "SAND"
-                const descHasParcelOrSand = containsKeywords(descriptionText, ['PARCEL', 'SAND']);
-                const remarkHasParcelOrSand = containsKeywords(remarkText, ['PARCEL', 'SAND']);
+                // LIGHT GREEN - DESCRIPTION OR REMARK contains "PARCEL" or "SAND" (whole word match)
+                const descHasParcelOrSand = containsWholeWords(descriptionText, ['PARCEL', 'SAND']);
+                const remarkHasParcelOrSand = containsWholeWords(remarkText, ['PARCEL', 'SAND']);
                 console.log(`Row ${index + 1}: Checking LIGHT GREEN - Description has PARCEL/SAND: ${descHasParcelOrSand}, Remark has PARCEL/SAND: ${remarkHasParcelOrSand}`);
                 if (descHasParcelOrSand || remarkHasParcelOrSand) {
                     row.classList.add('highlight-light-green');
@@ -3732,7 +3757,7 @@
                 }
 
                 // DARK GREEN - REMARK contains "TRANSFERRED FROM"
-                const remarkHasTransferredFrom = containsKeywords(remarkText, ['TRANSFERRED FROM']);
+                const remarkHasTransferredFrom = containsWholeWords(remarkText, ['TRANSFERRED FROM']);
                 console.log(`Row ${index + 1}: Checking DARK GREEN - Remark has TRANSFERRED FROM: ${remarkHasTransferredFrom}`);
                 if (remarkHasTransferredFrom) {
                     row.classList.add('highlight-dark-green');
@@ -3740,17 +3765,19 @@
                     return;
                 }
 
-                // PINK VIOLET - DESCRIPTION contains "MOTORCYCLE" or "CAR"
-                const descHasMotorOrCar = containsKeywords(descriptionText, ['MOTORCYCLE', 'CAR', 'MODEL']);
-                console.log(`Row ${index + 1}: Checking PINK VIOLET - Description has MOTORCYCLE/CAR/MODEL: ${descHasMotorOrCar}`);
-                if (descHasMotorOrCar) {
+                // PINK VIOLET - DESCRIPTION contains specific motorcycle types or CAR/MODEL
+                const descHasSpecificMotorcycles = containsSpecificMotorcycles(descriptionText);
+                const descHasCarOrModel = containsWholeWords(descriptionText, ['CAR', 'MODEL']);
+                const descHasVehicles = descHasSpecificMotorcycles || descHasCarOrModel;
+                console.log(`Row ${index + 1}: Checking PINK VIOLET - Description has specific motorcycles: ${descHasSpecificMotorcycles}, CAR/MODEL: ${descHasCarOrModel}`);
+                if (descHasVehicles) {
                     row.classList.add('highlight-pink-violet');
-                    console.log(`Row ${index + 1}: Applied PINK VIOLET highlight (MOTORCYCLE/CAR/MODEL in DESCRIPTION)`);
+                    console.log(`Row ${index + 1}: Applied PINK VIOLET highlight (MOTORCYCLE SMALL/MEDIUM/LARGE or CAR/MODEL in DESCRIPTION)`);
                     return;
                 }
 
                 // LIGHT ORANGE - CARGO STATUS contains "CHARTERED"
-                const cargoStatusHasChartered = containsKeywords(cargoStatusText, ['CHARTERED']);
+                const cargoStatusHasChartered = containsWholeWords(cargoStatusText, ['CHARTERED']);
                 console.log(`Row ${index + 1}: Checking LIGHT ORANGE - Cargo Status has CHARTERED: ${cargoStatusHasChartered}`);
                 if (cargoStatusHasChartered) {
                     row.classList.add('highlight-light-orange');
@@ -3759,8 +3786,8 @@
                 }
 
                 // DARK ORANGE - DESCRIPTION OR REMARK contains "S4S"
-                const descHasS4S = containsKeywords(descriptionText, ['S4S']);
-                const remarkHasS4S = containsKeywords(remarkText, ['S4S']);
+                const descHasS4S = containsWholeWords(descriptionText, ['S4S']);
+                const remarkHasS4S = containsWholeWords(remarkText, ['S4S']);
                 console.log(`Row ${index + 1}: Checking DARK ORANGE - Description has S4S: ${descHasS4S}, Remark has S4S: ${remarkHasS4S}`);
                 if (descHasS4S || remarkHasS4S) {
                     row.classList.add('highlight-dark-orange');
@@ -3770,8 +3797,8 @@
 
                 // BLUE GREEN - DESCRIPTION OR REMARK contains fuel-related keywords
                 const fuelKeywords = ['DRUM', 'AVGAS', 'PREMIUM', 'UNLEADED', 'DIESEL', '4KL', '5KL'];
-                const descHasFuel = containsKeywords(descriptionText, fuelKeywords);
-                const remarkHasFuel = containsKeywords(remarkText, fuelKeywords);
+                const descHasFuel = containsWholeWords(descriptionText, fuelKeywords);
+                const remarkHasFuel = containsWholeWords(remarkText, fuelKeywords);
                 console.log(`Row ${index + 1}: Checking BLUE GREEN - Description has FUEL: ${descHasFuel}, Remark has FUEL: ${remarkHasFuel}`);
                 if (descHasFuel || remarkHasFuel) {
                     row.classList.add('highlight-blue-green');
