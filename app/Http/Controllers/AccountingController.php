@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\DailyCashCollectionEntry;
+use App\Models\Customer;
+use App\Models\SubAccount;
 
 class AccountingController extends Controller
 {
@@ -19,12 +22,38 @@ class AccountingController extends Controller
     // Daily Cash Collection Reports
     public function dailyCashCollectionTrading()
     {
-        return view('accounting.daily-cash-collection.trading');
+        $entries = DailyCashCollectionEntry::where('type', 'trading')
+            ->orderBy('entry_date', 'desc')
+            ->get();
+        
+        return view('accounting.daily-cash-collection.trading', compact('entries'));
     }
 
     public function dailyCashCollectionShipping()
     {
-        return view('accounting.daily-cash-collection.shipping');
+        $entries = DailyCashCollectionEntry::where('type', 'shipping')
+            ->orderBy('entry_date', 'desc')
+            ->get();
+            
+        return view('accounting.daily-cash-collection.shipping', compact('entries'));
+    }
+
+    public function dailyCashCollectionTradingPrint()
+    {
+        $entries = DailyCashCollectionEntry::where('type', 'trading')
+            ->orderBy('entry_date', 'asc')
+            ->get();
+            
+        return view('accounting.daily-cash-collection.trading-print', compact('entries'));
+    }
+
+    public function dailyCashCollectionShippingPrint()
+    {
+        $entries = DailyCashCollectionEntry::where('type', 'shipping')
+            ->orderBy('entry_date', 'asc')
+            ->get();
+            
+        return view('accounting.daily-cash-collection.shipping-print', compact('entries'));
     }
 
     // Monthly Cash Receipt Journals
@@ -170,5 +199,156 @@ class AccountingController extends Controller
     public function cashOnHandRegister()
     {
         return view('accounting.cash-on-hand-register');
+    }
+
+    // Daily Cash Collection CRUD Methods
+    public function storeCashCollectionEntry(Request $request)
+    {
+        $request->validate([
+            'type' => 'required|in:trading,shipping',
+            'entry_date' => 'required|date',
+            'customer_name' => 'required|string|max:255',
+            'ar' => 'nullable|string|max:255',
+            'or' => 'nullable|string|max:255',
+            'gravel_sand' => 'nullable|numeric|min:0',
+            'chb' => 'nullable|numeric|min:0',
+            'other_income_cement' => 'nullable|numeric|min:0',
+            'other_income_df' => 'nullable|numeric|min:0',
+            'others' => 'nullable|numeric|min:0',
+            'interest' => 'nullable|numeric|min:0',
+            'vessel' => 'nullable|string|max:255',
+            'container_parcel' => 'nullable|string|max:255',
+            'payment_method' => 'nullable|string|max:255',
+            'status' => 'nullable|string|max:255',
+            'remark' => 'nullable|string'
+        ]);
+
+        // Calculate total for trading entries
+        $total = 0;
+        if ($request->type === 'trading') {
+            $total = ($request->gravel_sand ?? 0) + 
+                    ($request->chb ?? 0) + 
+                    ($request->other_income_cement ?? 0) + 
+                    ($request->other_income_df ?? 0) + 
+                    ($request->others ?? 0) + 
+                    ($request->interest ?? 0);
+        } else {
+            $total = $request->total ?? 0;
+        }
+
+        DailyCashCollectionEntry::create([
+            'type' => $request->type,
+            'entry_date' => $request->entry_date,
+            'ar' => $request->ar,
+            'or' => $request->or,
+            'customer_name' => $request->customer_name,
+            'customer_id' => $request->customer_id,
+            'gravel_sand' => $request->gravel_sand ?? 0,
+            'chb' => $request->chb ?? 0,
+            'other_income_cement' => $request->other_income_cement ?? 0,
+            'other_income_df' => $request->other_income_df ?? 0,
+            'others' => $request->others ?? 0,
+            'interest' => $request->interest ?? 0,
+            'vessel' => $request->vessel,
+            'container_parcel' => $request->container_parcel,
+            'payment_method' => $request->payment_method,
+            'status' => $request->status,
+            'total' => $total,
+            'remark' => $request->remark
+        ]);
+
+        return response()->json(['success' => true, 'message' => 'Entry created successfully']);
+    }
+
+    public function updateCashCollectionEntry(Request $request, $id)
+    {
+        $entry = DailyCashCollectionEntry::findOrFail($id);
+
+        $request->validate([
+            'entry_date' => 'required|date',
+            'customer_name' => 'required|string|max:255',
+            'ar' => 'nullable|string|max:255',
+            'or' => 'nullable|string|max:255',
+            'gravel_sand' => 'nullable|numeric|min:0',
+            'chb' => 'nullable|numeric|min:0',
+            'other_income_cement' => 'nullable|numeric|min:0',
+            'other_income_df' => 'nullable|numeric|min:0',
+            'others' => 'nullable|numeric|min:0',
+            'interest' => 'nullable|numeric|min:0',
+            'vessel' => 'nullable|string|max:255',
+            'container_parcel' => 'nullable|string|max:255',
+            'payment_method' => 'nullable|string|max:255',
+            'status' => 'nullable|string|max:255',
+            'remark' => 'nullable|string'
+        ]);
+
+        // Calculate total for trading entries
+        $total = 0;
+        if ($entry->type === 'trading') {
+            $total = ($request->gravel_sand ?? 0) + 
+                    ($request->chb ?? 0) + 
+                    ($request->other_income_cement ?? 0) + 
+                    ($request->other_income_df ?? 0) + 
+                    ($request->others ?? 0) + 
+                    ($request->interest ?? 0);
+        } else {
+            $total = $request->total ?? 0;
+        }
+
+        $entry->update([
+            'entry_date' => $request->entry_date,
+            'ar' => $request->ar,
+            'or' => $request->or,
+            'customer_name' => $request->customer_name,
+            'customer_id' => $request->customer_id,
+            'gravel_sand' => $request->gravel_sand ?? 0,
+            'chb' => $request->chb ?? 0,
+            'other_income_cement' => $request->other_income_cement ?? 0,
+            'other_income_df' => $request->other_income_df ?? 0,
+            'others' => $request->others ?? 0,
+            'interest' => $request->interest ?? 0,
+            'vessel' => $request->vessel,
+            'container_parcel' => $request->container_parcel,
+            'payment_method' => $request->payment_method,
+            'status' => $request->status,
+            'total' => $total,
+            'remark' => $request->remark
+        ]);
+
+        return response()->json(['success' => true, 'message' => 'Entry updated successfully']);
+    }
+
+    public function getCashCollectionEntry($id)
+    {
+        $entry = DailyCashCollectionEntry::findOrFail($id);
+        return response()->json(['success' => true, 'entry' => $entry]);
+    }
+
+    public function searchCustomers(Request $request)
+    {
+        $query = $request->input('q');
+
+        // Search in Customers (Main Accounts)
+        $customers = Customer::where('first_name', 'LIKE', "%$query%")
+            ->orWhere('last_name', 'LIKE', "%$query%")
+            ->orWhere('company_name', 'LIKE', "%$query%")
+            ->selectRaw("id,
+                COALESCE(NULLIF(company_name, ''), CONCAT(first_name, ' ', last_name)) AS name,
+                IFNULL(NULLIF(phone, ''), '') AS phone")
+            ->get();
+
+        // Search in SubAccounts
+        $subAccounts = SubAccount::where('first_name', 'LIKE', "%$query%")
+            ->orWhere('last_name', 'LIKE', "%$query%")
+            ->orWhere('company_name', 'LIKE', "%$query%")
+            ->selectRaw("sub_account_number AS id,
+                COALESCE(NULLIF(company_name, ''), CONCAT(first_name, ' ', last_name)) AS name,
+                IFNULL(NULLIF(phone, ''), '') AS phone")
+            ->get();
+
+        // Merge the results
+        $allCustomers = $customers->merge($subAccounts);
+
+        return response()->json($allCustomers);
     }
 }

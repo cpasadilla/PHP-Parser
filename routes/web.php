@@ -79,6 +79,14 @@ Route::middleware('auth')->group(function () {
         Route::middleware('subpage.permission:accounting,daily-cash-collection')->group(function () {
             Route::get('/accounting/daily-cash-collection/trading', [AccountingController::class, 'dailyCashCollectionTrading'])->name('accounting.daily-cash-collection.trading');
             Route::get('/accounting/daily-cash-collection/shipping', [AccountingController::class, 'dailyCashCollectionShipping'])->name('accounting.daily-cash-collection.shipping');
+            Route::get('/accounting/daily-cash-collection/trading/print', [AccountingController::class, 'dailyCashCollectionTradingPrint'])->name('accounting.daily-cash-collection.trading-print');
+            Route::get('/accounting/daily-cash-collection/shipping/print', [AccountingController::class, 'dailyCashCollectionShippingPrint'])->name('accounting.daily-cash-collection.shipping-print');
+            
+            // CRUD routes for cash collection entries
+            Route::post('/accounting/daily-cash-collection/entries', [AccountingController::class, 'storeCashCollectionEntry'])->name('accounting.daily-cash-collection.store');
+            Route::put('/accounting/daily-cash-collection/entries/{id}', [AccountingController::class, 'updateCashCollectionEntry'])->name('accounting.daily-cash-collection.update');
+            Route::get('/accounting/daily-cash-collection/entries/{id}', [AccountingController::class, 'getCashCollectionEntry'])->name('accounting.daily-cash-collection.get');
+            Route::get('/accounting/search-customers', [AccountingController::class, 'searchCustomers'])->name('accounting.search-customers');
         });
 
         // Monthly Cash Receipt Journals
