@@ -150,7 +150,8 @@ class MasterListController extends Controller
                 'field_name' => 'transfer',
                 'old_value' => null,
                 'new_value' => $transferToInfo,
-                'action_type' => 'update'
+                'action_type' => 'update',
+                'updated_at' => \Carbon\Carbon::now('Asia/Manila')
             ]);
 
             // Log the transfer as an OrderUpdateLog entry
@@ -160,7 +161,8 @@ class MasterListController extends Controller
                 'field_name' => 'transfer',
                 'old_value' => null,
                 'new_value' => "Transferred from order {$original->id} ({$original->shipNum}/{$original->voyageNum}) to {$copy->shipNum}/{$copy->voyageNum}",
-                'action_type' => 'create'
+                'action_type' => 'create',
+                'updated_at' => \Carbon\Carbon::now('Asia/Manila')
             ]);
 
             DB::commit();
@@ -1145,7 +1147,8 @@ class MasterListController extends Controller
                     'field_name' => $fieldName,
                     'old_value' => $oldValue,
                     'new_value' => $newValue,
-                    'action_type' => 'update'
+                    'action_type' => 'update',
+                    'updated_at' => \Carbon\Carbon::now('Asia/Manila')
                 ]);
             }
         };
@@ -1609,7 +1612,8 @@ class MasterListController extends Controller
                     'field_name' => $fieldName,
                     'old_value' => $oldVal,
                     'new_value' => $newVal,
-                    'action_type' => 'update'
+                    'action_type' => 'update',
+                    'updated_at' => \Carbon\Carbon::now('Asia/Manila') // Explicitly set timezone
                 ];
 
                 // For AR/OR updates, store location info in the new_value field
@@ -2155,8 +2159,8 @@ class MasterListController extends Controller
                 'field_type' => $field,
                 // Return field-specific information if available, otherwise use general info
                 'or_ar_date' => $fieldSpecificInfo ? 
-                    \Carbon\Carbon::parse($fieldSpecificInfo['or_ar_date'])->format('F d, Y h:i A') : 
-                    ($displayInfo['or_ar_date'] ? \Carbon\Carbon::parse($displayInfo['or_ar_date'])->format('F d, Y h:i A') : ''),
+                    \Carbon\Carbon::parse($fieldSpecificInfo['or_ar_date'])->setTimezone('Asia/Manila')->format('F d, Y h:i A') : 
+                    ($displayInfo['or_ar_date'] ? \Carbon\Carbon::parse($displayInfo['or_ar_date'])->setTimezone('Asia/Manila')->format('F d, Y h:i A') : ''),
                 'updated_by' => $fieldSpecificInfo ? 
                     $fieldSpecificInfo['updated_by'] : 
                     ($displayInfo['updated_by'] ?? ''),
@@ -2254,7 +2258,8 @@ class MasterListController extends Controller
                 'field_name' => 'blStatus',
                 'old_value' => $oldBlStatus,
                 'new_value' => $order->blStatus,
-                'action_type' => 'update'
+                'action_type' => 'update',
+                'updated_at' => \Carbon\Carbon::now('Asia/Manila')
             ]);
         }
 
@@ -2307,7 +2312,8 @@ class MasterListController extends Controller
                 'field_name' => 'note',
                 'old_value' => $oldNote,
                 'new_value' => $order->note,
-                'action_type' => 'update'
+                'action_type' => 'update',
+                'updated_at' => \Carbon\Carbon::now('Asia/Manila')
             ]);
         }
 
@@ -2334,7 +2340,8 @@ class MasterListController extends Controller
                 'field_name' => 'image',
                 'old_value' => $oldImage,
                 'new_value' => null,
-                'action_type' => 'delete'
+                'action_type' => 'delete',
+                'updated_at' => \Carbon\Carbon::now('Asia/Manila')
             ]);
 
             return response()->json(['success' => true, 'message' => 'Image removed successfully!']);
@@ -2476,7 +2483,8 @@ class MasterListController extends Controller
                 'field_name' => 'valuation',
                 'old_value' => $oldValuation,
                 'new_value' => $order->valuation,
-                'action_type' => 'update'
+                'action_type' => 'update',
+                'updated_at' => \Carbon\Carbon::now('Asia/Manila')
             ]);
         }
 
@@ -2487,7 +2495,8 @@ class MasterListController extends Controller
                 'field_name' => 'discount',
                 'old_value' => $oldDiscount,
                 'new_value' => $order->discount,
-                'action_type' => 'update'
+                'action_type' => 'update',
+                'updated_at' => \Carbon\Carbon::now('Asia/Manila')
             ]);
         }
 
@@ -2498,7 +2507,8 @@ class MasterListController extends Controller
                 'field_name' => 'totalAmount',
                 'old_value' => $oldTotalAmount,
                 'new_value' => $order->totalAmount,
-                'action_type' => 'update'
+                'action_type' => 'update',
+                'updated_at' => \Carbon\Carbon::now('Asia/Manila')
             ]);
         }
 
