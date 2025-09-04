@@ -10,6 +10,38 @@
         </div>
     </x-slot>
 
+    <style>
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+        .btn-primary {
+            background-color: #3b82f6;
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #2563eb;
+        }
+        .btn-secondary {
+            background-color: #6b7280;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background-color: #4b5563;
+        }
+        .btn-info {
+            background-color: #06b6d4;
+            color: white;
+        }
+        .btn-info:hover {
+            background-color: #0891b2;
+        }
+    </style>
+
     <div class="p-6 bg-white rounded-md shadow-md dark:bg-dark-eval-1">
         <div class="flex justify-between items-center mb-4">
             <h3 class="text-lg font-semibold">
@@ -17,6 +49,10 @@
             </h3>
             <div class="flex gap-2">
                 <button class="btn btn-primary" onclick="printContent('printContainer')">PRINT</button>
+                <button class="btn btn-secondary" onclick="openDccrModal()">Edit DCCR No.</button>
+                <button class="btn btn-info" onclick="openCashierModal()">Edit Collected By</button>
+                <button id="exportExcel" class="btn" style="background-color: #10b981; color: white;" onmouseover="this.style.backgroundColor='#059669'" onmouseout="this.style.backgroundColor='#10b981'">Export to Excel</button>
+                <!--button class="btn btn-info" onclick="openCollectionModal()">Edit ADD: COLLECTION</button-->
             </div>
         </div>
         
@@ -33,11 +69,8 @@
                         <p style="margin: 0; font-size: 12px; padding: 2px 5px; color: #00B050; font-weight: bold; font-family: 'Cambria', serif;">TRADING</p>
                         <p style="margin: 0; font-size: 12px; padding: 2px 5px; font-family: 'Cambria', serif;">DATE: {{ $selectedDate ? strtoupper(\Carbon\Carbon::parse($selectedDate)->format('F d, Y')) : strtoupper(date('F d, Y')) }}</p>
                         <p style="margin: 0; font-size: 12px; padding: 2px 5px; font-family: 'Cambria', serif; text-align: right; font-weight: bold; ">DCCR No. : 
-                        @if($entries->isNotEmpty())
-                            @php
-                                $dccrNumber = $entries->whereNotNull('dccr_number')->where('dccr_number', '!=', '')->first();
-                            @endphp
-                            {{ $dccrNumber ? $dccrNumber->dccr_number : '___________' }}
+                        @if(isset($reportSettings) && $reportSettings && $reportSettings->dccr_number)
+                            {{ $reportSettings->dccr_number }}
                         @else
                             ___________
                         @endif
@@ -159,7 +192,7 @@
                         <div style="width: 22%; padding: 3px; font-family: 'Cambria', serif;">
                             <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
                             <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
-                            <p style="margin: 0; line-height: 1.3; border-bottom: 2px solid black; padding-bottom: 3px; text-align: center;">&nbsp;</p>
+                            <p style="margin: 0; line-height: 1.3; border-bottom: 2px solid black; padding-bottom: 3px; text-align: right;">{{ number_format($grandTotal, 2) }}</p>
                             <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
                             <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
                             <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
@@ -192,8 +225,20 @@
                             <p style="margin: 0; line-height: 1.3; text-align: center; font-size: 10px; font-family: 'Calibri', sans-serif;">Bookkeeper</p>
                             <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
                             <p style="margin: 0; line-height: 1.3; border-bottom: 1px solid black; padding-bottom: 3px; text-align: center;">&nbsp;</p>
-                            <p style="margin: 0; line-height: 1.3; text-align: center; font-family: 'Bookman Old Style', serif;"><strong>RANDAL HERUELA</strong></p>
-                            <p style="margin: 0; line-height: 1.3; text-align: center; font-size: 10px; font-family: 'Calibri', sans-serif;">Cashier</p>
+                            <p style="margin: 0; line-height: 1.3; text-align: center; font-family: 'Bookman Old Style', serif;"><strong>
+                                @if(isset($reportSettings) && $reportSettings && $reportSettings->collected_by_name)
+                                    {{ strtoupper($reportSettings->collected_by_name) }}
+                                @else
+                                    RANDAL HERUELA
+                                @endif
+                            </strong></p>
+                            <p style="margin: 0; line-height: 1.3; text-align: center; font-size: 10px; font-family: 'Calibri', sans-serif;">
+                                @if(isset($reportSettings) && $reportSettings && $reportSettings->collected_by_title)
+                                    {{ $reportSettings->collected_by_title }}
+                                @else
+                                    Cashier
+                                @endif
+                            </p>
                             <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
                             <p style="margin: 0; line-height: 1.3; border-bottom: 1px solid black; padding-bottom: 3px; text-align: center;">&nbsp;</p>
                             <p style="margin: 0; line-height: 1.3; text-align: center; font-family: 'Bookman Old Style', serif;"><strong>ANTONIO L. CASTRO</strong></p>
@@ -224,7 +269,7 @@
                 <div style="width: 22%; padding: 3px; font-family: 'Cambria', serif;">
                     <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
                     <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
-                    <p style="margin: 0; line-height: 1.3; border-bottom: 2px solid black; padding-bottom: 3px; text-align: center;">&nbsp;</p>
+                    <p style="margin: 0; line-height: 1.3; border-bottom: 2px solid black; padding-bottom: 3px; text-align: right;">{{ number_format($grandTotal, 2) }}</p>
                     <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
                     <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
                     <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
@@ -257,8 +302,20 @@
                     <p style="margin: 0; line-height: 1.3; text-align: center; font-size: 10px; font-family: 'Calibri', sans-serif;">Bookkeeper</p>
                     <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
                     <p style="margin: 0; line-height: 1.3; border-bottom: 1px solid black; padding-bottom: 3px; text-align: center;">&nbsp;</p>
-                    <p style="margin: 0; line-height: 1.3; text-align: center; font-family: 'Bookman Old Style', serif;"><strong>RANDAL HERUELA</strong></p>
-                    <p style="margin: 0; line-height: 1.3; text-align: center; font-size: 10px; font-family: 'Calibri', sans-serif;">Cashier</p>
+                    <p style="margin: 0; line-height: 1.3; text-align: center; font-family: 'Bookman Old Style', serif;"><strong>
+                        @if(isset($reportSettings) && $reportSettings && $reportSettings->collected_by_name)
+                            {{ strtoupper($reportSettings->collected_by_name) }}
+                        @else
+                            RANDAL HERUELA
+                        @endif
+                    </strong></p>
+                    <p style="margin: 0; line-height: 1.3; text-align: center; font-size: 10px; font-family: 'Calibri', sans-serif;">
+                        @if(isset($reportSettings) && $reportSettings && $reportSettings->collected_by_title)
+                            {{ $reportSettings->collected_by_title }}
+                        @else
+                            Cashier
+                        @endif
+                    </p>
                     <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
                     <p style="margin: 0; line-height: 1.3; border-bottom: 1px solid black; padding-bottom: 3px; text-align: center;">&nbsp;</p>
                     <p style="margin: 0; line-height: 1.3; text-align: center; font-family: 'Bookman Old Style', serif;"><strong>ANTONIO L. CASTRO</strong></p>
@@ -267,6 +324,9 @@
             </div>
         </div>
     </div>
+
+    <!-- Include XLSX library for Excel export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <!-- For printing -->
     <script>
@@ -475,5 +535,641 @@
                 printWindow.close();
             };
         }
+
+        // DCCR Modal Functions
+        function openDccrModal() {
+            document.getElementById('dccrModal').style.display = 'block';
+            document.getElementById('dccrModalOverlay').style.display = 'block';
+            loadCurrentDccrNumber();
+        }
+
+        function closeDccrModal() {
+            document.getElementById('dccrModal').style.display = 'none';
+            document.getElementById('dccrModalOverlay').style.display = 'none';
+        }
+
+        function loadCurrentDccrNumber() {
+            const selectedDate = '{{ $selectedDate ?? date("Y-m-d") }}';
+            
+            fetch(`{{ route('accounting.daily-cash-collection.get-settings') }}?report_date=${selectedDate}&report_type=trading`, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.data) {
+                    document.getElementById('dccr_number').value = data.data.dccr_number || '';
+                } else {
+                    document.getElementById('dccr_number').value = '';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('dccr_number').value = '';
+            });
+        }
+
+        function saveDccrNumber() {
+            const selectedDate = '{{ $selectedDate ?? date("Y-m-d") }}';
+            const dccrNumber = document.getElementById('dccr_number').value;
+
+            const formData = new FormData();
+            formData.append('report_date', selectedDate);
+            formData.append('report_type', 'trading');
+            formData.append('dccr_number', dccrNumber);
+            // Only send dccr_number field
+
+            fetch('{{ route("accounting.daily-cash-collection.store-settings") }}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('DCCR Number saved successfully!');
+                    closeDccrModal();
+                    location.reload();
+                } else {
+                    alert('Error saving DCCR Number: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error saving DCCR Number');
+            });
+        }
+
+        // Cashier Modal Functions
+        function openCashierModal() {
+            document.getElementById('cashierModal').style.display = 'block';
+            document.getElementById('cashierModalOverlay').style.display = 'block';
+            loadCurrentCashier();
+        }
+
+        function closeCashierModal() {
+            document.getElementById('cashierModal').style.display = 'none';
+            document.getElementById('cashierModalOverlay').style.display = 'none';
+        }
+
+        function loadCurrentCashier() {
+            const selectedDate = '{{ $selectedDate ?? date("Y-m-d") }}';
+            
+            fetch(`{{ route('accounting.daily-cash-collection.get-settings') }}?report_date=${selectedDate}&report_type=trading`, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.data) {
+                    const collectedByName = data.data.collected_by_name || 'RANDAL HERUELA';
+                    const collectedByTitle = data.data.collected_by_title || 'Cashier';
+                    
+                    // Set the selected values
+                    document.getElementById('collected_by_name').value = collectedByName;
+                    document.getElementById('collected_by_title').value = collectedByTitle;
+                    
+                    // Update title dropdown based on name selection
+                    updateTitleOptions();
+                } else {
+                    document.getElementById('collected_by_name').value = 'RANDAL HERUELA';
+                    document.getElementById('collected_by_title').value = 'Cashier';
+                    updateTitleOptions();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('collected_by_name').value = 'RANDAL HERUELA';
+                document.getElementById('collected_by_title').value = 'Cashier';
+                updateTitleOptions();
+            });
+        }
+
+        function updateTitleOptions() {
+            const collectedByName = document.getElementById('collected_by_name').value;
+            const titleSelect = document.getElementById('collected_by_title');
+            
+            // Clear existing options
+            titleSelect.innerHTML = '';
+            
+            if (collectedByName === 'RANDAL HERUELA') {
+                titleSelect.innerHTML = '<option value="Cashier">Cashier</option>';
+                titleSelect.value = 'Cashier';
+            } else if (collectedByName === 'CHERRY MAE E. CAMAYA') {
+                titleSelect.innerHTML = '<option value="Billing Officer">Billing Officer</option>';
+                titleSelect.value = 'Billing Officer';
+            }
+        }
+
+        function saveCashier() {
+            const selectedDate = '{{ $selectedDate ?? date("Y-m-d") }}';
+            const collectedByName = document.getElementById('collected_by_name').value;
+            const collectedByTitle = document.getElementById('collected_by_title').value;
+
+            const formData = new FormData();
+            formData.append('report_date', selectedDate);
+            formData.append('report_type', 'trading');
+            formData.append('collected_by_name', collectedByName);
+            formData.append('collected_by_title', collectedByTitle);
+            // Only send collected_by fields
+
+            fetch('{{ route("accounting.daily-cash-collection.store-settings") }}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Collected By information saved successfully!');
+                    closeCashierModal();
+                    location.reload();
+                } else {
+                    alert('Error saving Collected By information: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error saving Collected By information');
+            });
+        }
+
+        // Collection Modal Functions
+        function openCollectionModal() {
+            document.getElementById('collectionModal').style.display = 'block';
+            document.getElementById('collectionModalOverlay').style.display = 'block';
+            loadCurrentCollection();
+        }
+
+        function closeCollectionModal() {
+            document.getElementById('collectionModal').style.display = 'none';
+            document.getElementById('collectionModalOverlay').style.display = 'none';
+        }
+
+        function loadCurrentCollection() {
+            const selectedDate = '{{ $selectedDate ?? date("Y-m-d") }}';
+            
+            fetch(`{{ route('accounting.daily-cash-collection.get-settings') }}?report_date=${selectedDate}&report_type=trading`, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.data) {
+                    document.getElementById('add_collection').value = data.data.add_collection || '';
+                } else {
+                    document.getElementById('add_collection').value = '';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('add_collection').value = '';
+            });
+        }
+
+        function saveCollection() {
+            const selectedDate = '{{ $selectedDate ?? date("Y-m-d") }}';
+            const addCollection = document.getElementById('add_collection').value;
+
+            const formData = new FormData();
+            formData.append('report_date', selectedDate);
+            formData.append('report_type', 'trading');
+            formData.append('add_collection', addCollection);
+            // Only send add_collection field
+
+            fetch('{{ route("accounting.daily-cash-collection.store-settings") }}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('ADD: COLLECTION saved successfully!');
+                    closeCollectionModal();
+                    location.reload();
+                } else {
+                    alert('Error saving ADD: COLLECTION: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error saving ADD: COLLECTION');
+            });
+        }
+
+        // Close modal when clicking outside
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const dccrModal = document.getElementById('dccrModal');
+            const collectionModal = document.getElementById('collectionModal');
+            const cashierModal = document.getElementById('cashierModal');
+            const dccrOverlay = document.getElementById('dccrModalOverlay');
+            const collectionOverlay = document.getElementById('collectionModalOverlay');
+            const cashierOverlay = document.getElementById('cashierModalOverlay');
+            
+            if (event.target == dccrOverlay) {
+                closeDccrModal();
+            }
+            if (event.target == collectionOverlay) {
+                closeCollectionModal();
+            }
+            if (event.target == cashierOverlay) {
+                closeCashierModal();
+            }
+        }
     </script>
+
+    <!-- Export to Excel functionality -->
+    <script>
+        // Function to export table to Excel
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('exportExcel').addEventListener('click', function () {
+                // Get the table element
+                const table = document.querySelector('#printContainer table');
+                
+                if (!table) {
+                    alert('No table found to export');
+                    return;
+                }
+
+                // Get current data for calculations and information
+                const selectedDate = '{{ $selectedDate ?? date("Y-m-d") }}';
+                const reportDate = selectedDate || '{{ date("Y-m-d") }}';
+                const formattedDate = new Date(reportDate).toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                });
+
+                // Get DCCR Number
+                const dccrNumber = '{{ isset($reportSettings) && $reportSettings && $reportSettings->dccr_number ? $reportSettings->dccr_number : "___________" }}';
+                
+                // Get Collected By information
+                const collectedByName = '{{ isset($reportSettings) && $reportSettings && $reportSettings->collected_by_name ? strtoupper($reportSettings->collected_by_name) : "RANDAL HERUELA" }}';
+                const collectedByTitle = '{{ isset($reportSettings) && $reportSettings && $reportSettings->collected_by_title ? $reportSettings->collected_by_title : "Cashier" }}';
+
+                // Calculate totals from PHP data
+                const totalGravelSand = {{ $totalGravelSand ?? 0 }};
+                const totalCHB = {{ $totalCHB ?? 0 }};
+                const totalCement = {{ $totalCement ?? 0 }};
+                const totalDF = {{ $totalDF ?? 0 }};
+                const totalOthers = {{ $totalOthers ?? 0 }};
+                const totalInterest = {{ $totalInterest ?? 0 }};
+                const grandTotal = {{ $grandTotal ?? 0 }};
+
+                // Create workbook and worksheet
+                const workbook = XLSX.utils.book_new();
+                
+                // Create header data
+                const headerData = [
+                    ['SAINT FRANCIS XAVIER STAR SHIPPING LINES INC.'],
+                    ['Basco Office: National Road Brgy. Kaychanarianan, Basco Batanes'],
+                    ['DAILY CASH COLLECTION REPORT'],
+                    ['TRADING'],
+                    ['DATE: ' + formattedDate.toUpperCase()],
+                    ['DCCR No.: ' + dccrNumber],
+                    [''], // Empty row
+                    [''], // Empty row
+                ];
+
+                // Get table headers
+                const headerRow = table.querySelector('thead tr');
+                const headers = [];
+                for (let i = 0; i < headerRow.children.length; i++) {
+                    headers.push(headerRow.children[i].textContent.trim());
+                }
+                headerData.push(headers);
+
+                // Get table body data
+                const bodyRows = table.querySelectorAll('tbody tr');
+                const bodyData = [];
+                
+                bodyRows.forEach(row => {
+                    if (row.children.length > 1 && !row.textContent.includes('No entries found')) {
+                        const rowData = [];
+                        for (let i = 0; i < row.children.length; i++) {
+                            let cellText = row.children[i].textContent.trim();
+                            
+                            // Clean up numeric data - remove commas but keep numbers as text for proper formatting
+                            if (cellText.includes(',') && !isNaN(cellText.replace(/,/g, ''))) {
+                                cellText = parseFloat(cellText.replace(/,/g, ''));
+                            }
+                            
+                            rowData.push(cellText);
+                        }
+                        bodyData.push(rowData);
+                    }
+                });
+
+                // Footer data with cash flow section
+                const footerData = [
+                    [''], // Empty row
+                    [''], // Empty row
+                    ['CASH FLOW SUMMARY:'],
+                    ['CASH ON HAND BEGINNING:', ''],
+                    ['ADD: COLLECTION', grandTotal.toLocaleString('en-US', {minimumFractionDigits: 2})],
+                    ['TOTAL CASH ON HAND:', ''],
+                    [''], // Empty row
+                    ['LESS: DEPOSIT'],
+                    ['LBP - Account', ''],
+                    ['PNB - Account', ''],
+                    ['UnionBank - Account', ''],
+                    ['CASH ON HAND:', ''],
+                    [''], // Empty row
+                    [''], // Empty row
+                    ['SIGNATURE SECTION:'],
+                    [''], // Empty row
+                    ['Prepared By:', '', '', 'Collected By:', '', '', 'Noted By:'],
+                    [''], // Empty row
+                    [''], // Empty row
+                    [''], // Empty row
+                    ['CHRISTY NUÑEZ', '', '', collectedByName, '', '', 'ANTONIO L. CASTRO'],
+                    ['Bookkeeper', '', '', collectedByTitle, '', '', 'Operations Manager'],
+                    [''], // Empty row
+                    [''], // Empty row
+                    ['Generated on: ' + new Date().toLocaleDateString('en-US', { 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    })],
+                ];
+
+                // Combine all data
+                const allData = [...headerData, ...bodyData, ...footerData];
+
+                // Create worksheet from array
+                const worksheet = XLSX.utils.aoa_to_sheet(allData);
+
+                // Set column widths
+                const colWidths = [
+                    { wch: 8 },  // AR
+                    { wch: 8 },  // OR
+                    { wch: 25 }, // Name
+                    { wch: 15 }, // Gravel & Sand
+                    { wch: 10 }, // CHB
+                    { wch: 20 }, // Other Income (Cement)
+                    { wch: 20 }, // Other Income (DF)
+                    { wch: 10 }, // Others
+                    { wch: 10 }, // Interest
+                    { wch: 12 }, // Total
+                    { wch: 30 }  // Remark
+                ];
+                worksheet['!cols'] = colWidths;
+
+                // Style the header rows
+                const range = XLSX.utils.decode_range(worksheet['!ref']);
+                
+                // Style company name (row 1)
+                if (worksheet['A1']) {
+                    worksheet['A1'].s = {
+                        font: { bold: true, sz: 16, color: { rgb: "00B050" } },
+                        alignment: { horizontal: "center" }
+                    };
+                }
+
+                // Style other header rows (2-6)
+                for (let i = 2; i <= 6; i++) {
+                    const cellRef = 'A' + i;
+                    if (worksheet[cellRef]) {
+                        worksheet[cellRef].s = {
+                            font: { bold: true, sz: 12 },
+                            alignment: { horizontal: "center" }
+                        };
+                    }
+                }
+
+                // Style table headers (row 9)
+                const headerRowIndex = 9;
+                for (let col = 0; col < headers.length; col++) {
+                    const cellRef = XLSX.utils.encode_cell({ r: headerRowIndex - 1, c: col });
+                    if (worksheet[cellRef]) {
+                        worksheet[cellRef].s = {
+                            font: { bold: true },
+                            fill: { fgColor: { rgb: "F2F2F2" } },
+                            border: {
+                                top: { style: "thin" },
+                                bottom: { style: "thin" },
+                                left: { style: "thin" },
+                                right: { style: "thin" }
+                            }
+                        };
+                    }
+                }
+
+                // Find and style totals row (look for "TOTAL:" in the data)
+                const totalsRowIndex = headerData.length + bodyData.length - 1;
+                for (let col = 0; col < headers.length; col++) {
+                    const cellRef = XLSX.utils.encode_cell({ r: totalsRowIndex, c: col });
+                    if (worksheet[cellRef]) {
+                        worksheet[cellRef].s = {
+                            font: { bold: true },
+                            fill: { fgColor: { rgb: "92D050" } }
+                        };
+                    }
+                }
+
+                // Style cash flow summary section
+                const cashFlowStartRow = headerData.length + bodyData.length + 3;
+                for (let i = 0; i < 12; i++) {
+                    const cellRef = 'A' + (cashFlowStartRow + i);
+                    if (worksheet[cellRef]) {
+                        worksheet[cellRef].s = {
+                            font: { bold: i === 0 || i === 2 || i === 7 ? true : false },
+                            fill: i === 0 ? { fgColor: { rgb: "E6F3FF" } } : undefined
+                        };
+                    }
+                }
+
+                // Style signature section
+                const signatureStartRow = headerData.length + bodyData.length + 15;
+                const signatureHeaderRef = 'A' + signatureStartRow;
+                if (worksheet[signatureHeaderRef]) {
+                    worksheet[signatureHeaderRef].s = {
+                        font: { bold: true, sz: 12 },
+                        fill: { fgColor: { rgb: "E6F3FF" } }
+                    };
+                }
+
+                // Style signature names (make them bold)
+                const nameRowIndex = signatureStartRow + 6;
+                ['A', 'D', 'G'].forEach(col => {
+                    const cellRef = col + nameRowIndex;
+                    if (worksheet[cellRef]) {
+                        worksheet[cellRef].s = {
+                            font: { bold: true }
+                        };
+                    }
+                });
+
+                // Merge cells for header sections
+                worksheet['!merges'] = [
+                    { s: { r: 0, c: 0 }, e: { r: 0, c: headers.length - 1 } }, // Company name
+                    { s: { r: 1, c: 0 }, e: { r: 1, c: headers.length - 1 } }, // Address
+                    { s: { r: 2, c: 0 }, e: { r: 2, c: headers.length - 1 } }, // Report title
+                    { s: { r: 3, c: 0 }, e: { r: 3, c: headers.length - 1 } }, // Trading
+                    { s: { r: 4, c: 0 }, e: { r: 4, c: headers.length - 1 } }, // Date
+                    { s: { r: 5, c: 0 }, e: { r: 5, c: headers.length - 1 } }  // DCCR Number
+                ];
+
+                // Add the worksheet to the workbook
+                XLSX.utils.book_append_sheet(workbook, worksheet, 'Trading Report');
+
+                // Generate filename with current date
+                const dateStr = reportDate.replace(/-/g, '');
+                const filename = `Daily_Cash_Collection_Trading_${dateStr}.xlsx`;
+
+                // Export the workbook to an Excel file
+                XLSX.writeFile(workbook, filename);
+            });
+        });
+    </script>
+
+    <!-- DCCR Modal -->
+    <div id="dccrModalOverlay" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-40"></div>
+    <div id="dccrModal" class="fixed inset-0 z-50 hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="relative bg-white rounded-lg shadow-lg max-w-md w-full">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900">Edit DCCR Number</h3>
+                        <button type="button" onclick="closeDccrModal()" class="text-gray-400 hover:text-gray-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <form onsubmit="event.preventDefault(); saveDccrNumber();">
+                        <div class="mb-4">
+                            <label for="dccr_number" class="block text-sm font-medium text-gray-700 mb-2">DCCR Number</label>
+                            <input type="text" id="dccr_number" name="dccr_number" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="Enter DCCR Number">
+                        </div>
+                        
+                        <div class="flex justify-end space-x-3">
+                            <button type="button" onclick="closeDccrModal()" 
+                                    class="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                                Cancel
+                            </button>
+                            <button type="submit" 
+                                    class="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                Save
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Collection Modal -->
+    <div id="collectionModalOverlay" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-40"></div>
+    <div id="collectionModal" class="fixed inset-0 z-50 hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="relative bg-white rounded-lg shadow-lg max-w-md w-full">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900">Edit ADD: COLLECTION</h3>
+                        <button type="button" onclick="closeCollectionModal()" class="text-gray-400 hover:text-gray-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <form onsubmit="event.preventDefault(); saveCollection();">
+                        <div class="mb-4">
+                            <label for="add_collection" class="block text-sm font-medium text-gray-700 mb-2">ADD: COLLECTION Amount</label>
+                            <input type="number" id="add_collection" name="add_collection" step="0.01" min="0"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="Enter collection amount">
+                        </div>
+                        
+                        <div class="flex justify-end space-x-3">
+                            <button type="button" onclick="closeCollectionModal()" 
+                                    class="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                                Cancel
+                            </button>
+                            <button type="submit" 
+                                    class="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                Save
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cashier Modal -->
+    <div id="cashierModalOverlay" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-40"></div>
+    <div id="cashierModal" class="fixed inset-0 z-50 hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="relative bg-white rounded-lg shadow-lg max-w-md w-full">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900">Edit Collected By Information</h3>
+                        <button type="button" onclick="closeCashierModal()" class="text-gray-400 hover:text-gray-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <form onsubmit="event.preventDefault(); saveCashier();">
+                        <div class="mb-4">
+                            <label for="collected_by_name" class="block text-sm font-medium text-gray-700 mb-2">Collected By Name</label>
+                            <select id="collected_by_name" name="collected_by_name" onchange="updateTitleOptions()"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="RANDAL HERUELA">RANDAL HERUELA</option>
+                                <option value="CHERRY MAE E. CAMAYA">CHERRY MAE E. CAMAYA</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="collected_by_title" class="block text-sm font-medium text-gray-700 mb-2">Title</label>
+                            <select id="collected_by_title" name="collected_by_title" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="Cashier">Cashier</option>
+                                <option value="Billing Officer">Billing Officer</option>
+                            </select>
+                        </div>
+                        
+                        <div class="flex justify-end space-x-3">
+                            <button type="button" onclick="closeCashierModal()" 
+                                    class="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                                Cancel
+                            </button>
+                            <button type="submit" 
+                                    class="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                Save
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </x-app-layout>

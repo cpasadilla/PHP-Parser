@@ -128,7 +128,7 @@
                         <button onclick="generateReport()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
                             Generate Report
                         </button>
-                        <button class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500">
+                        <button id="exportExcel" onclick="exportToExcel()" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500">
                             Export to Excel
                         </button>
                     </div>
@@ -612,6 +612,213 @@
             const url = new URL(window.location.href);
             url.searchParams.delete('date');
             window.location.href = url.toString();
+        }
+    </script>
+
+    <!-- Include XLSX library for Excel export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <!-- Export to Excel functionality -->
+    <script>
+        // Function to export table to Excel
+        function exportToExcel() {
+            // Get the table element
+            const table = document.querySelector('table');
+            
+            if (!table) {
+                alert('No table found to export');
+                return;
+            }
+
+            // Get current data for calculations
+            const totalCollections = '{{ $entries->sum("total") }}';
+            const totalEntries = '{{ $entries->count() }}';
+            const selectedDate = document.getElementById('filterDate').value;
+            const reportDate = selectedDate || '{{ date("Y-m-d") }}';
+            const formattedDate = new Date(reportDate).toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+
+            // Create workbook and worksheet
+            const workbook = XLSX.utils.book_new();
+            
+            // Create header data
+            const headerData = [
+                ['SAINT FRANCIS XAVIER STAR SHIPPING LINES INC.'],
+                ['Basco Office: National Road Brgy. Kaychanarianan, Basco Batanes'],
+                ['DAILY CASH COLLECTION REPORT'],
+                ['TRADING'],
+                ['DATE: ' + formattedDate.toUpperCase()],
+                [''], // Empty row
+                [''], // Empty row
+            ];
+
+            // Get table headers (excluding Actions column)
+            const headerRow = table.querySelector('thead tr');
+            const headers = [];
+            for (let i = 0; i < headerRow.children.length - 1; i++) { // -1 to exclude Actions
+                headers.push(headerRow.children[i].textContent.trim());
+            }
+            headerData.push(headers);
+
+            // Get table body data (excluding Actions column)
+            const bodyRows = table.querySelectorAll('tbody tr');
+            const bodyData = [];
+            
+            bodyRows.forEach(row => {
+                if (row.children.length > 1) { // Skip empty state row
+                    const rowData = [];
+                    for (let i = 0; i < row.children.length - 1; i++) { // -1 to exclude Actions
+                        let cellText = row.children[i].textContent.trim();
+                        // Remove currency symbols and clean up numbers
+                        if (cellText.includes('₱')) {
+                            cellText = cellText.replace('₱', '').replace(/,/g, '');
+                            // Convert to number if it's a valid number
+                            if (!isNaN(cellText) && cellText !== '') {
+                                cellText = parseFloat(cellText);
+                            }
+                        }
+                        rowData.push(cellText);
+                    }
+                    bodyData.push(rowData);
+                }
+            });
+
+            // Calculate totals for each numeric column
+            const totalsRow = ['', '', 'TOTAL:', 0, 0, 0, 0, 0, 0, 0, ''];
+            
+            bodyData.forEach(row => {
+                // Sum numeric columns (Gravel & Sand, CHB, Other Income Cement, Other Income DF, Others, Interest, Total)
+                for (let i = 4; i <= 10; i++) {
+                    if (typeof row[i] === 'number' && !isNaN(row[i])) {
+                        totalsRow[i] += row[i];
+                    }
+                }
+            });
+
+            // Format totals
+            for (let i = 4; i <= 10; i++) {
+                if (totalsRow[i] > 0) {
+                    totalsRow[i] = parseFloat(totalsRow[i].toFixed(2));
+                } else {
+                    totalsRow[i] = '';
+                }
+            }
+
+            // Add totals row
+            bodyData.push(totalsRow);
+
+            // Footer data
+            const footerData = [
+                [''], // Empty row
+                [''], // Empty row
+                ['Summary:'],
+                ['Total Collections: ₱' + parseFloat(totalCollections).toLocaleString('en-US', {minimumFractionDigits: 2})],
+                ['Total Entries: ' + totalEntries],
+                [''], // Empty row
+                ['Generated on: ' + new Date().toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                })],
+            ];
+
+            // Combine all data
+            const allData = [...headerData, ...bodyData, ...footerData];
+
+            // Create worksheet from array
+            const worksheet = XLSX.utils.aoa_to_sheet(allData);
+
+            // Set column widths
+            const colWidths = [
+                { wch: 12 }, // Date
+                { wch: 8 },  // AR
+                { wch: 8 },  // OR
+                { wch: 25 }, // Name
+                { wch: 15 }, // Gravel & Sand
+                { wch: 10 }, // CHB
+                { wch: 20 }, // Other Income (Cement)
+                { wch: 20 }, // Other Income (DF)
+                { wch: 10 }, // Others
+                { wch: 10 }, // Interest
+                { wch: 12 }, // Total
+                { wch: 30 }  // Remark
+            ];
+            worksheet['!cols'] = colWidths;
+
+            // Style the header rows
+            const range = XLSX.utils.decode_range(worksheet['!ref']);
+            
+            // Style company name (row 1)
+            if (worksheet['A1']) {
+                worksheet['A1'].s = {
+                    font: { bold: true, sz: 14, color: { rgb: "00B050" } },
+                    alignment: { horizontal: "center" }
+                };
+            }
+
+            // Style other header rows
+            for (let i = 2; i <= 5; i++) {
+                const cellRef = 'A' + i;
+                if (worksheet[cellRef]) {
+                    worksheet[cellRef].s = {
+                        font: { bold: true, sz: 11 },
+                        alignment: { horizontal: "center" }
+                    };
+                }
+            }
+
+            // Style table headers (row 8)
+            for (let col = 0; col < headers.length; col++) {
+                const cellRef = XLSX.utils.encode_cell({ r: 7, c: col });
+                if (worksheet[cellRef]) {
+                    worksheet[cellRef].s = {
+                        font: { bold: true },
+                        fill: { fgColor: { rgb: "F2F2F2" } },
+                        border: {
+                            top: { style: "thin" },
+                            bottom: { style: "thin" },
+                            left: { style: "thin" },
+                            right: { style: "thin" }
+                        }
+                    };
+                }
+            }
+
+            // Style totals row
+            const totalsRowIndex = headerData.length + bodyData.length - 1;
+            for (let col = 0; col < headers.length; col++) {
+                const cellRef = XLSX.utils.encode_cell({ r: totalsRowIndex, c: col });
+                if (worksheet[cellRef]) {
+                    worksheet[cellRef].s = {
+                        font: { bold: true },
+                        fill: { fgColor: { rgb: "92D050" } }
+                    };
+                }
+            }
+
+            // Merge cells for header
+            worksheet['!merges'] = [
+                { s: { r: 0, c: 0 }, e: { r: 0, c: headers.length - 1 } }, // Company name
+                { s: { r: 1, c: 0 }, e: { r: 1, c: headers.length - 1 } }, // Address
+                { s: { r: 2, c: 0 }, e: { r: 2, c: headers.length - 1 } }, // Report title
+                { s: { r: 3, c: 0 }, e: { r: 3, c: headers.length - 1 } }, // Trading
+                { s: { r: 4, c: 0 }, e: { r: 4, c: headers.length - 1 } }  // Date
+            ];
+
+            // Add the worksheet to the workbook
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'Trading Report');
+
+            // Generate filename with current date and selected date if available
+            const dateStr = reportDate.replace(/-/g, '');
+            const filename = `Daily_Cash_Collection_Trading_${dateStr}.xlsx`;
+
+            // Export the workbook to an Excel file
+            XLSX.writeFile(workbook, filename);
         }
     </script>
 </x-app-layout>

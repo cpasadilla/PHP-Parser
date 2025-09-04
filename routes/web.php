@@ -87,6 +87,10 @@ Route::middleware('auth')->group(function () {
             Route::put('/accounting/daily-cash-collection/entries/{id}', [AccountingController::class, 'updateCashCollectionEntry'])->name('accounting.daily-cash-collection.update');
             Route::get('/accounting/daily-cash-collection/entries/{id}', [AccountingController::class, 'getCashCollectionEntry'])->name('accounting.daily-cash-collection.get');
             Route::get('/accounting/search-customers', [AccountingController::class, 'searchCustomers'])->name('accounting.search-customers');
+            
+            // Report settings routes
+            Route::get('/accounting/daily-cash-collection/get-settings', [AccountingController::class, 'getReportSettings'])->name('accounting.daily-cash-collection.get-settings');
+            Route::post('/accounting/daily-cash-collection/store-settings', [AccountingController::class, 'storeReportSettings'])->name('accounting.daily-cash-collection.store-settings');
         });
 
         // Monthly Cash Receipt Journals

@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\DailyCashCollectionEntry;
 use App\Models\Customer;
 use App\Models\SubAccount;
+use App\Models\DailyReportSettings;
 
 class AccountingController extends Controller
 {
@@ -54,9 +55,14 @@ class AccountingController extends Controller
         }
         
         $entries = $query->orderBy('entry_date', 'asc')->get();
-        $selectedDate = $request->date;
+        $selectedDate = $request->date ?? date('Y-m-d');
+        
+        // Get report settings for the selected date
+        $reportSettings = DailyReportSettings::where('report_date', $selectedDate)
+            ->where('report_type', 'trading')
+            ->first();
             
-        return view('accounting.daily-cash-collection.trading-print', compact('entries', 'selectedDate'));
+        return view('accounting.daily-cash-collection.trading-print', compact('entries', 'selectedDate', 'reportSettings'));
     }
 
     public function dailyCashCollectionShippingPrint()
@@ -366,5 +372,64 @@ class AccountingController extends Controller
         $allCustomers = $customers->merge($subAccounts);
 
         return response()->json($allCustomers);
+    }
+
+    // Daily Report Settings Methods
+    public function getReportSettings(Request $request)
+    {
+        $reportDate = $request->input('report_date');
+        $reportType = $request->input('report_type');
+
+        $settings = DailyReportSettings::where('report_date', $reportDate)
+            ->where('report_type', $reportType)
+            ->first();
+
+        return response()->json([
+            'success' => true,
+            'data' => $settings
+        ]);
+    }
+
+    public function storeReportSettings(Request $request)
+    {
+        $request->validate([
+            'report_date' => 'required|date',
+            'report_type' => 'required|in:trading,shipping',
+            'dccr_number' => 'nullable|string|max:255',
+            'add_collection' => 'nullable|numeric|min:0',
+            'collected_by_name' => 'nullable|string|max:255',
+            'collected_by_title' => 'nullable|string|max:255'
+        ]);
+
+        // Find existing record or create new one
+        $settings = DailyReportSettings::firstOrNew([
+            'report_date' => $request->report_date,
+            'report_type' => $request->report_type
+        ]);
+
+        // Only update fields that are provided in the request
+        if ($request->has('dccr_number')) {
+            $settings->dccr_number = $request->dccr_number;
+        }
+        
+        if ($request->has('add_collection')) {
+            $settings->add_collection = $request->add_collection;
+        }
+        
+        if ($request->has('collected_by_name')) {
+            $settings->collected_by_name = $request->collected_by_name;
+        }
+        
+        if ($request->has('collected_by_title')) {
+            $settings->collected_by_title = $request->collected_by_title;
+        }
+
+        $settings->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Settings saved successfully',
+            'data' => $settings
+        ]);
     }
 }
