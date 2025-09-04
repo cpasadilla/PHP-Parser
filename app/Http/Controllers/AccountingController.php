@@ -36,13 +36,19 @@ class AccountingController extends Controller
         return view('accounting.daily-cash-collection.trading', compact('entries', 'selectedDate'));
     }
 
-    public function dailyCashCollectionShipping()
+    public function dailyCashCollectionShipping(Request $request)
     {
-        $entries = DailyCashCollectionEntry::where('type', 'shipping')
-            ->orderBy('entry_date', 'desc')
-            ->get();
-            
-        return view('accounting.daily-cash-collection.shipping', compact('entries'));
+        $query = DailyCashCollectionEntry::where('type', 'shipping');
+        
+        // Filter by date if provided
+        if ($request->has('date') && $request->date) {
+            $query->whereDate('entry_date', $request->date);
+        }
+        
+        $entries = $query->orderBy('entry_date', 'desc')->get();
+        $selectedDate = $request->date;
+        
+        return view('accounting.daily-cash-collection.shipping', compact('entries', 'selectedDate'));
     }
 
     public function dailyCashCollectionTradingPrint(Request $request)
@@ -65,13 +71,24 @@ class AccountingController extends Controller
         return view('accounting.daily-cash-collection.trading-print', compact('entries', 'selectedDate', 'reportSettings'));
     }
 
-    public function dailyCashCollectionShippingPrint()
+    public function dailyCashCollectionShippingPrint(Request $request)
     {
-        $entries = DailyCashCollectionEntry::where('type', 'shipping')
-            ->orderBy('entry_date', 'asc')
-            ->get();
+        $query = DailyCashCollectionEntry::where('type', 'shipping');
+        
+        // Filter by date if provided
+        if ($request->has('date') && $request->date) {
+            $query->whereDate('entry_date', $request->date);
+        }
+        
+        $entries = $query->orderBy('entry_date', 'asc')->get();
+        $selectedDate = $request->date ?? date('Y-m-d');
+        
+        // Get report settings for the selected date
+        $reportSettings = DailyReportSettings::where('report_date', $selectedDate)
+            ->where('report_type', 'shipping')
+            ->first();
             
-        return view('accounting.daily-cash-collection.shipping-print', compact('entries'));
+        return view('accounting.daily-cash-collection.shipping-print', compact('entries', 'selectedDate', 'reportSettings'));
     }
 
     // Monthly Cash Receipt Journals
@@ -239,10 +256,21 @@ class AccountingController extends Controller
             'container_parcel' => 'nullable|string|max:255',
             'payment_method' => 'nullable|string|max:255',
             'status' => 'nullable|string|max:255',
+            'mv_everwin_star_1' => 'nullable|numeric|min:0',
+            'mv_everwin_star_2' => 'nullable|numeric|min:0',
+            'mv_everwin_star_3' => 'nullable|numeric|min:0',
+            'mv_everwin_star_4' => 'nullable|numeric|min:0',
+            'mv_everwin_star_5' => 'nullable|numeric|min:0',
+            'mv_everwin_star_1_other' => 'nullable|numeric|min:0',
+            'mv_everwin_star_2_other' => 'nullable|numeric|min:0',
+            'mv_everwin_star_3_other' => 'nullable|numeric|min:0',
+            'mv_everwin_star_4_other' => 'nullable|numeric|min:0',
+            'mv_everwin_star_5_other' => 'nullable|numeric|min:0',
+            'wharfage_payables' => 'nullable|numeric|min:0',
             'remark' => 'nullable|string'
         ]);
 
-        // Calculate total for trading entries
+        // Calculate total
         $total = 0;
         if ($request->type === 'trading') {
             $total = ($request->gravel_sand ?? 0) + 
@@ -252,7 +280,19 @@ class AccountingController extends Controller
                     ($request->others ?? 0) + 
                     ($request->interest ?? 0);
         } else {
-            $total = $request->total ?? 0;
+            // Calculate total for shipping entries
+            $total = ($request->mv_everwin_star_1 ?? 0) + 
+                    ($request->mv_everwin_star_2 ?? 0) + 
+                    ($request->mv_everwin_star_3 ?? 0) + 
+                    ($request->mv_everwin_star_4 ?? 0) + 
+                    ($request->mv_everwin_star_5 ?? 0) + 
+                    ($request->mv_everwin_star_1_other ?? 0) + 
+                    ($request->mv_everwin_star_2_other ?? 0) + 
+                    ($request->mv_everwin_star_3_other ?? 0) + 
+                    ($request->mv_everwin_star_4_other ?? 0) + 
+                    ($request->mv_everwin_star_5_other ?? 0) + 
+                    ($request->wharfage_payables ?? 0) + 
+                    ($request->interest ?? 0);
         }
 
         DailyCashCollectionEntry::create([
@@ -273,6 +313,17 @@ class AccountingController extends Controller
             'container_parcel' => $request->container_parcel,
             'payment_method' => $request->payment_method,
             'status' => $request->status,
+            'mv_everwin_star_1' => $request->mv_everwin_star_1 ?? 0,
+            'mv_everwin_star_2' => $request->mv_everwin_star_2 ?? 0,
+            'mv_everwin_star_3' => $request->mv_everwin_star_3 ?? 0,
+            'mv_everwin_star_4' => $request->mv_everwin_star_4 ?? 0,
+            'mv_everwin_star_5' => $request->mv_everwin_star_5 ?? 0,
+            'mv_everwin_star_1_other' => $request->mv_everwin_star_1_other ?? 0,
+            'mv_everwin_star_2_other' => $request->mv_everwin_star_2_other ?? 0,
+            'mv_everwin_star_3_other' => $request->mv_everwin_star_3_other ?? 0,
+            'mv_everwin_star_4_other' => $request->mv_everwin_star_4_other ?? 0,
+            'mv_everwin_star_5_other' => $request->mv_everwin_star_5_other ?? 0,
+            'wharfage_payables' => $request->wharfage_payables ?? 0,
             'total' => $total,
             'remark' => $request->remark
         ]);
@@ -300,10 +351,21 @@ class AccountingController extends Controller
             'container_parcel' => 'nullable|string|max:255',
             'payment_method' => 'nullable|string|max:255',
             'status' => 'nullable|string|max:255',
+            'mv_everwin_star_1' => 'nullable|numeric|min:0',
+            'mv_everwin_star_2' => 'nullable|numeric|min:0',
+            'mv_everwin_star_3' => 'nullable|numeric|min:0',
+            'mv_everwin_star_4' => 'nullable|numeric|min:0',
+            'mv_everwin_star_5' => 'nullable|numeric|min:0',
+            'mv_everwin_star_1_other' => 'nullable|numeric|min:0',
+            'mv_everwin_star_2_other' => 'nullable|numeric|min:0',
+            'mv_everwin_star_3_other' => 'nullable|numeric|min:0',
+            'mv_everwin_star_4_other' => 'nullable|numeric|min:0',
+            'mv_everwin_star_5_other' => 'nullable|numeric|min:0',
+            'wharfage_payables' => 'nullable|numeric|min:0',
             'remark' => 'nullable|string'
         ]);
 
-        // Calculate total for trading entries
+        // Calculate total
         $total = 0;
         if ($entry->type === 'trading') {
             $total = ($request->gravel_sand ?? 0) + 
@@ -313,7 +375,19 @@ class AccountingController extends Controller
                     ($request->others ?? 0) + 
                     ($request->interest ?? 0);
         } else {
-            $total = $request->total ?? 0;
+            // Calculate total for shipping entries
+            $total = ($request->mv_everwin_star_1 ?? 0) + 
+                    ($request->mv_everwin_star_2 ?? 0) + 
+                    ($request->mv_everwin_star_3 ?? 0) + 
+                    ($request->mv_everwin_star_4 ?? 0) + 
+                    ($request->mv_everwin_star_5 ?? 0) + 
+                    ($request->mv_everwin_star_1_other ?? 0) + 
+                    ($request->mv_everwin_star_2_other ?? 0) + 
+                    ($request->mv_everwin_star_3_other ?? 0) + 
+                    ($request->mv_everwin_star_4_other ?? 0) + 
+                    ($request->mv_everwin_star_5_other ?? 0) + 
+                    ($request->wharfage_payables ?? 0) + 
+                    ($request->interest ?? 0);
         }
 
         $entry->update([
@@ -333,6 +407,17 @@ class AccountingController extends Controller
             'container_parcel' => $request->container_parcel,
             'payment_method' => $request->payment_method,
             'status' => $request->status,
+            'mv_everwin_star_1' => $request->mv_everwin_star_1 ?? 0,
+            'mv_everwin_star_2' => $request->mv_everwin_star_2 ?? 0,
+            'mv_everwin_star_3' => $request->mv_everwin_star_3 ?? 0,
+            'mv_everwin_star_4' => $request->mv_everwin_star_4 ?? 0,
+            'mv_everwin_star_5' => $request->mv_everwin_star_5 ?? 0,
+            'mv_everwin_star_1_other' => $request->mv_everwin_star_1_other ?? 0,
+            'mv_everwin_star_2_other' => $request->mv_everwin_star_2_other ?? 0,
+            'mv_everwin_star_3_other' => $request->mv_everwin_star_3_other ?? 0,
+            'mv_everwin_star_4_other' => $request->mv_everwin_star_4_other ?? 0,
+            'mv_everwin_star_5_other' => $request->mv_everwin_star_5_other ?? 0,
+            'wharfage_payables' => $request->wharfage_payables ?? 0,
             'total' => $total,
             'remark' => $request->remark
         ]);
@@ -349,29 +434,52 @@ class AccountingController extends Controller
     public function searchCustomers(Request $request)
     {
         $query = $request->input('q');
+        
+        if (empty($query)) {
+            return response()->json([]);
+        }
 
         // Search in Customers (Main Accounts)
-        $customers = Customer::where('first_name', 'LIKE', "%$query%")
-            ->orWhere('last_name', 'LIKE', "%$query%")
-            ->orWhere('company_name', 'LIKE', "%$query%")
+        $customers = Customer::where(function($q) use ($query) {
+                // Search for exact matches first
+                $q->where('first_name', 'LIKE', "{$query}%")
+                  ->orWhere('last_name', 'LIKE', "{$query}%")
+                  ->orWhere('company_name', 'LIKE', "{$query}%")
+                  // Then search for matches anywhere in the string
+                  ->orWhere('first_name', 'LIKE', "%{$query}%")
+                  ->orWhere('last_name', 'LIKE', "%{$query}%")
+                  ->orWhere('company_name', 'LIKE', "%{$query}%");
+            })
             ->selectRaw("id,
                 COALESCE(NULLIF(company_name, ''), CONCAT(first_name, ' ', last_name)) AS name,
-                IFNULL(NULLIF(phone, ''), '') AS phone")
+                IFNULL(NULLIF(phone, ''), '') AS phone,
+                type")
+            ->limit(50) // Limit for better performance
             ->get();
 
         // Search in SubAccounts
-        $subAccounts = SubAccount::where('first_name', 'LIKE', "%$query%")
-            ->orWhere('last_name', 'LIKE', "%$query%")
-            ->orWhere('company_name', 'LIKE', "%$query%")
+        $subAccounts = SubAccount::where(function($q) use ($query) {
+                $q->where('first_name', 'LIKE', "{$query}%")
+                  ->orWhere('last_name', 'LIKE', "{$query}%")
+                  ->orWhere('company_name', 'LIKE', "{$query}%")
+                  ->orWhere('first_name', 'LIKE', "%{$query}%")
+                  ->orWhere('last_name', 'LIKE', "%{$query}%")
+                  ->orWhere('company_name', 'LIKE', "%{$query}%");
+            })
             ->selectRaw("sub_account_number AS id,
                 COALESCE(NULLIF(company_name, ''), CONCAT(first_name, ' ', last_name)) AS name,
-                IFNULL(NULLIF(phone, ''), '') AS phone")
+                IFNULL(NULLIF(phone, ''), '') AS phone,
+                'subaccount' AS type")
+            ->limit(50)
             ->get();
 
         // Merge the results
         $allCustomers = $customers->merge($subAccounts);
 
-        return response()->json($allCustomers);
+        // Remove duplicates and sort by relevance
+        $uniqueCustomers = $allCustomers->unique('name')->values();
+
+        return response()->json($uniqueCustomers);
     }
 
     // Daily Report Settings Methods

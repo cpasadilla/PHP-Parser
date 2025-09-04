@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Search Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-2xl font-bold mb-4">Customer Search Test</h2>
+        
+        <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Customer Name</label>
+            <input type="text" id="customer_name" autocomplete="off" 
+                   class="w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                   placeholder="Type to search customers..." list="customerList">
+            <datalist id="customerList"></datalist>
+            <input type="hidden" id="customer_id">
+        </div>
+        
+        <div class="mb-4">
+            <strong>Selected Customer ID:</strong> <span id="selectedId">None</span>
+        </div>
+        
+        <div class="mb-4">
+            <strong>Search Results:</strong>
+            <div id="searchResults" class="mt-2 text-sm text-gray-600">Start typing to see results...</div>
+        </div>
+    </div>
+
+    <script>
+        // Customer search functionality
+        function setupCustomerSearch() {
+            const input = document.getElementById('customer_name');
+            const datalist = document.getElementById('customerList');
+            const idField = document.getElementById('customer_id');
+            const selectedIdSpan = document.getElementById('selectedId');
+            const resultsDiv = document.getElementById('searchResults');
+            
+            input.addEventListener('input', function() {
+                const query = this.value;
+                if (query.length < 2) {
+                    resultsDiv.innerHTML = 'Type at least 2 characters to search...';
+                    return;
+                }
+                
+                // Using the same route as in the shipping modal
+                fetch(`/accounting/search-customers?q=${encodeURIComponent(query)}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    datalist.innerHTML = '';
+                    resultsDiv.innerHTML = '';
+                    
+                    if (data.length === 0) {
+                        resultsDiv.innerHTML = 'No customers found.';
+                    } else {
+                        resultsDiv.innerHTML = `Found ${data.length} customers:`;
+                        data.forEach(customer => {
+                            const option = document.createElement('option');
+                            option.value = customer.name;
+                            option.dataset.id = customer.id;
+                            datalist.appendChild(option);
+                            
+                            // Add to results display
+                            const div = document.createElement('div');
+                            div.className = 'ml-4 text-xs';
+                            div.innerHTML = `${customer.name} (ID: ${customer.id})`;
+                            resultsDiv.appendChild(div);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching customers:', error);
+                    resultsDiv.innerHTML = 'Error fetching customers: ' + error.message;
+                });
+            });
+            
+            input.addEventListener('change', function() {
+                const selectedOption = [...datalist.options].find(option => option.value === input.value);
+                const customerId = selectedOption ? selectedOption.dataset.id : '';
+                idField.value = customerId;
+                selectedIdSpan.textContent = customerId || 'None';
+            });
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', setupCustomerSearch);
+    </script>
+</body>
+</html>

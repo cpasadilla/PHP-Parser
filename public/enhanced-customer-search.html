@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Customer Search - Real-time Word Matching</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .search-indicator {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+        .result-highlight {
+            background-color: #fef3c7;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-2xl font-bold mb-4 text-center">Enhanced Customer Search</h2>
+        <p class="text-sm text-gray-600 mb-6 text-center">
+            Real-time word matching - Results appear as you type!
+        </p>
+        
+        <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Customer Name</label>
+            <input type="text" id="customer_name" autocomplete="off" 
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg" 
+                   placeholder="Start typing customer name..." list="customerList">
+            <datalist id="customerList"></datalist>
+            <input type="hidden" id="customer_id">
+            
+            <div id="searchIndicator" class="search-indicator">Ready to search...</div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div class="bg-blue-50 p-4 rounded-lg">
+                <h3 class="font-semibold text-blue-800 mb-2">Selected Customer</h3>
+                <div class="text-sm">
+                    <strong>Name:</strong> <span id="selectedName">None</span><br>
+                    <strong>ID:</strong> <span id="selectedId">None</span>
+                </div>
+            </div>
+            
+            <div class="bg-green-50 p-4 rounded-lg">
+                <h3 class="font-semibold text-green-800 mb-2">Search Status</h3>
+                <div id="searchStatus" class="text-sm text-green-600">Ready</div>
+            </div>
+        </div>
+        
+        <div class="mb-4">
+            <h3 class="font-semibold text-gray-800 mb-2">Live Search Results:</h3>
+            <div id="searchResults" class="bg-gray-50 p-4 rounded-lg min-h-[100px] max-h-60 overflow-y-auto text-sm">
+                Start typing to see live results...
+            </div>
+        </div>
+        
+        <div class="text-xs text-gray-500">
+            <h4 class="font-semibold mb-2">Search Features:</h4>
+            <ul class="list-disc list-inside space-y-1">
+                <li>🚀 <strong>Instant search</strong> - Results appear as you type (no minimum characters)</li>
+                <li>📝 <strong>Word matching</strong> - Finds matches at word boundaries</li>
+                <li>🎯 <strong>Smart sorting</strong> - Exact matches first, then partial matches</li>
+                <li>⚡ <strong>Performance optimized</strong> - Limited to top 10 results with smart caching</li>
+                <li>🔍 <strong>Multi-field search</strong> - Searches first name, last name, and company name</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Enhanced customer search functionality
+        function setupEnhancedCustomerSearch() {
+            const input = document.getElementById('customer_name');
+            const datalist = document.getElementById('customerList');
+            const idField = document.getElementById('customer_id');
+            const selectedNameSpan = document.getElementById('selectedName');
+            const selectedIdSpan = document.getElementById('selectedId');
+            const resultsDiv = document.getElementById('searchResults');
+            const statusDiv = document.getElementById('searchStatus');
+            const indicatorDiv = document.getElementById('searchIndicator');
+            let searchTimeout;
+            
+            input.addEventListener('input', function() {
+                const query = this.value.trim();
+                
+                // Clear previous timeout
+                clearTimeout(searchTimeout);
+                
+                // Update indicator
+                if (query.length === 0) {
+                    datalist.innerHTML = '';
+                    idField.value = '';
+                    resultsDiv.innerHTML = 'Start typing to see live results...';
+                    statusDiv.textContent = 'Ready';
+                    indicatorDiv.textContent = 'Ready to search...';
+                    selectedNameSpan.textContent = 'None';
+                    selectedIdSpan.textContent = 'None';
+                    return;
+                }
+                
+                // Show searching indicator
+                statusDiv.textContent = 'Searching...';
+                indicatorDiv.textContent = `Searching for "${query}"...`;
+                resultsDiv.innerHTML = '<div class="text-blue-600">🔍 Searching...</div>';
+                
+                // Search with minimal delay for responsiveness
+                const delay = query.length === 1 ? 100 : 200;
+                
+                searchTimeout = setTimeout(() => {
+                    fetch(`/accounting/search-customers?q=${encodeURIComponent(query)}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        datalist.innerHTML = '';
+                        resultsDiv.innerHTML = '';
+                        
+                        if (data.length === 0) {
+                            resultsDiv.innerHTML = `<div class="text-gray-500">No customers found for "${query}"</div>`;
+                            statusDiv.textContent = 'No results';
+                            indicatorDiv.textContent = 'No customers found';
+                        } else {
+                            // Sort results by relevance
+                            data.sort((a, b) => {
+                                const aName = a.name.toLowerCase();
+                                const bName = b.name.toLowerCase();
+                                const queryLower = query.toLowerCase();
+                                
+                                // Exact match at start gets highest priority
+                                const aStartsWithQuery = aName.startsWith(queryLower);
+                                const bStartsWithQuery = bName.startsWith(queryLower);
+                                
+                                if (aStartsWithQuery && !bStartsWithQuery) return -1;
+                                if (!aStartsWithQuery && bStartsWithQuery) return 1;
+                                
+                                // Then by word boundaries
+                                const aWordMatch = aName.includes(' ' + queryLower) || aName.startsWith(queryLower);
+                                const bWordMatch = bName.includes(' ' + queryLower) || bName.startsWith(queryLower);
+                                
+                                if (aWordMatch && !bWordMatch) return -1;
+                                if (!aWordMatch && bWordMatch) return 1;
+                                
+                                // Finally by alphabetical order
+                                return aName.localeCompare(bName);
+                            });
+                            
+                            const displayLimit = 10;
+                            const displayData = data.slice(0, displayLimit);
+                            
+                            // Update status
+                            statusDiv.textContent = `Found ${data.length} results`;
+                            indicatorDiv.textContent = data.length > displayLimit ? 
+                                `Showing ${displayLimit} of ${data.length} results` : 
+                                `Found ${data.length} results`;
+                            
+                            // Create dropdown options
+                            displayData.forEach(customer => {
+                                const option = document.createElement('option');
+                                option.value = customer.name;
+                                option.dataset.id = customer.id;
+                                datalist.appendChild(option);
+                            });
+                            
+                            // Display results with highlighting
+                            resultsDiv.innerHTML = `<div class="font-semibold mb-2 text-green-600">Found ${data.length} customers:</div>`;
+                            displayData.forEach((customer, index) => {
+                                const div = document.createElement('div');
+                                div.className = 'mb-1 p-2 bg-white rounded border hover:bg-blue-50 cursor-pointer';
+                                
+                                // Highlight matching text
+                                const highlightedName = highlightMatch(customer.name, query);
+                                div.innerHTML = `
+                                    <div class="font-medium">${highlightedName}</div>
+                                    <div class="text-xs text-gray-500">ID: ${customer.id} • Type: ${customer.type || 'customer'}</div>
+                                `;
+                                
+                                // Click to select
+                                div.addEventListener('click', () => {
+                                    input.value = customer.name;
+                                    idField.value = customer.id;
+                                    selectedNameSpan.textContent = customer.name;
+                                    selectedIdSpan.textContent = customer.id;
+                                });
+                                
+                                resultsDiv.appendChild(div);
+                            });
+                            
+                            if (data.length > displayLimit) {
+                                const moreDiv = document.createElement('div');
+                                moreDiv.className = 'text-xs text-gray-500 italic mt-2';
+                                moreDiv.textContent = `... and ${data.length - displayLimit} more results`;
+                                resultsDiv.appendChild(moreDiv);
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching customers:', error);
+                        resultsDiv.innerHTML = `<div class="text-red-600">Error: ${error.message}</div>`;
+                        statusDiv.textContent = 'Error';
+                        indicatorDiv.textContent = 'Search error occurred';
+                    });
+                }, delay);
+            });
+            
+            input.addEventListener('change', function() {
+                const selectedOption = [...datalist.options].find(option => option.value === input.value);
+                if (selectedOption) {
+                    const customerId = selectedOption.dataset.id;
+                    idField.value = customerId;
+                    selectedNameSpan.textContent = input.value;
+                    selectedIdSpan.textContent = customerId;
+                }
+            });
+            
+            // Clear selection when input is manually cleared
+            input.addEventListener('keydown', function(e) {
+                if ((e.key === 'Backspace' || e.key === 'Delete') && this.value.length <= 1) {
+                    idField.value = '';
+                    selectedNameSpan.textContent = 'None';
+                    selectedIdSpan.textContent = 'None';
+                }
+            });
+        }
+        
+        // Highlight matching text in search results
+        function highlightMatch(text, query) {
+            if (!query) return text;
+            
+            const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+            return text.replace(regex, '<span class="result-highlight">$1</span>');
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', setupEnhancedCustomerSearch);
+    </script>
+</body>
+</html>
