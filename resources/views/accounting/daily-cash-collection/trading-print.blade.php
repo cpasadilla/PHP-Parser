@@ -27,11 +27,21 @@
                         <img style="height: 90px; width: auto;" src="{{ asset('images/logo.png') }}" alt="Logo">
                     </div>
                     <div style="flex: 1 1 auto; line-height: 1; text-align: center; margin-right: 40px;">
-                        <p style="margin: 0; font-size: 14px; font-weight: bold; color: #00B050; padding: 2px 5px; text-decoration: underline; font-family: 'Times New Roman', serif;">SAINT FRANCIS XAVIER STAR SHIPPING LINES INC.</p>
-                        <p style="margin: 0; font-size: 11px; padding: 2px 5px; font-style: italic; font-family: 'Times New Roman', serif;">Basco Office: National Road Brgy. Kaychanarianan, Basco Batanes</p>
-                        <p style="margin: 0; margin-bottom: 0; padding: 2px 5px; line-height: 1; font-size: 12px; font-weight: bold; font-family: 'Times New Roman', serif;">DAILY CASH COLLECTION REPORT</p>
-                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; color: #00B050; font-weight: bold; font-family: 'Times New Roman', serif;">TRADING</p>
-                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; font-family: 'Times New Roman', serif;">DATE: {{ strtoupper(date('F d, Y')) }}</p>
+                        <p style="margin: 0; font-size: 14px; font-weight: bold; color: #00B050; padding: 2px 5px; text-decoration: underline; font-family: 'Cambria', serif;">SAINT FRANCIS XAVIER STAR SHIPPING LINES INC.</p>
+                        <p style="margin: 0; font-size: 11px; padding: 2px 5px; font-style: italic; font-family: 'Cambria', serif;">Basco Office: National Road Brgy. Kaychanarianan, Basco Batanes</p>
+                        <p style="margin: 0; margin-bottom: 0; padding: 2px 5px; line-height: 1; font-size: 12px; font-weight: bold; font-family: 'Cambria', serif;">DAILY CASH COLLECTION REPORT</p>
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; color: #00B050; font-weight: bold; font-family: 'Cambria', serif;">TRADING</p>
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; font-family: 'Cambria', serif;">DATE: {{ $selectedDate ? strtoupper(\Carbon\Carbon::parse($selectedDate)->format('F d, Y')) : strtoupper(date('F d, Y')) }}</p>
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; font-family: 'Cambria', serif; text-align: right; font-weight: bold; ">DCCR No. : 
+                        @if($entries->isNotEmpty())
+                            @php
+                                $dccrNumber = $entries->whereNotNull('dccr_number')->where('dccr_number', '!=', '')->first();
+                            @endphp
+                            {{ $dccrNumber ? $dccrNumber->dccr_number : '___________' }}
+                        @else
+                            ___________
+                        @endif
+                        </p>
                     </div>
                 </div>
                 
@@ -53,7 +63,7 @@
                 </div-->
 
                 <div class="overflow-x-auto mt-4">
-                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700" style="font-family: Arial, sans-serif; font-size: 11px; table-layout: fixed; width: 100%;">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700" style="font-family: 'Cambria', serif; font-size: 11px; table-layout: fixed; width: 100%;">
                         <thead class="bg-gray-100 dark:bg-gray-800">
                             <tr>
                                 <th style="width: 8%;" class="px-4 py-2">AR</th>
@@ -90,22 +100,22 @@
                                     $totalInterest += $entry->interest;
                                     $grandTotal += $entry->total;
                                 @endphp
-                                <tr style="font-family: Arial, sans-serif; font-size: 10px; line-height: 1.2;">
+                                <tr style="font-family: 'Cambria', serif; font-size: 10px; line-height: 1.2;">
                                     <td class="px-4 py-2 text-center">{{ $entry->ar }}</td>
                                     <td class="px-4 py-2 text-center">{{ $entry->or }}</td>
                                     <td class="px-4 py-2">{{ $entry->customer_name }}</td>
-                                    <td class="px-4 py-2 text-right">{{ number_format($entry->gravel_sand, 2) }}</td>
-                                    <td class="px-4 py-2 text-right">{{ number_format($entry->chb, 2) }}</td>
-                                    <td class="px-4 py-2 text-right">{{ number_format($entry->other_income_cement, 2) }}</td>
-                                    <td class="px-4 py-2 text-right">{{ number_format($entry->other_income_df, 2) }}</td>
-                                    <td class="px-4 py-2 text-right">{{ number_format($entry->others, 2) }}</td>
-                                    <td class="px-4 py-2 text-right">{{ number_format($entry->interest, 2) }}</td>
+                                    <td class="px-4 py-2 text-right">{{ $entry->gravel_sand > 0 ? number_format($entry->gravel_sand, 2) : '' }}</td>
+                                    <td class="px-4 py-2 text-right">{{ $entry->chb > 0 ? number_format($entry->chb, 2) : '' }}</td>
+                                    <td class="px-4 py-2 text-right">{{ $entry->other_income_cement > 0 ? number_format($entry->other_income_cement, 2) : '' }}</td>
+                                    <td class="px-4 py-2 text-right">{{ $entry->other_income_df > 0 ? number_format($entry->other_income_df, 2) : '' }}</td>
+                                    <td class="px-4 py-2 text-right">{{ $entry->others > 0 ? number_format($entry->others, 2) : '' }}</td>
+                                    <td class="px-4 py-2 text-right">{{ $entry->interest > 0 ? number_format($entry->interest, 2) : '' }}</td>
                                     <td class="px-4 py-2 text-right">{{ number_format($entry->total, 2) }}</td>
                                     <td class="px-4 py-2">{{ $entry->remark }}</td>
                                 </tr>
                             @empty
-                                <tr style="font-family: Arial, sans-serif; font-size: 10px; line-height: 1.2;">
-                                    <td colspan="12" class="px-4 py-2 text-center">No entries found for this period.</td>
+                                <tr style="font-family: 'Cambria', serif; font-size: 10px; line-height: 1.2;">
+                                    <td colspan="11" class="px-4 py-2 text-center">No entries found for this period.</td>
                                 </tr>
                             @endforelse
                             
@@ -115,12 +125,12 @@
                                     <td class="px-4 py-1 text-center"></td>
                                     <td class="px-4 py-1 text-center"></td>
                                     <td class="px-4 py-1" style="text-align: center; font-weight: bold;">TOTAL:</td>
-                                    <td class="px-4 py-1 text-right">{{ number_format($totalGravelSand, 2) }}</td>
-                                    <td class="px-4 py-1 text-right">{{ number_format($totalCHB, 2) }}</td>
-                                    <td class="px-4 py-1 text-right">{{ number_format($totalCement, 2) }}</td>
-                                    <td class="px-4 py-1 text-right">{{ number_format($totalDF, 2) }}</td>
-                                    <td class="px-4 py-1 text-right">{{ number_format($totalOthers, 2) }}</td>
-                                    <td class="px-4 py-1 text-right">{{ number_format($totalInterest, 2) }}</td>
+                                    <td class="px-4 py-1 text-right">{{ $totalGravelSand > 0 ? number_format($totalGravelSand, 2) : '-' }}</td>
+                                    <td class="px-4 py-1 text-right">{{ $totalCHB > 0 ? number_format($totalCHB, 2) : '-' }}</td>
+                                    <td class="px-4 py-1 text-right">{{ $totalCement > 0 ? number_format($totalCement, 2) : '-' }}</td>
+                                    <td class="px-4 py-1 text-right">{{ $totalDF > 0 ? number_format($totalDF, 2) : '-' }}</td>
+                                    <td class="px-4 py-1 text-right">{{ $totalOthers > 0 ? number_format($totalOthers, 2) : '-' }}</td>
+                                    <td class="px-4 py-1 text-right">{{ $totalInterest > 0 ? number_format($totalInterest, 2) : '-' }}</td>
                                     <td class="px-4 py-1 text-right">{{ number_format($grandTotal, 2) }}</td>
                                     <td class="px-4 py-1"></td>
                                 </tr>
@@ -131,19 +141,63 @@
 
                 <!-- Print-only signature section that will be included in print -->
                 <div class="print-signature" style="display: none;">
-                    <div style="margin: 40px 0 0 0; padding: 0; display: flex; justify-content: space-between; font-size: 12px; line-height: 1;">
-                        <div style="width: 60%;">
-                            <p style="margin: 0; line-height: 2;"><strong>PREPARED BY:</strong></p>
-                            <p style="margin-bottom: 0; line-height: 1;"><strong style="margin-left: 100px; font-size: 12px; text-decoration: underline; font-size: 14px;">CHERRY MAE E. CAMAYA</strong></p>
-                            <p style="margin-top: 0; margin-left: 145px; font-size: 13px; line-height: 1;">Accounting Officer</p>
+                    <div style="margin: 25px 0 0 0; padding: 0; display: flex; justify-content: space-between; font-size: 11px; line-height: 1;">
+                        <div style="width: 28%; padding-left: 150px; font-family: 'Cambria', serif;">
+                            <p style="margin: 0; line-height: 1.3;">CASH ON HAND BEGINNING:</p>
+                            <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                            <p style="margin: 0; line-height: 1.3;"><strong>ADD: COLLECTION</strong></p>
+                            <p style="margin: 0; line-height: 1.3;">TOTAL CASH ON HAND:</p>
+                            <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                            <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                            <p style="margin: 0; line-height: 1.3;"><strong>LESS: DEPOSIT</strong></p>
+                            <p style="margin: 0; line-height: 1.3;">LBP -Account</p>
+                            <p style="margin: 0; line-height: 1.3;">PNB - Account</p>
+                            <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                            <p style="margin: 0; line-height: 1.3;">UnionBank - Account</p>
+                            <p style="margin: 0; line-height: 1.3;">CASH ON HAND:</p>
                         </div>
-                        <div style="width: 35%; text-align: left; line-height: 1;">
-                            <p style="margin-bottom: 0; line-height: 2;"><strong>REVIEWED BY:</strong></p>
-                            <p style="margin-bottom: 0; line-height: 1;"><strong style="margin-left: 100px; font-size: 12px; text-decoration: underline; font-size: 14px;">_________________________</strong></p>
-                            <p style="margin-top: 0; margin-left: 100px; font-size: 13px; line-height: 1;">Signature over Printed Name</p>
-                            <p style="margin-bottom: 0; line-height: 0;"><strong>DATE:</strong></p>
-                            <p style="margin-bottom: 0; line-height: 1;"><strong style="margin-left: 100px; font-size: 12px; text-decoration: underline; font-size: 14px;">_________________________</strong></p>
-                            <p style="margin-top: 0; margin-left: 150px; font-size: 13px; line-height: 1;">MM/DD/YR</p>
+                        <div style="width: 22%; padding: 3px; font-family: 'Cambria', serif;">
+                            <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                            <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                            <p style="margin: 0; line-height: 1.3; border-bottom: 2px solid black; padding-bottom: 3px; text-align: center;">&nbsp;</p>
+                            <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                            <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                            <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                            <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                            <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                            <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                            <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                            <p style="margin: 0; line-height: 1.3; border-bottom: 2px solid black; padding-bottom: 3px; text-align: center;">&nbsp;</p>
+                            <p style="margin: 0; line-height: 1.3; border-bottom: 1px solid black; padding-bottom: 3px; text-align: center;">&nbsp;</p>
+                        </div>
+                        <div style="width: 25%; padding: 3px; text-align: right; font-family: 'Cambria', serif;">
+                            <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                            <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                            <p style="margin: 0; line-height: 1.3;">Prepared By:</p>
+                            <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                            <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                            <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                            <p style="margin: 0; line-height: 1.3;">Collected By:</p>
+                            <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                            <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                            <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                            <p style="margin: 0; line-height: 1.3;">Noted By:</p>
+                            <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                        </div>
+                        <div style="width: 25%; padding: 3px;">
+                            <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                            <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                            <p style="margin: 0; line-height: 1.3; border-bottom: 1px solid black; padding-bottom: 3px; text-align: center;">&nbsp;</p>
+                            <p style="margin: 0; line-height: 1.3; text-align: center; font-family: 'Bookman Old Style', serif;"><strong>CHRISTY NUÑEZ</strong></p>
+                            <p style="margin: 0; line-height: 1.3; text-align: center; font-size: 10px; font-family: 'Calibri', sans-serif;">Bookkeeper</p>
+                            <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                            <p style="margin: 0; line-height: 1.3; border-bottom: 1px solid black; padding-bottom: 3px; text-align: center;">&nbsp;</p>
+                            <p style="margin: 0; line-height: 1.3; text-align: center; font-family: 'Bookman Old Style', serif;"><strong>RANDAL HERUELA</strong></p>
+                            <p style="margin: 0; line-height: 1.3; text-align: center; font-size: 10px; font-family: 'Calibri', sans-serif;">Cashier</p>
+                            <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                            <p style="margin: 0; line-height: 1.3; border-bottom: 1px solid black; padding-bottom: 3px; text-align: center;">&nbsp;</p>
+                            <p style="margin: 0; line-height: 1.3; text-align: center; font-family: 'Bookman Old Style', serif;"><strong>ANTONIO L. CASTRO</strong></p>
+                            <p style="margin: 0; line-height: 1.3; text-align: center; font-size: 10px; font-family: 'Calibri', sans-serif;">Operations Manager</p>
                         </div>
                     </div>
                 </div>
@@ -152,23 +206,66 @@
 
         <!-- Signature section for screen display -->
         <div class="signature-section">
-            <div style="margin: 40px 0 0 0; padding: 0; display: flex; justify-content: space-between; font-size: 12px; line-height: 1;">
-                <div style="width: 60%;">
-                    <p style="margin: 0; line-height: 2;"><strong>PREPARED BY:</strong></p>
-                    <p style="margin-bottom: 0; line-height: 1;"><strong style="margin-left: 100px; font-size: 12px; text-decoration: underline; font-size: 14px;">CHERRY MAE E. CAMAYA</strong></p>
-                    <p style="margin-top: 0; margin-left: 145px; font-size: 13px; line-height: 1;">Accounting Officer</p>
+            <div style="margin: 25px 0 0 0; padding: 0; display: flex; justify-content: space-between; font-size: 11px; line-height: 1;">
+                <div style="width: 28%; padding-left: 150px; font-family: 'Cambria', serif;">
+                    <p style="margin: 0; line-height: 1.3;">CASH ON HAND BEGINNING:</p>
+                    <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                    <p style="margin: 0; line-height: 1.3;"><strong>ADD: COLLECTION</strong></p>
+                    <p style="margin: 0; line-height: 1.3;">TOTAL CASH ON HAND:</p>
+                    <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                    <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                    <p style="margin: 0; line-height: 1.3;"><strong>LESS: DEPOSIT</strong></p>
+                    <p style="margin: 0; line-height: 1.3;">LBP -Account</p>
+                    <p style="margin: 0; line-height: 1.3;">PNB - Account</p>
+                    <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                    <p style="margin: 0; line-height: 1.3;">UnionBank - Account</p>
+                    <p style="margin: 0; line-height: 1.3;">CASH ON HAND:</p>
                 </div>
-                <div style="width: 35%; text-align: left; line-height: 1;">
-                    <p style="margin-bottom: 0; line-height: 2;"><strong>REVIEWED BY:</strong></p>
-                    <p style="margin-bottom: 0; line-height: 1;"><strong style="margin-left: 100px; font-size: 12px; text-decoration: underline; font-size: 14px;">_________________________</strong></p>
-                    <p style="margin-top: 0; margin-left: 100px; font-size: 13px; line-height: 1;">Signature over Printed Name</p>
-                    <p style="margin-bottom: 0; line-height: 0;"><strong>DATE:</strong></p>
-                    <p style="margin-bottom: 0; line-height: 1;"><strong style="margin-left: 100px; font-size: 12px; text-decoration: underline; font-size: 14px;">_________________________</strong></p>
-                    <p style="margin-top: 0; margin-left: 150px; font-size: 13px; line-height: 1;">MM/DD/YR</p>
+                <div style="width: 22%; padding: 3px; font-family: 'Cambria', serif;">
+                    <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                    <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                    <p style="margin: 0; line-height: 1.3; border-bottom: 2px solid black; padding-bottom: 3px; text-align: center;">&nbsp;</p>
+                    <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                    <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                    <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                    <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                    <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                    <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                    <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                    <p style="margin: 0; line-height: 1.3; border-bottom: 2px solid black; padding-bottom: 3px; text-align: center;">&nbsp;</p>
+                    <p style="margin: 0; line-height: 1.3; border-bottom: 1px solid black; padding-bottom: 3px; text-align: center;">&nbsp;</p>
+                </div>
+                <div style="width: 25%; padding: 3px; text-align: right; font-family: 'Cambria', serif;">
+                    <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                    <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                    <p style="margin: 0; line-height: 1.3;">Prepared By:</p>
+                    <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                    <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                    <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                    <p style="margin: 0; line-height: 1.3;">Collected By:</p>
+                    <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                    <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                    <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                    <p style="margin: 0; line-height: 1.3;">Noted By:</p>
+                    <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                </div>
+                <div style="width: 25%; padding: 3px;">
+                    <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                    <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                    <p style="margin: 0; line-height: 1.3; border-bottom: 1px solid black; padding-bottom: 3px; text-align: center;">&nbsp;</p>
+                    <p style="margin: 0; line-height: 1.3; text-align: center; font-family: 'Bookman Old Style', serif;"><strong>CHRISTY NUÑEZ</strong></p>
+                    <p style="margin: 0; line-height: 1.3; text-align: center; font-size: 10px; font-family: 'Calibri', sans-serif;">Bookkeeper</p>
+                    <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                    <p style="margin: 0; line-height: 1.3; border-bottom: 1px solid black; padding-bottom: 3px; text-align: center;">&nbsp;</p>
+                    <p style="margin: 0; line-height: 1.3; text-align: center; font-family: 'Bookman Old Style', serif;"><strong>RANDAL HERUELA</strong></p>
+                    <p style="margin: 0; line-height: 1.3; text-align: center; font-size: 10px; font-family: 'Calibri', sans-serif;">Cashier</p>
+                    <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
+                    <p style="margin: 0; line-height: 1.3; border-bottom: 1px solid black; padding-bottom: 3px; text-align: center;">&nbsp;</p>
+                    <p style="margin: 0; line-height: 1.3; text-align: center; font-family: 'Bookman Old Style', serif;"><strong>ANTONIO L. CASTRO</strong></p>
+                    <p style="margin: 0; line-height: 1.3; text-align: center; font-size: 10px; font-family: 'Calibri', sans-serif;">Operations Manager</p>
                 </div>
             </div>
         </div>
-        
     </div>
 
     <!-- For printing -->
@@ -184,7 +281,7 @@
             // Fix input fields before printing to maintain font consistency and preserve values
             var inputs = printContainer.querySelectorAll('input');
             inputs.forEach(function(input) {
-                input.style.fontFamily = "Arial, sans-serif";
+                input.style.fontFamily = "'Cambria', serif";
                 if (!input.style.fontSize) {
                     input.style.fontSize = "12px";
                 }
@@ -209,7 +306,7 @@
             tempContainer.style.visibility = 'hidden';
             tempContainer.style.width = '210mm'; // A4 width
             tempContainer.style.padding = '0.5in'; // Page margins
-            tempContainer.style.fontFamily = 'Arial, sans-serif';
+            tempContainer.style.fontFamily = "'Cambria', serif";
             document.body.appendChild(tempContainer);
 
             // Hide BOTH signature sections to measure only main content
@@ -259,7 +356,7 @@
                     var currentValue = originalInputsAll[index].value;
                     var span = document.createElement('span');
                     span.textContent = currentValue;
-                    span.style.fontFamily = 'Arial, sans-serif';
+                    span.style.fontFamily = "'Cambria', serif";
                     span.style.fontSize = '12px';
                     span.style.fontWeight = 'normal';
                     span.style.color = 'black';
@@ -285,7 +382,7 @@
                         padding: 0; 
                         -webkit-print-color-adjust: exact; 
                         print-color-adjust: exact; 
-                        font-family: Arial, sans-serif; 
+                        font-family: 'Cambria', serif; 
                     }
                     .print-container {
                         position: relative;
@@ -314,7 +411,7 @@
                     table { 
                         border-collapse: collapse; 
                         width: 100%; 
-                        font-family: Arial, sans-serif; 
+                        font-family: 'Cambria', serif; 
                         table-layout: auto;
                         page-break-inside: auto;
                     }
@@ -332,7 +429,7 @@
                     th, td { 
                         border: 1px solid #ddd; 
                         padding: 3px 6px; 
-                        font-family: Arial, sans-serif; 
+                        font-family: 'Cambria', serif; 
                         word-wrap: break-word; 
                         white-space: normal; 
                         line-height: 1.2; 
@@ -345,7 +442,7 @@
                     button { display: none; }
                     .non-printable { display: none; }
                     input { 
-                        font-family: Arial, sans-serif; 
+                        font-family: 'Cambria', serif; 
                         font-size: 12px; 
                         border: none !important; 
                         background: transparent !important; 
@@ -356,7 +453,7 @@
                         appearance: none !important;
                     }
                     span {
-                        font-family: Arial, sans-serif;
+                        font-family: 'Cambria', serif;
                         font-size: 12px;
                         color: black !important;
                     }

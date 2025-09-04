@@ -20,13 +20,19 @@ class AccountingController extends Controller
     }
 
     // Daily Cash Collection Reports
-    public function dailyCashCollectionTrading()
+    public function dailyCashCollectionTrading(Request $request)
     {
-        $entries = DailyCashCollectionEntry::where('type', 'trading')
-            ->orderBy('entry_date', 'desc')
-            ->get();
+        $query = DailyCashCollectionEntry::where('type', 'trading');
         
-        return view('accounting.daily-cash-collection.trading', compact('entries'));
+        // Filter by date if provided
+        if ($request->has('date') && $request->date) {
+            $query->whereDate('entry_date', $request->date);
+        }
+        
+        $entries = $query->orderBy('entry_date', 'desc')->get();
+        $selectedDate = $request->date;
+        
+        return view('accounting.daily-cash-collection.trading', compact('entries', 'selectedDate'));
     }
 
     public function dailyCashCollectionShipping()
@@ -38,13 +44,19 @@ class AccountingController extends Controller
         return view('accounting.daily-cash-collection.shipping', compact('entries'));
     }
 
-    public function dailyCashCollectionTradingPrint()
+    public function dailyCashCollectionTradingPrint(Request $request)
     {
-        $entries = DailyCashCollectionEntry::where('type', 'trading')
-            ->orderBy('entry_date', 'asc')
-            ->get();
+        $query = DailyCashCollectionEntry::where('type', 'trading');
+        
+        // Filter by date if provided
+        if ($request->has('date') && $request->date) {
+            $query->whereDate('entry_date', $request->date);
+        }
+        
+        $entries = $query->orderBy('entry_date', 'asc')->get();
+        $selectedDate = $request->date;
             
-        return view('accounting.daily-cash-collection.trading-print', compact('entries'));
+        return view('accounting.daily-cash-collection.trading-print', compact('entries', 'selectedDate'));
     }
 
     public function dailyCashCollectionShippingPrint()
@@ -207,6 +219,7 @@ class AccountingController extends Controller
         $request->validate([
             'type' => 'required|in:trading,shipping',
             'entry_date' => 'required|date',
+            'dccr_number' => 'nullable|string|max:255',
             'customer_name' => 'required|string|max:255',
             'ar' => 'nullable|string|max:255',
             'or' => 'nullable|string|max:255',
@@ -239,6 +252,7 @@ class AccountingController extends Controller
         DailyCashCollectionEntry::create([
             'type' => $request->type,
             'entry_date' => $request->entry_date,
+            'dccr_number' => $request->dccr_number,
             'ar' => $request->ar,
             'or' => $request->or,
             'customer_name' => $request->customer_name,
@@ -266,6 +280,7 @@ class AccountingController extends Controller
 
         $request->validate([
             'entry_date' => 'required|date',
+            'dccr_number' => 'nullable|string|max:255',
             'customer_name' => 'required|string|max:255',
             'ar' => 'nullable|string|max:255',
             'or' => 'nullable|string|max:255',
@@ -297,6 +312,7 @@ class AccountingController extends Controller
 
         $entry->update([
             'entry_date' => $request->entry_date,
+            'dccr_number' => $request->dccr_number,
             'ar' => $request->ar,
             'or' => $request->or,
             'customer_name' => $request->customer_name,

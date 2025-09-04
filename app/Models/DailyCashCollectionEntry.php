@@ -9,6 +9,7 @@ class DailyCashCollectionEntry extends Model
     protected $fillable = [
         'type',
         'entry_date',
+        'dccr_number',
         'ar',
         'or',
         'customer_name',

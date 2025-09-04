@@ -47,6 +47,7 @@
                             <thead class="bg-gray-50 dark:bg-gray-700">
                                 <tr>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Date</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">DCCR No.</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Customer</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Vessel</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Container/Parcel</th>
@@ -61,6 +62,9 @@
                                 <tr>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                                         {{ $entry->entry_date->format('Y-m-d') }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                                        {{ $entry->dccr_number }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                                         {{ $entry->customer_name }}
@@ -88,7 +92,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="8" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                                    <td colspan="9" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
                                         No shipping entries found. Click "Add Entry" to create your first entry.
                                     </td>
                                 </tr>
@@ -126,11 +130,16 @@
                         </div>
                         
                         <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">DCCR No.</label>
+                            <input type="text" name="dccr_number" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        </div>
+                        
+                        <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Amount (₱)</label>
                             <input type="number" name="total" step="0.01" min="0" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                         </div>
                         
-                        <div class="md:col-span-2">
+                        <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Customer Name</label>
                             <input type="text" name="customer_name" id="shipping_customer_name" required autocomplete="off" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                             <datalist id="shippingCustomerList"></datalist>
@@ -204,11 +213,16 @@
                         </div>
                         
                         <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">DCCR No.</label>
+                            <input type="text" name="dccr_number" id="edit_shipping_dccr_number" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        </div>
+                        
+                        <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Amount (₱)</label>
                             <input type="number" name="total" id="edit_shipping_total" step="0.01" min="0" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                         </div>
                         
-                        <div class="md:col-span-2">
+                        <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Customer Name</label>
                             <input type="text" name="customer_name" id="edit_shipping_customer_name" required autocomplete="off" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                             <datalist id="editShippingCustomerList"></datalist>
@@ -292,6 +306,7 @@
                     const entry = data.entry;
                     document.getElementById('edit_shipping_entry_id').value = entry.id;
                     document.getElementById('edit_shipping_entry_date').value = entry.entry_date;
+                    document.getElementById('edit_shipping_dccr_number').value = entry.dccr_number || '';
                     document.getElementById('edit_shipping_customer_name').value = entry.customer_name;
                     document.getElementById('edit_shipping_customer_id').value = entry.customer_id || '';
                     document.getElementById('edit_shipping_vessel').value = entry.vessel || '';
