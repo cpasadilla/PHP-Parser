@@ -43,7 +43,7 @@ class FixDeleteLogData extends Command
                 $this->line("Found existing order, updating delete log with order data...");
                 
                 // Get parcels for this order
-                $parcels = Parcel::where('orderId', $order->id)->get();
+                $parcels = Parcel::where('orderId', $order->orderId)->get();
                 
                 // Update the delete log with the order and parcels data
                 $log->update([
