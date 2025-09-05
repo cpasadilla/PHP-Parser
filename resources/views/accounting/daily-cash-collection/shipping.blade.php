@@ -159,7 +159,7 @@
                     </div>
 
                     <div class="mt-6 flex justify-between items-center">
-                        <button onclick="window.open('{{ route('accounting.daily-cash-collection.shipping-print') }}', '_blank')" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <button onclick="openPrintModal()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
                             Generate Report
                         </button>
                         <button class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500">

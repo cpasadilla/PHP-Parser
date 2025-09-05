@@ -5,7 +5,7 @@
                 <button onclick="window.history.back();" class="px-4 py-2 text-blue-600 rounded-md hover:text-blue-700 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
                     ←
                 </button>
-                {{ __('Daily Cash Collection Report - Trading') }}
+                {{ __('Daily Cash Collection Report - Shipping') }}
             </h2>
         </div>
     </x-slot>
@@ -45,7 +45,7 @@
     <div class="p-6 bg-white rounded-md shadow-md dark:bg-dark-eval-1">
         <div class="flex justify-between items-center mb-4">
             <h3 class="text-lg font-semibold">
-                Daily Cash Collection Report - Trading
+                Daily Cash Collection Report - Shipping
             </h3>
             <div class="flex gap-2">
                 <button class="btn btn-primary" onclick="printContent('printContainer')">PRINT</button>
@@ -85,7 +85,7 @@
                             to 
                             <input type="date" id="endDate" style="border: 1px solid #ccc; padding: 2px 5px; width: 120px; font-family: Arial, sans-serif; font-size: 12px;" value="{{ date('Y-m-d') }}">
                         </p>
-                        <p style="margin-bottom: 0; line-height: 1;"><strong>REPORT TYPE:</strong> Trading Operations</p>
+                        <p style="margin-bottom: 0; line-height: 1;"><strong>REPORT TYPE:</strong> Shipping Operations</p>
                     </div>
                     <div style="width: 35%; text-align: left; line-height: 1;">
                         <p style="margin-bottom: 0; line-height: 1;"><strong>GENERATED DATE:</strong> {{ date('F d, Y') }}</p>
@@ -96,44 +96,43 @@
                 </div-->
 
                 <div class="overflow-x-auto mt-4">
-                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700" style="font-family: 'Cambria', serif; font-size: 11px; table-layout: fixed; width: 100%;">
-                        <thead class="bg-gray-100 dark:bg-gray-800">
-                            <tr>
+                    <table class="min-w-full" style="font-family: 'Cambria', serif; font-size: 11px; table-layout: fixed; width: 100%; border: 2px solid black; border-collapse: collapse;">
+                        <thead class="bg-gray-100 dark:bg-gray-800" style="margin: 0; padding: 0; line-height: 1.6; font-weight: bold;">
+                            <tr style="margin: 0; padding: 0; line-height: 1.6;">
                                 <!--th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Date</th-->
-                                <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider"></th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider"></th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider"></th>
-                                <th colspan="5" class="px-6 py-3 text-center text-xs font-medium text-black uppercase tracking-wider">FREIGHT </th>
-                                <th colspan="5" class="px-6 py-3 text-center text-xs font-medium text-black uppercase tracking-wider">OTHER INCOME</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider"></th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider"></th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider"></th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider"></th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider"></th>
+                                <th class="text-center text-xs font-medium text-black uppercase tracking-wider" style="border: 1px dotted #999; margin: 0; padding: 2px 4px; width: 4%; text-align: center; font-weight: bold;"></th>
+                                <th class="text-center text-xs font-medium text-black uppercase tracking-wider" style="border: 1px dotted #999; margin: 0; padding: 2px 4px; width: 4%; text-align: center; font-weight: bold;"></th>
+                                <th class="text-center text-xs font-medium text-black uppercase tracking-wider" style="border: 1px dotted #999; margin: 0; padding: 2px 4px; width: 10%; text-align: center; font-weight: bold;"></th>
+                                <th colspan="5" class="text-center text-xs font-medium text-black uppercase tracking-wider" style="border: 1px dotted #999; margin: 0; padding: 2px 4px; text-align: center; font-weight: bold;">FREIGHT </th>
+                                <th colspan="5" class="text-center text-xs font-medium text-black uppercase tracking-wider" style="border: 1px dotted #999; margin: 0; padding: 2px 4px; text-align: center; font-weight: bold;">OTHER INCOME</th>
+                                <th class="text-center text-xs font-medium text-black uppercase tracking-wider" style="border: 1px dotted #999; margin: 0; padding: 2px 4px; width: 6%; text-align: center; font-weight: bold;"></th>
+                                <th class="text-center text-xs font-medium text-black uppercase tracking-wider" style="border: 1px dotted #999; margin: 0; padding: 2px 4px; width: 5%; text-align: center; font-weight: bold;"></th>
+                                <th class="text-center text-xs font-medium text-black uppercase tracking-wider" style="border: 1px dotted #999; margin: 0; padding: 2px 4px; text-align: center; font-weight: bold;"></th>
+                                <th class="text-center text-xs font-medium text-black uppercase tracking-wider" style="border: 1px dotted #999; margin: 0; padding: 2px 4px; width: 8%; text-align: center; font-weight: bold;"></th>
                             </tr>
-                            <tr>
+                            <tr style="margin: 0; padding: 0; line-height: 1.6;">
                                 <!--th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Date</th-->
-                                <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">AR</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">OR</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Name</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">MV EVERWIN STAR 1</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">MV EVERWIN STAR 2</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">MV EVERWIN STAR 3</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">MV EVERWIN STAR 4</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">MV EVERWIN STAR 5</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">MV EVERWIN STAR 1</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">MV EVERWIN STAR 2</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">MV EVERWIN STAR 3</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">MV EVERWIN STAR 4</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">MV EVERWIN STAR 5</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">WHARFAGE PAYABLES</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">INTEREST</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">TOTAL</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Remark</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Actions</th>
+                                <th class="text-center text-xs font-medium text-black uppercase tracking-wider" style="border: 1px dotted #999; margin: 0; padding: 2px 4px; width: 4%; text-align: center; font-weight: bold;">AR</th>
+                                <th class="text-center text-xs font-medium text-black uppercase tracking-wider" style="border: 1px dotted #999; margin: 0; padding: 2px 4px; width: 4%; text-align: center; font-weight: bold;">OR</th>
+                                <th class="text-center text-xs font-medium text-black uppercase tracking-wider" style="border: 1px dotted #999; margin: 0; padding: 2px 4px; width: 10%; text-align: center; font-weight: bold;">Name</th>
+                                <th class="text-center text-xs font-medium text-black uppercase tracking-wider" style="border: 1px dotted #999; margin: 0; padding: 2px 4px; width: 8%; text-align: center; font-weight: bold;">MV EVERWIN STAR 1</th>
+                                <th class="text-center text-xs font-medium text-black uppercase tracking-wider" style="border: 1px dotted #999; margin: 0; padding: 2px 4px; width: 8%; text-align: center; font-weight: bold;">MV EVERWIN STAR 2</th>
+                                <th class="text-center text-xs font-medium text-black uppercase tracking-wider" style="border: 1px dotted #999; margin: 0; padding: 2px 4px; width: 8%; text-align: center; font-weight: bold;">MV EVERWIN STAR 3</th>
+                                <th class="text-center text-xs font-medium text-black uppercase tracking-wider" style="border: 1px dotted #999; margin: 0; padding: 2px 4px; width: 8%; text-align: center; font-weight: bold;">MV EVERWIN STAR 4</th>
+                                <th class="text-center text-xs font-medium text-black uppercase tracking-wider" style="border: 1px dotted #999; margin: 0; padding: 2px 4px; width: 8%; text-align: center; font-weight: bold;">MV EVERWIN STAR 5</th>
+                                <th class="text-center text-xs font-medium text-black uppercase tracking-wider" style="border: 1px dotted #999; margin: 0; padding: 2px 4px; width: 8%; text-align: center; font-weight: bold;">MV EVERWIN STAR 1</th>
+                                <th class="text-center text-xs font-medium text-black uppercase tracking-wider" style="border: 1px dotted #999; margin: 0; padding: 2px 4px; width: 8%; text-align: center; font-weight: bold;">MV EVERWIN STAR 2</th>
+                                <th class="text-center text-xs font-medium text-black uppercase tracking-wider" style="border: 1px dotted #999; margin: 0; padding: 2px 4px; width: 8%; text-align: center; font-weight: bold;">MV EVERWIN STAR 3</th>
+                                <th class="text-center text-xs font-medium text-black uppercase tracking-wider" style="border: 1px dotted #999; margin: 0; padding: 2px 4px; width: 8%; text-align: center; font-weight: bold;">MV EVERWIN STAR 4</th>
+                                <th class="text-center text-xs font-medium text-black uppercase tracking-wider" style="border: 1px dotted #999; margin: 0; padding: 2px 4px; width: 8%; text-align: center; font-weight: bold;">MV EVERWIN STAR 5</th>
+                                <th class="text-center text-xs font-medium text-black uppercase tracking-wider" style="border: 1px dotted #999; margin: 0; padding: 2px 4px; width: 6%; text-align: center; font-weight: bold;">WHARFAGE PAYABLES</th>
+                                <th class="text-center text-xs font-medium text-black uppercase tracking-wider" style="border: 1px dotted #999; margin: 0; padding: 2px 4px; width: 5%; text-align: center; font-weight: bold;">INTEREST</th>
+                                <th class="text-center text-xs font-medium text-black uppercase tracking-wider" style="border: 1px dotted #999; margin: 0; padding: 2px 4px; text-align: center; font-weight: bold;">TOTAL</th>
+                                <th class="text-center text-xs font-medium text-black uppercase tracking-wider" style="border: 1px dotted #999; margin: 0; padding: 2px 4px; width: 8%; text-align: center; font-weight: bold;">Remark</th>
+                                <!--th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Actions</th-->
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                        <tbody>
                             @php
                                 $totalMvStar1 = 0;
                                 $totalMvStar2 = 0;
@@ -166,29 +165,29 @@
                                     $totalInterest += $entry->interest ?? 0;
                                     $grandTotal += $entry->total ?? 0;
                                 @endphp
-                                <tr style="font-family: Arial, sans-serif; font-size: 10px; line-height: 1.2;">
-                                    <td class="px-4 py-2">{{ $entry->ar ?? '' }}</td>
-                                    <td class="px-4 py-2">{{ $entry->or ?? '' }}</td>
-                                    <td class="px-4 py-2">{{ $entry->customer_name }}</td>
-                                    <td class="px-4 py-2 text-right">{{ $entry->mv_everwin_star_1 > 0 ? number_format($entry->mv_everwin_star_1, 2) : '' }}</td>
-                                    <td class="px-4 py-2 text-right">{{ $entry->mv_everwin_star_2 > 0 ? number_format($entry->mv_everwin_star_2, 2) : '' }}</td>
-                                    <td class="px-4 py-2 text-right">{{ $entry->mv_everwin_star_3 > 0 ? number_format($entry->mv_everwin_star_3, 2) : '' }}</td>
-                                    <td class="px-4 py-2 text-right">{{ $entry->mv_everwin_star_4 > 0 ? number_format($entry->mv_everwin_star_4, 2) : '' }}</td>
-                                    <td class="px-4 py-2 text-right">{{ $entry->mv_everwin_star_5 > 0 ? number_format($entry->mv_everwin_star_5, 2) : '' }}</td>
-                                    <td class="px-4 py-2 text-right">{{ $entry->mv_everwin_star_1_other > 0 ? number_format($entry->mv_everwin_star_1_other, 2) : '' }}</td>
-                                    <td class="px-4 py-2 text-right">{{ $entry->mv_everwin_star_2_other > 0 ? number_format($entry->mv_everwin_star_2_other, 2) : '' }}</td>
-                                    <td class="px-4 py-2 text-right">{{ $entry->mv_everwin_star_3_other > 0 ? number_format($entry->mv_everwin_star_3_other, 2) : '' }}</td>
-                                    <td class="px-4 py-2 text-right">{{ $entry->mv_everwin_star_4_other > 0 ? number_format($entry->mv_everwin_star_4_other, 2) : '' }}</td>
-                                    <td class="px-4 py-2 text-right">{{ $entry->mv_everwin_star_5_other > 0 ? number_format($entry->mv_everwin_star_5_other, 2) : '' }}</td>
-                                    <td class="px-4 py-2 text-right">{{ $entry->wharfage_payables > 0 ? number_format($entry->wharfage_payables, 2) : '' }}</td>
-                                    <td class="px-4 py-2 text-right">{{ $entry->interest > 0 ? number_format($entry->interest, 2) : '' }}</td>
-                                    <td class="px-4 py-2 text-right">{{ number_format($entry->total, 2) }}</td>
-                                    <td class="px-4 py-2">{{ $entry->remark ?? '' }}</td>
-                                    <td class="px-4 py-2 text-center">Edit</td>
+                                <tr style="font-family: Arial, sans-serif; font-size: 10px; line-height: 1.5; margin: 0; padding: 0;">
+                                    <td class="text-center" style="border: 1px dotted #999; margin: 0; padding: 1px 2px; text-align: center;">{{ $entry->ar ?? '' }}</td>
+                                    <td class="text-center" style="border: 1px dotted #999; margin: 0; padding: 1px 2px; text-align: center;">{{ $entry->or ?? '' }}</td>
+                                    <td class="text-left" style="border: 1px dotted #999; margin: 0; padding: 1px 2px;">{{ $entry->customer_name }}</td>
+                                    <td class="text-right" style="border: 1px dotted #999; margin: 0; padding: 1px 2px; text-align: right;">{{ $entry->mv_everwin_star_1 > 0 ? number_format($entry->mv_everwin_star_1, 2) : '' }}</td>
+                                    <td class="text-right" style="border: 1px dotted #999; margin: 0; padding: 1px 2px; text-align: right;">{{ $entry->mv_everwin_star_2 > 0 ? number_format($entry->mv_everwin_star_2, 2) : '' }}</td>
+                                    <td class="text-right" style="border: 1px dotted #999; margin: 0; padding: 1px 2px; text-align: right;">{{ $entry->mv_everwin_star_3 > 0 ? number_format($entry->mv_everwin_star_3, 2) : '' }}</td>
+                                    <td class="text-right" style="border: 1px dotted #999; margin: 0; padding: 1px 2px; text-align: right;">{{ $entry->mv_everwin_star_4 > 0 ? number_format($entry->mv_everwin_star_4, 2) : '' }}</td>
+                                    <td class="text-right" style="border: 1px dotted #999; margin: 0; padding: 1px 2px; text-align: right;">{{ $entry->mv_everwin_star_5 > 0 ? number_format($entry->mv_everwin_star_5, 2) : '' }}</td>
+                                    <td class="text-right" style="border: 1px dotted #999; margin: 0; padding: 1px 2px; text-align: right;">{{ $entry->mv_everwin_star_1_other > 0 ? number_format($entry->mv_everwin_star_1_other, 2) : '' }}</td>
+                                    <td class="text-right" style="border: 1px dotted #999; margin: 0; padding: 1px 2px; text-align: right;">{{ $entry->mv_everwin_star_2_other > 0 ? number_format($entry->mv_everwin_star_2_other, 2) : '' }}</td>
+                                    <td class="text-right" style="border: 1px dotted #999; margin: 0; padding: 1px 2px; text-align: right;">{{ $entry->mv_everwin_star_3_other > 0 ? number_format($entry->mv_everwin_star_3_other, 2) : '' }}</td>
+                                    <td class="text-right" style="border: 1px dotted #999; margin: 0; padding: 1px 2px; text-align: right;">{{ $entry->mv_everwin_star_4_other > 0 ? number_format($entry->mv_everwin_star_4_other, 2) : '' }}</td>
+                                    <td class="text-right" style="border: 1px dotted #999; margin: 0; padding: 1px 2px; text-align: right;">{{ $entry->mv_everwin_star_5_other > 0 ? number_format($entry->mv_everwin_star_5_other, 2) : '' }}</td>
+                                    <td class="text-right" style="border: 1px dotted #999; margin: 0; padding: 1px 2px; text-align: right;">{{ $entry->wharfage_payables > 0 ? number_format($entry->wharfage_payables, 2) : '' }}</td>
+                                    <td class="text-right" style="border: 1px dotted #999; margin: 0; padding: 1px 2px; text-align: right;">{{ $entry->interest > 0 ? number_format($entry->interest, 2) : '' }}</td>
+                                    <td class="text-right" style="border: 1px dotted #999; margin: 0; padding: 1px 2px; text-align: right;">{{ number_format($entry->total, 2) }}</td>
+                                    <td class="text-left" style="border: 1px dotted #999; margin: 0; padding: 1px 2px;">{{ $entry->remark ?? '' }}</td>
+                                    <!--td class="px-4 py-2 text-center">Edit</td-->
                                 </tr>
                             @empty
-                                <tr style="font-family: Arial, sans-serif; font-size: 10px; line-height: 1.2;">
-                                    <td colspan="18" class="px-4 py-2 text-center text-gray-500">
+                                <tr style="font-family: Arial, sans-serif; font-size: 10px; line-height: 1.5; margin: 0; padding: 0;">
+                                    <td colspan="17" class="text-center text-gray-500" style="border: 1px dotted #999; margin: 0; padding: 1px 2px;">
                                         No shipping entries found for the selected date.
                                     </td>
                                 </tr>
@@ -196,25 +195,25 @@
                             
                             @if($entries->count() > 0)
                                 <!-- Summary rows -->
-                                <tr class="bg-gray-50 dark:bg-gray-900 font-semibold" style="line-height: 0.8;">
-                                    <td colspan="18" class="px-4 py-1 text-right"></td>
+                                <tr class="bg-gray-50 dark:bg-gray-900 font-semibold" style="line-height: 1.4;">
+                                    <td colspan="17" class="px-4 py-1 text-right"></td>
                                 </tr>
-                                <tr class="font-semibold" style="line-height: 0.8; background-color: #92d050; color: black;">
-                                    <td colspan="3" class="px-4 py-1" style="text-align: center; font-weight: bold;">TOTAL COLLECTIONS:</td>
-                                    <td class="px-4 py-1 text-right">{{ $totalMvStar1 > 0 ? number_format($totalMvStar1, 2) : '' }}</td>
-                                    <td class="px-4 py-1 text-right">{{ $totalMvStar2 > 0 ? number_format($totalMvStar2, 2) : '' }}</td>
-                                    <td class="px-4 py-1 text-right">{{ $totalMvStar3 > 0 ? number_format($totalMvStar3, 2) : '' }}</td>
-                                    <td class="px-4 py-1 text-right">{{ $totalMvStar4 > 0 ? number_format($totalMvStar4, 2) : '' }}</td>
-                                    <td class="px-4 py-1 text-right">{{ $totalMvStar5 > 0 ? number_format($totalMvStar5, 2) : '' }}</td>
-                                    <td class="px-4 py-1 text-right">{{ $totalMvStar1Other > 0 ? number_format($totalMvStar1Other, 2) : '' }}</td>
-                                    <td class="px-4 py-1 text-right">{{ $totalMvStar2Other > 0 ? number_format($totalMvStar2Other, 2) : '' }}</td>
-                                    <td class="px-4 py-1 text-right">{{ $totalMvStar3Other > 0 ? number_format($totalMvStar3Other, 2) : '' }}</td>
-                                    <td class="px-4 py-1 text-right">{{ $totalMvStar4Other > 0 ? number_format($totalMvStar4Other, 2) : '' }}</td>
-                                    <td class="px-4 py-1 text-right">{{ $totalMvStar5Other > 0 ? number_format($totalMvStar5Other, 2) : '' }}</td>
-                                    <td class="px-4 py-1 text-right">{{ $totalWharfagePayables > 0 ? number_format($totalWharfagePayables, 2) : '' }}</td>
-                                    <td class="px-4 py-1 text-right">{{ $totalInterest > 0 ? number_format($totalInterest, 2) : '' }}</td>
-                                    <td class="px-4 py-1 text-right">{{ number_format($grandTotal, 2) }}</td>
-                                    <td colspan="2" class="px-4 py-1"></td>
+                                <tr class="font-semibold" style="line-height: 1.4; background-color: #ffff00; color: black; margin: 0; padding: 0;">
+                                    <td colspan="3" class="text-center" style="font-weight: bold; border: 1px dotted #999; margin: 0; padding: 1px 2px; text-align: center;">TOTAL COLLECTIONS:</td>
+                                    <td class="text-right" style="border: 1px dotted #999; margin: 0; padding: 1px 2px; text-align: right;">{{ $totalMvStar1 > 0 ? number_format($totalMvStar1, 2) : '-' }}</td>
+                                    <td class="text-right" style="border: 1px dotted #999; margin: 0; padding: 1px 2px; text-align: right;">{{ $totalMvStar2 > 0 ? number_format($totalMvStar2, 2) : '-' }}</td>
+                                    <td class="text-right" style="border: 1px dotted #999; margin: 0; padding: 1px 2px; text-align: right;">{{ $totalMvStar3 > 0 ? number_format($totalMvStar3, 2) : '-' }}</td>
+                                    <td class="text-right" style="border: 1px dotted #999; margin: 0; padding: 1px 2px; text-align: right;">{{ $totalMvStar4 > 0 ? number_format($totalMvStar4, 2) : '-' }}</td>
+                                    <td class="text-right" style="border: 1px dotted #999; margin: 0; padding: 1px 2px; text-align: right;">{{ $totalMvStar5 > 0 ? number_format($totalMvStar5, 2) : '-' }}</td>
+                                    <td class="text-right" style="border: 1px dotted #999; margin: 0; padding: 1px 2px; text-align: right;">{{ $totalMvStar1Other > 0 ? number_format($totalMvStar1Other, 2) : '-' }}</td>
+                                    <td class="text-right" style="border: 1px dotted #999; margin: 0; padding: 1px 2px; text-align: right;">{{ $totalMvStar2Other > 0 ? number_format($totalMvStar2Other, 2) : '-' }}</td>
+                                    <td class="text-right" style="border: 1px dotted #999; margin: 0; padding: 1px 2px; text-align: right;">{{ $totalMvStar3Other > 0 ? number_format($totalMvStar3Other, 2) : '-' }}</td>
+                                    <td class="text-right" style="border: 1px dotted #999; margin: 0; padding: 1px 2px; text-align: right;">{{ $totalMvStar4Other > 0 ? number_format($totalMvStar4Other, 2) : '-' }}</td>
+                                    <td class="text-right" style="border: 1px dotted #999; margin: 0; padding: 1px 2px; text-align: right;">{{ $totalMvStar5Other > 0 ? number_format($totalMvStar5Other, 2) : '-' }}</td>
+                                    <td class="text-right" style="border: 1px dotted #999; margin: 0; padding: 1px 2px; text-align: right;">{{ $totalWharfagePayables > 0 ? number_format($totalWharfagePayables, 2) : '-' }}</td>
+                                    <td class="text-right" style="border: 1px dotted #999; margin: 0; padding: 1px 2px; text-align: right;">{{ $totalInterest > 0 ? number_format($totalInterest, 2) : '-' }}</td>
+                                    <td class="text-right" style="border: 1px dotted #999; margin: 0; padding: 1px 2px; text-align: right;">{{ number_format($grandTotal, 2) }}</td>
+                                    <td class="text-left" style="border: 1px dotted #999; margin: 0; padding: 1px 2px;"></td>
                                 </tr>
                             @endif
                         </tbody>
@@ -478,7 +477,7 @@
 
             // Open new print window
             var printWindow = window.open("", "", "width=1000,height=800");
-            printWindow.document.write("<html><head><title>Daily Cash Collection Report - Trading</title>");
+            printWindow.document.write("<html><head><title>Daily Cash Collection Report - Shipping</title>");
             printWindow.document.write("<style>");
             printWindow.document.write(`
                 @page {
@@ -527,6 +526,7 @@
                     thead {
                         display: table-header-group;
                         background-color: #f2f2f2 !important;
+                        font-weight: bold;
                     }
                     tbody {
                         display: table-row-group;
@@ -600,7 +600,7 @@
         function loadCurrentDccrNumber() {
             const selectedDate = '{{ $selectedDate ?? date("Y-m-d") }}';
             
-            fetch(`{{ route('accounting.daily-cash-collection.get-settings') }}?report_date=${selectedDate}&report_type=trading`, {
+            fetch(`{{ route('accounting.daily-cash-collection.get-settings') }}?report_date=${selectedDate}&report_type=shipping`, {
                 method: 'GET',
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
@@ -627,7 +627,7 @@
 
             const formData = new FormData();
             formData.append('report_date', selectedDate);
-            formData.append('report_type', 'trading');
+            formData.append('report_type', 'shipping');
             formData.append('dccr_number', dccrNumber);
             // Only send dccr_number field
 
@@ -670,7 +670,7 @@
         function loadCurrentCashier() {
             const selectedDate = '{{ $selectedDate ?? date("Y-m-d") }}';
             
-            fetch(`{{ route('accounting.daily-cash-collection.get-settings') }}?report_date=${selectedDate}&report_type=trading`, {
+            fetch(`{{ route('accounting.daily-cash-collection.get-settings') }}?report_date=${selectedDate}&report_type=shipping`, {
                 method: 'GET',
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
@@ -726,7 +726,7 @@
 
             const formData = new FormData();
             formData.append('report_date', selectedDate);
-            formData.append('report_type', 'trading');
+            formData.append('report_type', 'shipping');
             formData.append('collected_by_name', collectedByName);
             formData.append('collected_by_title', collectedByTitle);
             // Only send collected_by fields
@@ -770,7 +770,7 @@
         function loadCurrentCollection() {
             const selectedDate = '{{ $selectedDate ?? date("Y-m-d") }}';
             
-            fetch(`{{ route('accounting.daily-cash-collection.get-settings') }}?report_date=${selectedDate}&report_type=trading`, {
+            fetch(`{{ route('accounting.daily-cash-collection.get-settings') }}?report_date=${selectedDate}&report_type=shipping`, {
                 method: 'GET',
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
@@ -797,7 +797,7 @@
 
             const formData = new FormData();
             formData.append('report_date', selectedDate);
-            formData.append('report_type', 'trading');
+            formData.append('report_type', 'shipping');
             formData.append('add_collection', addCollection);
             // Only send add_collection field
 
@@ -893,7 +893,7 @@
                     ['SAINT FRANCIS XAVIER STAR SHIPPING LINES INC.'],
                     ['Basco Office: National Road Brgy. Kaychanarianan, Basco Batanes'],
                     ['DAILY CASH COLLECTION REPORT'],
-                    ['TRADING'],
+                    ['SHIPPING'],
                     ['DATE: ' + formattedDate.toUpperCase()],
                     ['DCCR No.: ' + dccrNumber],
                     [''], // Empty row
@@ -1076,17 +1076,17 @@
                     { s: { r: 0, c: 0 }, e: { r: 0, c: headers.length - 1 } }, // Company name
                     { s: { r: 1, c: 0 }, e: { r: 1, c: headers.length - 1 } }, // Address
                     { s: { r: 2, c: 0 }, e: { r: 2, c: headers.length - 1 } }, // Report title
-                    { s: { r: 3, c: 0 }, e: { r: 3, c: headers.length - 1 } }, // Trading
+                    { s: { r: 3, c: 0 }, e: { r: 3, c: headers.length - 1 } }, // Shipping
                     { s: { r: 4, c: 0 }, e: { r: 4, c: headers.length - 1 } }, // Date
                     { s: { r: 5, c: 0 }, e: { r: 5, c: headers.length - 1 } }  // DCCR Number
                 ];
 
                 // Add the worksheet to the workbook
-                XLSX.utils.book_append_sheet(workbook, worksheet, 'Trading Report');
+                XLSX.utils.book_append_sheet(workbook, worksheet, 'Shipping Report');
 
                 // Generate filename with current date
                 const dateStr = reportDate.replace(/-/g, '');
-                const filename = `Daily_Cash_Collection_Trading_${dateStr}.xlsx`;
+                const filename = `Daily_Cash_Collection_Shipping_${dateStr}.xlsx`;
 
                 // Export the workbook to an Excel file
                 XLSX.writeFile(workbook, filename);

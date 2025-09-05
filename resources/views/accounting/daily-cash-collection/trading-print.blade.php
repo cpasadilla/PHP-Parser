@@ -96,23 +96,23 @@
                 </div-->
 
                 <div class="overflow-x-auto mt-4">
-                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700" style="font-family: 'Cambria', serif; font-size: 11px; table-layout: fixed; width: 100%;">
-                        <thead class="bg-gray-100 dark:bg-gray-800">
-                            <tr>
-                                <th style="width: 8%;" class="px-4 py-2">AR</th>
-                                <th style="width: 8%;" class="px-4 py-2">OR</th>
-                                <th style="width: 15%;" class="px-4 py-2">Name</th>
-                                <th style="width: 10%;" class="px-4 py-2">Gravel & Sand</th>
-                                <th style="width: 8%;" class="px-4 py-2">CHB</th>
-                                <th style="width: 10%;" class="px-4 py-2">Other Income (Cement)</th>
-                                <th style="width: 10%;" class="px-4 py-2">Other Income (DF)</th>
-                                <th style="width: 8%;" class="px-4 py-2">Others</th>
-                                <th style="width: 8%;" class="px-4 py-2">Interest</th>
-                                <th style="width: 10%;" class="px-4 py-2">Total</th>
-                                <th style="width: 15%;" class="px-4 py-2">Remark</th>
+                    <table class="min-w-full" style="font-family: 'Cambria', serif; font-size: 11px; table-layout: fixed; width: 100%; border: 2px solid black; border-collapse: collapse;">
+                        <thead class="bg-gray-100 dark:bg-gray-800" style="margin: 0; padding: 0; line-height: 1.6; font-weight: bold;">
+                            <tr style="margin: 0; padding: 0; line-height: 1.6;">
+                                <th class="text-center text-xs font-medium text-black uppercase tracking-wider" style="border: 1px dotted #999; margin: 0; padding: 2px 4px; width: 8%; text-align: center; font-weight: bold;">AR</th>
+                                <th class="text-center text-xs font-medium text-black uppercase tracking-wider" style="border: 1px dotted #999; margin: 0; padding: 2px 4px; width: 8%; text-align: center; font-weight: bold;">OR</th>
+                                <th class="text-center text-xs font-medium text-black uppercase tracking-wider" style="border: 1px dotted #999; margin: 0; padding: 2px 4px; width: 15%; text-align: center; font-weight: bold;">Name</th>
+                                <th class="text-center text-xs font-medium text-black uppercase tracking-wider" style="border: 1px dotted #999; margin: 0; padding: 2px 4px; width: 10%; text-align: center; font-weight: bold;">Gravel & Sand</th>
+                                <th class="text-center text-xs font-medium text-black uppercase tracking-wider" style="border: 1px dotted #999; margin: 0; padding: 2px 4px; width: 8%; text-align: center; font-weight: bold;">CHB</th>
+                                <th class="text-center text-xs font-medium text-black uppercase tracking-wider" style="border: 1px dotted #999; margin: 0; padding: 2px 4px; width: 10%; text-align: center; font-weight: bold;">Other Income (Cement)</th>
+                                <th class="text-center text-xs font-medium text-black uppercase tracking-wider" style="border: 1px dotted #999; margin: 0; padding: 2px 4px; width: 10%; text-align: center; font-weight: bold;">Other Income (DF)</th>
+                                <th class="text-center text-xs font-medium text-black uppercase tracking-wider" style="border: 1px dotted #999; margin: 0; padding: 2px 4px; width: 8%; text-align: center; font-weight: bold;">Others</th>
+                                <th class="text-center text-xs font-medium text-black uppercase tracking-wider" style="border: 1px dotted #999; margin: 0; padding: 2px 4px; width: 8%; text-align: center; font-weight: bold;">Interest</th>
+                                <th class="text-center text-xs font-medium text-black uppercase tracking-wider" style="border: 1px dotted #999; margin: 0; padding: 2px 4px; width: 10%; text-align: center; font-weight: bold;">Total</th>
+                                <th class="text-center text-xs font-medium text-black uppercase tracking-wider" style="border: 1px dotted #999; margin: 0; padding: 2px 4px; width: 15%; text-align: center; font-weight: bold;">Remark</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                        <tbody>
                             @php
                                 $totalGravelSand = 0;
                                 $totalCHB = 0;
@@ -133,39 +133,42 @@
                                     $totalInterest += $entry->interest;
                                     $grandTotal += $entry->total;
                                 @endphp
-                                <tr style="font-family: 'Cambria', serif; font-size: 10px; line-height: 1.2;">
-                                    <td class="px-4 py-2 text-center">{{ $entry->ar }}</td>
-                                    <td class="px-4 py-2 text-center">{{ $entry->or }}</td>
-                                    <td class="px-4 py-2">{{ $entry->customer_name }}</td>
-                                    <td class="px-4 py-2 text-right">{{ $entry->gravel_sand > 0 ? number_format($entry->gravel_sand, 2) : '' }}</td>
-                                    <td class="px-4 py-2 text-right">{{ $entry->chb > 0 ? number_format($entry->chb, 2) : '' }}</td>
-                                    <td class="px-4 py-2 text-right">{{ $entry->other_income_cement > 0 ? number_format($entry->other_income_cement, 2) : '' }}</td>
-                                    <td class="px-4 py-2 text-right">{{ $entry->other_income_df > 0 ? number_format($entry->other_income_df, 2) : '' }}</td>
-                                    <td class="px-4 py-2 text-right">{{ $entry->others > 0 ? number_format($entry->others, 2) : '' }}</td>
-                                    <td class="px-4 py-2 text-right">{{ $entry->interest > 0 ? number_format($entry->interest, 2) : '' }}</td>
-                                    <td class="px-4 py-2 text-right">{{ number_format($entry->total, 2) }}</td>
-                                    <td class="px-4 py-2">{{ $entry->remark }}</td>
+                                <tr style="font-family: Arial, sans-serif; font-size: 10px; line-height: 1.5; margin: 0; padding: 0;">
+                                    <td class="text-center" style="border: 1px dotted #999; margin: 0; padding: 1px 2px; text-align: center;">{{ $entry->ar }}</td>
+                                    <td class="text-center" style="border: 1px dotted #999; margin: 0; padding: 1px 2px; text-align: center;">{{ $entry->or }}</td>
+                                    <td class="text-left" style="border: 1px dotted #999; margin: 0; padding: 1px 2px;">{{ $entry->customer_name }}</td>
+                                    <td class="text-right" style="border: 1px dotted #999; margin: 0; padding: 1px 2px; text-align: right;">{{ $entry->gravel_sand > 0 ? number_format($entry->gravel_sand, 2) : '' }}</td>
+                                    <td class="text-right" style="border: 1px dotted #999; margin: 0; padding: 1px 2px; text-align: right;">{{ $entry->chb > 0 ? number_format($entry->chb, 2) : '' }}</td>
+                                    <td class="text-right" style="border: 1px dotted #999; margin: 0; padding: 1px 2px; text-align: right;">{{ $entry->other_income_cement > 0 ? number_format($entry->other_income_cement, 2) : '' }}</td>
+                                    <td class="text-right" style="border: 1px dotted #999; margin: 0; padding: 1px 2px; text-align: right;">{{ $entry->other_income_df > 0 ? number_format($entry->other_income_df, 2) : '' }}</td>
+                                    <td class="text-right" style="border: 1px dotted #999; margin: 0; padding: 1px 2px; text-align: right;">{{ $entry->others > 0 ? number_format($entry->others, 2) : '' }}</td>
+                                    <td class="text-right" style="border: 1px dotted #999; margin: 0; padding: 1px 2px; text-align: right;">{{ $entry->interest > 0 ? number_format($entry->interest, 2) : '' }}</td>
+                                    <td class="text-right" style="border: 1px dotted #999; margin: 0; padding: 1px 2px; text-align: right;">{{ number_format($entry->total, 2) }}</td>
+                                    <td class="text-left" style="border: 1px dotted #999; margin: 0; padding: 1px 2px;">{{ $entry->remark }}</td>
                                 </tr>
                             @empty
-                                <tr style="font-family: 'Cambria', serif; font-size: 10px; line-height: 1.2;">
-                                    <td colspan="11" class="px-4 py-2 text-center">No entries found for this period.</td>
+                                <tr style="font-family: Arial, sans-serif; font-size: 10px; line-height: 1.5; margin: 0; padding: 0;">
+                                    <td colspan="11" class="text-center" style="border: 1px dotted #999; margin: 0; padding: 1px 2px; text-align: center;">No entries found for this period.</td>
                                 </tr>
                             @endforelse
                             
                             @if($entries->count() > 0)
-                                <!-- Grand Total Row -->
-                                <tr class="font-semibold" style="line-height: 0.8; background-color: #92d050; color: black;">
-                                    <td class="px-4 py-1 text-center"></td>
-                                    <td class="px-4 py-1 text-center"></td>
-                                    <td class="px-4 py-1" style="text-align: center; font-weight: bold;">TOTAL:</td>
-                                    <td class="px-4 py-1 text-right">{{ $totalGravelSand > 0 ? number_format($totalGravelSand, 2) : '-' }}</td>
-                                    <td class="px-4 py-1 text-right">{{ $totalCHB > 0 ? number_format($totalCHB, 2) : '-' }}</td>
-                                    <td class="px-4 py-1 text-right">{{ $totalCement > 0 ? number_format($totalCement, 2) : '-' }}</td>
-                                    <td class="px-4 py-1 text-right">{{ $totalDF > 0 ? number_format($totalDF, 2) : '-' }}</td>
-                                    <td class="px-4 py-1 text-right">{{ $totalOthers > 0 ? number_format($totalOthers, 2) : '-' }}</td>
-                                    <td class="px-4 py-1 text-right">{{ $totalInterest > 0 ? number_format($totalInterest, 2) : '-' }}</td>
-                                    <td class="px-4 py-1 text-right">{{ number_format($grandTotal, 2) }}</td>
-                                    <td class="px-4 py-1"></td>
+                                <!-- Summary rows -->
+                                <tr class="bg-gray-50 dark:bg-gray-900 font-semibold" style="line-height: 1.4;">
+                                    <td colspan="11" class="px-4 py-1 text-right"></td>
+                                </tr>
+                                <tr class="font-semibold" style="line-height: 1.4; background-color: #92d050; color: black; margin: 0; padding: 0;">
+                                    <td class="text-center" style="border: 1px dotted #999; margin: 0; padding: 1px 2px; text-align: center;"></td>
+                                    <td class="text-center" style="border: 1px dotted #999; margin: 0; padding: 1px 2px; text-align: center;"></td>
+                                    <td class="text-center" style="font-weight: bold; border: 1px dotted #999; margin: 0; padding: 1px 2px; text-align: center;">TOTAL:</td>
+                                    <td class="text-right" style="border: 1px dotted #999; margin: 0; padding: 1px 2px; text-align: right;">{{ $totalGravelSand > 0 ? number_format($totalGravelSand, 2) : '-' }}</td>
+                                    <td class="text-right" style="border: 1px dotted #999; margin: 0; padding: 1px 2px; text-align: right;">{{ $totalCHB > 0 ? number_format($totalCHB, 2) : '-' }}</td>
+                                    <td class="text-right" style="border: 1px dotted #999; margin: 0; padding: 1px 2px; text-align: right;">{{ $totalCement > 0 ? number_format($totalCement, 2) : '-' }}</td>
+                                    <td class="text-right" style="border: 1px dotted #999; margin: 0; padding: 1px 2px; text-align: right;">{{ $totalDF > 0 ? number_format($totalDF, 2) : '-' }}</td>
+                                    <td class="text-right" style="border: 1px dotted #999; margin: 0; padding: 1px 2px; text-align: right;">{{ $totalOthers > 0 ? number_format($totalOthers, 2) : '-' }}</td>
+                                    <td class="text-right" style="border: 1px dotted #999; margin: 0; padding: 1px 2px; text-align: right;">{{ $totalInterest > 0 ? number_format($totalInterest, 2) : '-' }}</td>
+                                    <td class="text-right" style="border: 1px dotted #999; margin: 0; padding: 1px 2px; text-align: right;">{{ number_format($grandTotal, 2) }}</td>
+                                    <td class="text-left" style="border: 1px dotted #999; margin: 0; padding: 1px 2px;"></td>
                                 </tr>
                             @endif
                         </tbody>
@@ -478,6 +481,7 @@
                     thead {
                         display: table-header-group;
                         background-color: #f2f2f2 !important;
+                        font-weight: bold;
                     }
                     tbody {
                         display: table-row-group;
