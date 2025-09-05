@@ -41,6 +41,13 @@ class InventoryController extends Controller
             'pickup_delivery_type' => 'nullable|string',
             'vat_type' => 'nullable|string',
             'hollowblock_size' => 'nullable|string',
+            // Hollowblock specific fields
+            'hollowblock_4_inch_in' => 'nullable|numeric',
+            'hollowblock_4_inch_out' => 'nullable|numeric',
+            'hollowblock_5_inch_in' => 'nullable|numeric',
+            'hollowblock_5_inch_out' => 'nullable|numeric',
+            'hollowblock_6_inch_in' => 'nullable|numeric',
+            'hollowblock_6_inch_out' => 'nullable|numeric',
         ]);
         
         // Determine customer type
@@ -52,19 +59,31 @@ class InventoryController extends Controller
             $data['customer_id'] = str_replace('sub-', '', $data['customer_id']);
         }
         
-        // Get current balances for this item
-        $currentBalances = $this->getCurrentBalances($data['item']);
-        
-        // Calculate new balance automatically if not provided
-        if (!isset($data['balance']) || $data['balance'] === null) {
-            $previousBalance = $currentBalances['balance'];
-            $inValue = floatval($data['in'] ?? 0);
-            $outValue = floatval($data['out'] ?? 0);
-            $data['balance'] = $previousBalance + $inValue - $outValue;
+        // Handle PER BAG conversion: 1 BAG = 0.028 cubic (BAG / 36)
+        $pickupDeliveryType = $data['pickup_delivery_type'] ?? '';
+        if ($pickupDeliveryType === 'per_bag' && isset($data['out']) && $data['out'] > 0) {
+            $data['out_original_bags'] = $data['out']; // Store original bag count
+            $data['out'] = $data['out'] / 36; // Convert bags to cubic (1 bag = 0.028 cubic)
         }
         
-    // On create via Add Inventory Entry, keep onsite fields blank so user/admin can set later
-    $data['onsite_balance'] = null; // explicitly blank
+        // Handle HOLLOWBLOCKS - process separate size columns
+        if ($data['item'] === 'HOLLOWBLOCKS') {
+            $this->processHollowblockBalances($data);
+        } else {
+            // Get current balances for this item (non-hollowblock items)
+            $currentBalances = $this->getCurrentBalances($data['item']);
+            
+            // Calculate new balance automatically if not provided
+            if (!isset($data['balance']) || $data['balance'] === null) {
+                $previousBalance = $currentBalances['balance'];
+                $inValue = floatval($data['in'] ?? 0);
+                $outValue = floatval($data['out'] ?? 0);
+                $data['balance'] = $previousBalance + $inValue - $outValue;
+            }
+        }
+        
+        // On create via Add Inventory Entry, keep onsite fields blank so user/admin can set later
+        $data['onsite_balance'] = null; // explicitly blank
         
         // Respect manual amount toggle; otherwise calculate
         $isManual = $request->boolean('is_amount_manual') || (($data['pickup_delivery_type'] ?? '') === 'per_bag');
@@ -74,14 +93,14 @@ class InventoryController extends Controller
             $data['amount'] = $this->calculateAmount($data);
         }
         
-    // Do NOT auto-set onsite_date on create; leave it blank until explicitly set
-    $data['onsite_date'] = null;
+        // Do NOT auto-set onsite_date on create; leave it blank until explicitly set
+        $data['onsite_date'] = null;
         
         // Initialize other fields, set actual_out to same value as out initially
-    $data['or_ar'] = null;
-    $data['dr_number'] = null;
-    $data['onsite_in'] = $data['in']; // keep as provided or null
-    $data['actual_out'] = null; // keep blank on create
+        $data['or_ar'] = null;
+        $data['dr_number'] = null;
+        $data['onsite_in'] = $data['in']; // keep as provided or null
+        $data['actual_out'] = null; // keep blank on create
         
         \App\Models\InventoryEntry::create($data);
         return redirect()->route('inventory')->with('success', 'Inventory entry saved!');
@@ -99,6 +118,10 @@ class InventoryController extends Controller
             'voyage_number' => 'required|string',
             'balance' => 'required|numeric|min:0',
             'onsite_balance' => 'required|numeric|min:0',
+            'hollowblock_size' => 'nullable|string',
+            'hollowblock_4_inch_in' => 'nullable|numeric',
+            'hollowblock_5_inch_in' => 'nullable|numeric',
+            'hollowblock_6_inch_in' => 'nullable|numeric',
         ]);
         
         // For starting balance, we put the balance amount in the IN column
@@ -106,11 +129,28 @@ class InventoryController extends Controller
         $data['in'] = $data['balance'];
         $data['onsite_in'] = $data['onsite_balance'];
         
-    // For starting balance, avoid FK/user coupling: use safe defaults to prevent DB NOT NULL errors
-    // customer_id column may be non-nullable in some deployments. Use 0 as a sentinel value.
-    $data['customer_id'] = 0;
-    // customer_type column may be non-nullable; use empty string instead of null
-    $data['customer_type'] = '';
+        // Handle hollowblock sizes for starting balance
+        if ($data['item'] === 'HOLLOWBLOCKS' && isset($data['hollowblock_size'])) {
+            $size = $data['hollowblock_size'];
+            
+            // Set the appropriate hollowblock size fields
+            if ($size === '4_inch') {
+                $data['hollowblock_4_inch_in'] = $data['balance'];
+                $data['hollowblock_4_inch_balance'] = $data['balance'];
+            } elseif ($size === '5_inch') {
+                $data['hollowblock_5_inch_in'] = $data['balance'];
+                $data['hollowblock_5_inch_balance'] = $data['balance'];
+            } elseif ($size === '6_inch') {
+                $data['hollowblock_6_inch_in'] = $data['balance'];
+                $data['hollowblock_6_inch_balance'] = $data['balance'];
+            }
+        }
+        
+        // For starting balance, avoid FK/user coupling: use safe defaults to prevent DB NOT NULL errors
+        // customer_id column may be non-nullable in some deployments. Use 0 as a sentinel value.
+        $data['customer_id'] = 0;
+        // customer_type column may be non-nullable; use empty string instead of null
+        $data['customer_type'] = '';
         $data['is_starting_balance'] = true;
         
         \App\Models\InventoryEntry::create($data);
@@ -127,10 +167,63 @@ class InventoryController extends Controller
             ->orderBy('created_at', 'desc')
             ->first();
             
+        if ($item === 'HOLLOWBLOCKS') {
+            return [
+                'balance' => $lastEntry ? $lastEntry->balance : 0,
+                'onsite_balance' => $lastEntry ? $lastEntry->onsite_balance : 0,
+                'hollowblock_4_inch_balance' => $lastEntry ? $lastEntry->hollowblock_4_inch_balance : 0,
+                'hollowblock_5_inch_balance' => $lastEntry ? $lastEntry->hollowblock_5_inch_balance : 0,
+                'hollowblock_6_inch_balance' => $lastEntry ? $lastEntry->hollowblock_6_inch_balance : 0,
+            ];
+        }
+            
         return [
             'balance' => $lastEntry ? $lastEntry->balance : 0,
             'onsite_balance' => $lastEntry ? $lastEntry->onsite_balance : 0,
         ];
+    }
+    
+    /**
+     * Process hollowblock balances for separate size tracking.
+     */
+    private function processHollowblockBalances(&$data)
+    {
+        $currentBalances = $this->getCurrentBalances('HOLLOWBLOCKS');
+        
+        // Calculate balances for each size
+        if (isset($data['hollowblock_4_inch_in']) || isset($data['hollowblock_4_inch_out'])) {
+            $previousBalance = $currentBalances['hollowblock_4_inch_balance'];
+            $inValue = floatval($data['hollowblock_4_inch_in'] ?? 0);
+            $outValue = floatval($data['hollowblock_4_inch_out'] ?? 0);
+            $data['hollowblock_4_inch_balance'] = $previousBalance + $inValue - $outValue;
+        }
+        
+        if (isset($data['hollowblock_5_inch_in']) || isset($data['hollowblock_5_inch_out'])) {
+            $previousBalance = $currentBalances['hollowblock_5_inch_balance'];
+            $inValue = floatval($data['hollowblock_5_inch_in'] ?? 0);
+            $outValue = floatval($data['hollowblock_5_inch_out'] ?? 0);
+            $data['hollowblock_5_inch_balance'] = $previousBalance + $inValue - $outValue;
+        }
+        
+        if (isset($data['hollowblock_6_inch_in']) || isset($data['hollowblock_6_inch_out'])) {
+            $previousBalance = $currentBalances['hollowblock_6_inch_balance'];
+            $inValue = floatval($data['hollowblock_6_inch_in'] ?? 0);
+            $outValue = floatval($data['hollowblock_6_inch_out'] ?? 0);
+            $data['hollowblock_6_inch_balance'] = $previousBalance + $inValue - $outValue;
+        }
+        
+        // Calculate overall balance for hollowblocks (sum of all sizes)
+        $previousBalance = $currentBalances['balance'];
+        $totalIn = floatval($data['hollowblock_4_inch_in'] ?? 0) + 
+                   floatval($data['hollowblock_5_inch_in'] ?? 0) + 
+                   floatval($data['hollowblock_6_inch_in'] ?? 0);
+        $totalOut = floatval($data['hollowblock_4_inch_out'] ?? 0) + 
+                    floatval($data['hollowblock_5_inch_out'] ?? 0) + 
+                    floatval($data['hollowblock_6_inch_out'] ?? 0);
+        
+        $data['in'] = $totalIn;
+        $data['out'] = $totalOut;
+        $data['balance'] = $previousBalance + $totalIn - $totalOut;
     }
 
     /**
@@ -158,6 +251,13 @@ class InventoryController extends Controller
             'pickup_delivery_type' => 'nullable|string',
             'vat_type' => 'nullable|string',
             'hollowblock_size' => 'nullable|string',
+            // Hollowblock specific fields
+            'hollowblock_4_inch_in' => 'nullable|numeric',
+            'hollowblock_4_inch_out' => 'nullable|numeric',
+            'hollowblock_5_inch_in' => 'nullable|numeric',
+            'hollowblock_5_inch_out' => 'nullable|numeric',
+            'hollowblock_6_inch_in' => 'nullable|numeric',
+            'hollowblock_6_inch_out' => 'nullable|numeric',
         ]);
 
         // Determine customer type
@@ -167,6 +267,18 @@ class InventoryController extends Controller
         } else {
             $data['customer_type'] = 'sub';
             $data['customer_id'] = str_replace('sub-', '', $data['customer_id']);
+        }
+        
+        // Handle PER BAG conversion: 1 BAG = 0.028 cubic (BAG / 36)
+        $pickupDeliveryType = $data['pickup_delivery_type'] ?? '';
+        if ($pickupDeliveryType === 'per_bag' && isset($data['out']) && $data['out'] > 0) {
+            $data['out_original_bags'] = $data['out']; // Store original bag count
+            $data['out'] = $data['out'] / 36; // Convert bags to cubic (1 bag = 0.028 cubic)
+        }
+        
+        // Handle HOLLOWBLOCKS - process separate size columns
+        if ($data['item'] === 'HOLLOWBLOCKS') {
+            $this->processHollowblockBalances($data);
         }
 
         // Respect manual amount toggle; otherwise calculate

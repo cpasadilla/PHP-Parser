@@ -178,7 +178,7 @@
                     <!-- Tabs -->
                     <div class="border-b border-gray-200 dark:border-gray-700 mb-4">
                         <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="inventoryTabs">
-                            @foreach(['G1 DAMORTIS','G1 CURRIMAO','3/4 GRAVEL','VIBRO SAND','SAND S1 DAMORTIS','SAND S1 M','HOLLOWBLOCKS'] as $idx => $item)
+                            @foreach(['G1 DAMORTIS','G1 CURRIMAO','3/4 GRAVEL','VIBRO SAND','SAND S1 M','HOLLOWBLOCKS 4 INCH','HOLLOWBLOCKS 5 INCH','HOLLOWBLOCKS 6 INCH'] as $idx => $item)
                                 <li class="mr-2">
                                     <button class="inline-block p-4 border-b-2 rounded-t-lg text-gray-700 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400" id="tab{{ $idx }}" onclick="showInventoryTab('tabContent{{ $idx }}', 'tab{{ $idx }}')">
                                         {{ $item }}
@@ -188,7 +188,15 @@
                         </ul>
                     </div>
                     <!-- Tab Contents -->
-                    @foreach(['G1 DAMORTIS','G1 CURRIMAO','3/4 GRAVEL','VIBRO SAND','SAND S1 DAMORTIS','SAND S1 M','HOLLOWBLOCKS'] as $idx => $item)
+                    @php 
+                        $inventoryItems = ['G1 DAMORTIS','G1 CURRIMAO','3/4 GRAVEL','VIBRO SAND','SAND S1 M','HOLLOWBLOCKS 4 INCH','HOLLOWBLOCKS 5 INCH','HOLLOWBLOCKS 6 INCH'];
+                        $hollowblockSizeMap = [
+                            'HOLLOWBLOCKS 4 INCH' => ['size' => '4_inch', 'original' => 'HOLLOWBLOCKS'],
+                            'HOLLOWBLOCKS 5 INCH' => ['size' => '5_inch', 'original' => 'HOLLOWBLOCKS'],
+                            'HOLLOWBLOCKS 6 INCH' => ['size' => '6_inch', 'original' => 'HOLLOWBLOCKS']
+                        ];
+                    @endphp
+                    @foreach($inventoryItems as $idx => $item)
                         <div id="tabContent{{ $idx }}" class="tab-content p-4 bg-white rounded-md shadow-md dark:bg-gray-800 dark:shadow-gray-900/25" style="display: {{ $idx === 0 ? 'block' : 'none' }}; overflow-x: auto; white-space: nowrap;">
                             <h3 class="font-semibold mb-2 text-gray-900 dark:text-gray-100">{{ $item }}</h3>
                             <div class="flex flex-wrap items-end gap-3 mb-3">
@@ -231,7 +239,15 @@
                                 <tbody>
                                     @php
                                         $currentMonth = null;
-                                        $itemEntries = $entries->where('item', $item)->sortBy('date');
+                                        // For hollowblock sizes, filter by the original HOLLOWBLOCKS item and the specific size
+                                        if (isset($hollowblockSizeMap[$item])) {
+                                            $sizeInfo = $hollowblockSizeMap[$item];
+                                            $itemEntries = $entries->where('item', $sizeInfo['original'])
+                                                                 ->where('hollowblock_size', $sizeInfo['size'])
+                                                                 ->sortBy('date');
+                                        } else {
+                                            $itemEntries = $entries->where('item', $item)->sortBy('date');
+                                        }
                                     @endphp
                                     @foreach($itemEntries as $entry)
                                         @php
@@ -260,9 +276,40 @@
                                         </td>
                                         <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">{{ $entry->ship_number }}</td>
                                         <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">{{ $entry->voyage_number }}</td>
-                                        <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">{{ $entry->in ? number_format($entry->in, 2) : '' }}</td>
-                                        <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">{{ $entry->out ? number_format($entry->out, 3) : '' }}</td>
-                                        <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 font-semibold text-gray-900 dark:text-gray-100">{{ number_format($entry->balance, 2) }}</td>
+                                        <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">
+                                            @if(isset($hollowblockSizeMap[$item]))
+                                                @php
+                                                    $sizeInfo = $hollowblockSizeMap[$item];
+                                                    $inField = 'hollowblock_' . str_replace('_inch', '', $sizeInfo['size']) . '_inch_in';
+                                                @endphp
+                                                {{ $entry->$inField ? number_format($entry->$inField, 2) : '' }}
+                                            @else
+                                                {{ $entry->in ? number_format($entry->in, 2) : '' }}
+                                            @endif
+                                        </td>
+                                        <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">
+                                            @if(isset($hollowblockSizeMap[$item]))
+                                                @php
+                                                    $outField = 'hollowblock_' . str_replace('_inch', '', $sizeInfo['size']) . '_inch_out';
+                                                @endphp
+                                                {{ $entry->$outField ? number_format($entry->$outField, 3) : '' }}
+                                            @else
+                                                {{ $entry->out ? number_format($entry->out, 3) : '' }}
+                                                @if($entry->out_original_bags && $entry->pickup_delivery_type === 'per_bag')
+                                                    <span class="text-xs text-gray-500">({{ number_format($entry->out_original_bags, 0) }} bags)</span>
+                                                @endif
+                                            @endif
+                                        </td>
+                                        <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 font-semibold text-gray-900 dark:text-gray-100">
+                                            @if(isset($hollowblockSizeMap[$item]))
+                                                @php
+                                                    $balanceField = 'hollowblock_' . str_replace('_inch', '', $sizeInfo['size']) . '_inch_balance';
+                                                @endphp
+                                                {{ number_format($entry->$balanceField ?? 0, 2) }}
+                                            @else
+                                                {{ number_format($entry->balance, 2) }}
+                                            @endif
+                                        </td>
                                         <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">{{ $entry->amount ? number_format($entry->amount, 2) : '' }}</td>
                                         <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">{{ $entry->or_ar }}</td>
                                         <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">{{ $entry->dr_number }}</td>
@@ -306,7 +353,16 @@
                                             <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100"></td> <!-- VOYAGE# -->
                                             <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100"></td> <!-- IN -->
                                             <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100"></td> <!-- OUT -->
-                                            <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 font-bold text-gray-900 dark:text-gray-100">{{ number_format($finalEntry->balance, 2) }}</td> <!-- BALANCE -->
+                                            <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 font-bold text-gray-900 dark:text-gray-100">
+                                                @if(isset($hollowblockSizeMap[$item]))
+                                                    @php
+                                                        $balanceField = 'hollowblock_' . str_replace('_inch', '', $hollowblockSizeMap[$item]['size']) . '_inch_balance';
+                                                    @endphp
+                                                    {{ number_format($finalEntry->$balanceField ?? 0, 2) }}
+                                                @else
+                                                    {{ number_format($finalEntry->balance, 2) }}
+                                                @endif
+                                            </td> <!-- BALANCE -->
                                             <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100"></td> <!-- AMOUNT -->
                                             <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100"></td> <!-- OR/AR -->
                                             <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100"></td> <!-- DR# -->
@@ -347,9 +403,14 @@
                 <div class="mb-2">
                     <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Item</label>
                     <select name="item" class="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400" required onchange="updateBalance()">
-                        @foreach(['G1 DAMORTIS','G1 CURRIMAO','3/4 GRAVEL','VIBRO SAND','SAND S1 DAMORTIS','SAND S1 M','HOLLOWBLOCKS'] as $item)
+                        @foreach(['G1 DAMORTIS','G1 CURRIMAO','3/4 GRAVEL','VIBRO SAND','SAND S1 M'] as $item)
                             <option value="{{ $item }}">{{ $item }}</option>
                         @endforeach
+                        <optgroup label="HOLLOWBLOCKS">
+                            <option value="HOLLOWBLOCKS" data-size="4_inch">HOLLOWBLOCKS 4 INCH</option>
+                            <option value="HOLLOWBLOCKS" data-size="5_inch">HOLLOWBLOCKS 5 INCH</option>
+                            <option value="HOLLOWBLOCKS" data-size="6_inch">HOLLOWBLOCKS 6 INCH</option>
+                        </optgroup>
                     </select>
                 </div>
                 <div class="mb-2 grid grid-cols-2 gap-2">
@@ -396,7 +457,7 @@
                 <!-- Amount Calculation Fields -->
                 <div class="mb-2">
                     <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Pickup/Delivery Type</label>
-                    <select name="pickup_delivery_type" class="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400" onchange="updateAmountCalculation()">
+                    <select name="pickup_delivery_type" class="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400" onchange="updateAmountCalculation(); updateBalance()">>
                         <option value="">Select Type</option>
                         <option value="pickup_pier">Pick up from Pier</option>
                         <option value="pickup_stockpile_delivered_pier">Pick up from Stock Pile & Delivered from Pier</option>
@@ -435,6 +496,15 @@
                     </div>
                     <input type="number" step="0.01" name="amount" id="amountInput" class="w-full mt-1 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-gray-100" min="0" max="999999.99" readonly />
                 </div>
+                
+                <!-- Hidden fields for hollowblock sizes -->
+                <input type="hidden" name="hollowblock_4_inch_in" id="hollowblock_4_inch_in" />
+                <input type="hidden" name="hollowblock_4_inch_out" id="hollowblock_4_inch_out" />
+                <input type="hidden" name="hollowblock_5_inch_in" id="hollowblock_5_inch_in" />
+                <input type="hidden" name="hollowblock_5_inch_out" id="hollowblock_5_inch_out" />
+                <input type="hidden" name="hollowblock_6_inch_in" id="hollowblock_6_inch_in" />
+                <input type="hidden" name="hollowblock_6_inch_out" id="hollowblock_6_inch_out" />
+                
                 <div class="flex justify-end gap-2 mt-4">
                     <button type="button" onclick="document.getElementById('inventoryModal').classList.add('hidden')" class="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded hover:bg-gray-400 dark:hover:bg-gray-700 transition-colors duration-200">Cancel</button>
                     <button type="submit" class="px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded hover:bg-blue-700 dark:hover:bg-blue-800 transition-colors duration-200">Save</button>
@@ -471,10 +541,15 @@
                 @csrf
                 <div class="mb-2">
                     <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Item</label>
-                    <select name="item" class="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400" required>
-                        @foreach(['G1 DAMORTIS','G1 CURRIMAO','3/4 GRAVEL','VIBRO SAND','SAND S1 DAMORTIS','SAND S1 M','HOLLOWBLOCKS'] as $item)
+                    <select name="item" class="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400" required onchange="updateStartingBalanceFields()">
+                        @foreach(['G1 DAMORTIS','G1 CURRIMAO','3/4 GRAVEL','VIBRO SAND','SAND S1 M'] as $item)
                             <option value="{{ $item }}">{{ $item }}</option>
                         @endforeach
+                        <optgroup label="HOLLOWBLOCKS">
+                            <option value="HOLLOWBLOCKS" data-size="4_inch">HOLLOWBLOCKS 4 INCH</option>
+                            <option value="HOLLOWBLOCKS" data-size="5_inch">HOLLOWBLOCKS 5 INCH</option>
+                            <option value="HOLLOWBLOCKS" data-size="6_inch">HOLLOWBLOCKS 6 INCH</option>
+                        </optgroup>
                     </select>
                 </div>
                 <div class="mb-2 grid grid-cols-2 gap-2">
@@ -501,6 +576,13 @@
                         <input type="number" step="0.01" name="onsite_balance" class="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400" min="0" max="999999.99" required />
                     </div>
                 </div>
+                
+                <!-- Hidden fields for hollowblock sizes -->
+                <input type="hidden" name="hollowblock_size" id="starting_hollowblock_size" />
+                <input type="hidden" name="hollowblock_4_inch_in" id="starting_hollowblock_4_inch_in" />
+                <input type="hidden" name="hollowblock_5_inch_in" id="starting_hollowblock_5_inch_in" />
+                <input type="hidden" name="hollowblock_6_inch_in" id="starting_hollowblock_6_inch_in" />
+                
                 <div class="flex justify-end gap-2 mt-4">
                     <button type="button" onclick="document.getElementById('startingBalanceModal').classList.add('hidden')" class="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded hover:bg-gray-400 dark:hover:bg-gray-700 transition-colors duration-200">Cancel</button>
                     <button type="submit" class="px-4 py-2 bg-green-600 dark:bg-green-700 text-white rounded hover:bg-green-700 dark:hover:bg-green-800 transition-colors duration-200">Set Starting Balance</button>
@@ -599,17 +681,66 @@
             var inInput = document.querySelector('#inventoryModal input[name="in"]');
             var outInput = document.querySelector('#inventoryModal input[name="out"]');
             var balanceInput = document.querySelector('#inventoryModal input[name="balance"]');
+            var pickupDeliverySelect = document.querySelector('#inventoryModal select[name="pickup_delivery_type"]');
             
             if (!itemSelect || !balanceInput) return;
             
             var item = itemSelect.value;
             var inValue = parseFloat(inInput.value) || 0;
             var outValue = parseFloat(outInput.value) || 0;
+            
+            // Handle PER BAG conversion: 1 BAG = 0.028 cubic (BAG / 36)
+            // When user selects PER BAG, the OUT input represents number of bags
+            // Convert bags to cubic meters for balance calculation
+            var pickupDeliveryType = pickupDeliverySelect ? pickupDeliverySelect.value : '';
+            var convertedOutValue = outValue; // This will be used for balance calculation
+            
+            if (pickupDeliveryType === 'per_bag' && outValue > 0) {
+                convertedOutValue = outValue / 36; // Convert bags to cubic meters
+                // Store original bag count for display/reference
+                if (outInput) {
+                    outInput.setAttribute('data-original-bags', outValue);
+                }
+                console.log(`PER BAG conversion: ${outValue} bags = ${convertedOutValue.toFixed(6)} cubic meters`);
+            }
+            
+            // Handle hollowblock size selection
+            var selectedOption = itemSelect.options[itemSelect.selectedIndex];
+            var hollowblockSize = selectedOption.getAttribute('data-size');
+            
+            if (item === 'HOLLOWBLOCKS' && hollowblockSize) {
+                // Set the hollowblock size field
+                var hollowblockSizeSelect = document.querySelector('#inventoryModal select[name="hollowblock_size"]');
+                if (hollowblockSizeSelect) {
+                    hollowblockSizeSelect.value = hollowblockSize;
+                }
+                
+                // Update the hidden fields for specific hollowblock size
+                document.getElementById('hollowblock_4_inch_in').value = '';
+                document.getElementById('hollowblock_4_inch_out').value = '';
+                document.getElementById('hollowblock_5_inch_in').value = '';
+                document.getElementById('hollowblock_5_inch_out').value = '';
+                document.getElementById('hollowblock_6_inch_in').value = '';
+                document.getElementById('hollowblock_6_inch_out').value = '';
+                
+                if (hollowblockSize === '4_inch') {
+                    document.getElementById('hollowblock_4_inch_in').value = inValue;
+                    document.getElementById('hollowblock_4_inch_out').value = convertedOutValue; // Use converted value
+                } else if (hollowblockSize === '5_inch') {
+                    document.getElementById('hollowblock_5_inch_in').value = inValue;
+                    document.getElementById('hollowblock_5_inch_out').value = convertedOutValue; // Use converted value
+                } else if (hollowblockSize === '6_inch') {
+                    document.getElementById('hollowblock_6_inch_in').value = inValue;
+                    document.getElementById('hollowblock_6_inch_out').value = convertedOutValue; // Use converted value
+                }
+            }
+            
             var currentBalance = currentBalances[item] ? currentBalances[item].balance : 0;
             
-            // Calculate main balance: current balance + IN - OUT
-            var newBalance = currentBalance + inValue - outValue;
-            balanceInput.value = newBalance.toFixed(2);
+            // Calculate main balance using converted OUT value: current balance + IN - OUT (in cubic)
+            var newBalance = currentBalance + inValue - convertedOutValue;
+            balanceInput.value = newBalance.toFixed(4);
+            console.log(`Balance calculation: ${currentBalance} + ${inValue} - ${convertedOutValue} = ${newBalance.toFixed(4)}`);
             
             // Update hollowblock size field visibility and calculate amount
             updateHollowblockSizeField();
@@ -647,6 +778,24 @@
             var vatType = vatSelect ? vatSelect.value : '';
             var hollowblockSize = hollowblockSizeSelect ? hollowblockSizeSelect.value : '';
             
+            // Update OUT field placeholder and label based on pickup delivery type
+            var outLabel = document.querySelector('label[for="out"], label[aria-label="out"]');
+            if (pickupDeliveryType === 'per_bag') {
+                outInput.placeholder = 'Enter number of bags (e.g., 5 bags → 0.139 cubic)';
+                if (outLabel) {
+                    outLabel.textContent = 'OUT (Number of Bags)';
+                }
+                // Update the manual toggle to be checked for per_bag
+                if (manualToggle) {
+                    manualToggle.checked = true;
+                }
+            } else {
+                outInput.placeholder = 'Enter cubic meters';
+                if (outLabel) {
+                    outLabel.textContent = 'OUT';
+                }
+            }
+            
         // Manual amount if toggle is on OR per_bag type
         if ((manualToggle && manualToggle.checked) || pickupDeliveryType === 'per_bag') {
                 // Make amount field editable for manual entry
@@ -654,7 +803,7 @@
                 amountInput.classList.remove('bg-gray-100', 'dark:bg-gray-600');
                 amountInput.classList.add('bg-white', 'dark:bg-gray-700');
                 if (amountLabel) {
-            amountLabel.textContent = 'AMOUNT (Manual Entry)';
+            amountLabel.textContent = pickupDeliveryType === 'per_bag' ? 'AMOUNT (Per Bag - Manual Entry)' : 'AMOUNT (Manual Entry)';
                 }
                 return;
             } else {
@@ -667,7 +816,14 @@
                 }
             }
             
-            if (outValue <= 0) {
+            // For amount calculation, use the CUBIC value (converted from bags if needed)
+            var calculationOutValue = outValue;
+            if (pickupDeliveryType === 'per_bag') {
+                calculationOutValue = outValue / 36; // Convert bags to cubic for amount calculation
+                console.log(`Amount calculation: ${outValue} bags → ${calculationOutValue.toFixed(6)} cubic`);
+            }
+            
+            if (calculationOutValue <= 0) {
                 amountInput.value = '0.00';
                 return;
             }
@@ -739,7 +895,7 @@
                     priceMultiplier = 0;
             }
             
-            var calculatedAmount = outValue * priceMultiplier;
+            var calculatedAmount = calculationOutValue * priceMultiplier;
             amountInput.value = calculatedAmount.toFixed(2);
         }
 
@@ -893,6 +1049,12 @@
             var vatType = vatSelect ? vatSelect.value : '';
             var hollowblockSize = hollowblockSizeSelect ? hollowblockSizeSelect.value : '';
             
+            // Convert OUT value if it's per_bag for calculation
+            var calculationOutValue = outValue;
+            if (pickupDeliveryType === 'per_bag') {
+                calculationOutValue = outValue / 36; // Convert bags to cubic
+            }
+            
             // Manual amount if toggle is on OR per_bag type
             if ((manualToggle && manualToggle.checked) || pickupDeliveryType === 'per_bag') {
                 // Make amount field editable for manual entry
@@ -900,7 +1062,7 @@
                 amountInput.classList.remove('bg-gray-100', 'dark:bg-gray-600');
                 amountInput.classList.add('bg-white', 'dark:bg-gray-700');
                 if (amountLabel) {
-                    amountLabel.textContent = 'AMOUNT (Manual Entry)';
+                    amountLabel.textContent = pickupDeliveryType === 'per_bag' ? 'AMOUNT (Per Bag - Manual Entry)' : 'AMOUNT (Manual Entry)';
                 }
                 return;
             } else {
@@ -913,7 +1075,7 @@
                 }
             }
             
-            if (outValue <= 0) {
+            if (calculationOutValue <= 0) {
                 amountInput.value = '0.00';
                 return;
             }
@@ -985,7 +1147,7 @@
                     priceMultiplier = 0;
             }
             
-            var calculatedAmount = outValue * priceMultiplier;
+            var calculatedAmount = calculationOutValue * priceMultiplier;
             amountInput.value = calculatedAmount.toFixed(2);
         }
 
@@ -1028,6 +1190,59 @@
                 
                 document.body.appendChild(form);
                 form.submit();
+            }
+        }
+
+        // Function to handle starting balance form for hollowblock sizes
+        function updateStartingBalanceFields() {
+            var itemSelect = document.querySelector('#startingBalanceModal select[name="item"]');
+            if (!itemSelect) return;
+            
+            var selectedOption = itemSelect.options[itemSelect.selectedIndex];
+            var hollowblockSize = selectedOption.getAttribute('data-size');
+            
+            console.log('Selected item:', itemSelect.value, 'Size:', hollowblockSize);
+            
+            // Clear all hollowblock hidden fields
+            document.getElementById('starting_hollowblock_size').value = '';
+            document.getElementById('starting_hollowblock_4_inch_in').value = '';
+            document.getElementById('starting_hollowblock_5_inch_in').value = '';
+            document.getElementById('starting_hollowblock_6_inch_in').value = '';
+            
+            if (itemSelect.value === 'HOLLOWBLOCKS' && hollowblockSize) {
+                document.getElementById('starting_hollowblock_size').value = hollowblockSize;
+                console.log('Set hollowblock_size to:', hollowblockSize);
+                
+                // Add listener to balance input to populate the correct hollowblock size field
+                var balanceInput = document.querySelector('#startingBalanceModal input[name="balance"]');
+                if (balanceInput) {
+                    // Remove any existing listeners to avoid duplicates
+                    balanceInput.removeEventListener('input', updateHollowblockBalance);
+                    balanceInput.addEventListener('input', updateHollowblockBalance);
+                    
+                    // Trigger the event if there's already a value
+                    if (balanceInput.value) {
+                        updateHollowblockBalance.call(balanceInput);
+                    }
+                }
+            }
+        }
+        
+        // Separate function for updating hollowblock balance to avoid closure issues
+        function updateHollowblockBalance() {
+            var itemSelect = document.querySelector('#startingBalanceModal select[name="item"]');
+            var selectedOption = itemSelect.options[itemSelect.selectedIndex];
+            var hollowblockSize = selectedOption.getAttribute('data-size');
+            var balanceValue = parseFloat(this.value) || 0;
+            
+            console.log('Updating hollowblock balance:', hollowblockSize, 'value:', balanceValue);
+            
+            if (hollowblockSize === '4_inch') {
+                document.getElementById('starting_hollowblock_4_inch_in').value = balanceValue;
+            } else if (hollowblockSize === '5_inch') {
+                document.getElementById('starting_hollowblock_5_inch_in').value = balanceValue;
+            } else if (hollowblockSize === '6_inch') {
+                document.getElementById('starting_hollowblock_6_inch_in').value = balanceValue;
             }
         }
 
@@ -1083,7 +1298,7 @@
                 const workbook = XLSX.utils.book_new();
                 
                 // Define the inventory items
-                const inventoryItems = ['G1 DAMORTIS','G1 CURRIMAO','3/4 GRAVEL','VIBRO SAND','SAND S1 DAMORTIS','SAND S1 M','HOLLOWBLOCKS'];
+                const inventoryItems = ['G1 DAMORTIS','G1 CURRIMAO','3/4 GRAVEL','VIBRO SAND','SAND S1 M','HOLLOWBLOCKS'];
                 
                 // Process each inventory item
                 inventoryItems.forEach((itemName, index) => {
