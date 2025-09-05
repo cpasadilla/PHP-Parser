@@ -366,29 +366,19 @@
                 <div class="mb-6">
                     <h4 class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-3 flex items-center">
                         <svg class="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                         </svg>
                         Basic Information
                     </h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date *</label>
-                            <input type="date" name="entry_date" id="edit_shipping_entry_date" required class="w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">AR</label>
+                            <input type="text" name="ar" id="edit_shipping_ar" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Enter AR number...">
                         </div>
                         
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">DCCR No.</label>
-                            <input type="text" name="dccr_number" id="edit_shipping_dccr_number" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Enter DCCR number...">
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Vessel</label>
-                            <input type="text" name="vessel" id="edit_shipping_vessel" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Enter vessel name...">
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Container/Parcel</label>
-                            <input type="text" name="container_parcel" id="edit_shipping_container_parcel" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Enter container/parcel details...">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">OR</label>
+                            <input type="text" name="or" id="edit_shipping_or" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Enter OR number...">
                         </div>
                     </div>
                     
@@ -410,32 +400,85 @@
                         </svg>
                         Financial Details
                     </h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    
+                    <!-- Freight Charges Row -->
+                    <div class="mb-4">
+                        <h5 class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Freight Charges (₱)</h5>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">MV EVERWIN STAR 1</label>
+                                <input type="number" name="mv_everwin_star_1" id="edit_shipping_mv_everwin_star_1" step="0.01" min="0" placeholder="0.00" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" onchange="calculateEditTotal()">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">MV EVERWIN STAR 2</label>
+                                <input type="number" name="mv_everwin_star_2" id="edit_shipping_mv_everwin_star_2" step="0.01" min="0" placeholder="0.00" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" onchange="calculateEditTotal()">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">MV EVERWIN STAR 3</label>
+                                <input type="number" name="mv_everwin_star_3" id="edit_shipping_mv_everwin_star_3" step="0.01" min="0" placeholder="0.00" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" onchange="calculateEditTotal()">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">MV EVERWIN STAR 4</label>
+                                <input type="number" name="mv_everwin_star_4" id="edit_shipping_mv_everwin_star_4" step="0.01" min="0" placeholder="0.00" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" onchange="calculateEditTotal()">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">MV EVERWIN STAR 5</label>
+                                <input type="number" name="mv_everwin_star_5" id="edit_shipping_mv_everwin_star_5" step="0.01" min="0" placeholder="0.00" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" onchange="calculateEditTotal()">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Other Income Row -->
+                    <div class="mb-4">
+                        <h5 class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Other Income (₱)</h5>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">MV EVERWIN STAR 1</label>
+                                <input type="number" name="mv_everwin_star_1_other" id="edit_shipping_mv_everwin_star_1_other" step="0.01" min="0" placeholder="0.00" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" onchange="calculateEditTotal()">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">MV EVERWIN STAR 2</label>
+                                <input type="number" name="mv_everwin_star_2_other" id="edit_shipping_mv_everwin_star_2_other" step="0.01" min="0" placeholder="0.00" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" onchange="calculateEditTotal()">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">MV EVERWIN STAR 3</label>
+                                <input type="number" name="mv_everwin_star_3_other" id="edit_shipping_mv_everwin_star_3_other" step="0.01" min="0" placeholder="0.00" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" onchange="calculateEditTotal()">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">MV EVERWIN STAR 4</label>
+                                <input type="number" name="mv_everwin_star_4_other" id="edit_shipping_mv_everwin_star_4_other" step="0.01" min="0" placeholder="0.00" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" onchange="calculateEditTotal()">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">MV EVERWIN STAR 5</label>
+                                <input type="number" name="mv_everwin_star_5_other" id="edit_shipping_mv_everwin_star_5_other" step="0.01" min="0" placeholder="0.00" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" onchange="calculateEditTotal()">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Additional Charges Row -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Amount (₱) *</label>
-                            <input type="number" name="total" id="edit_shipping_total" step="0.01" min="0" required class="w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="0.00">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Wharfage Payables (₱)</label>
+                            <input type="number" name="wharfage_payables" id="edit_shipping_wharfage_payables" step="0.01" min="0" placeholder="0.00" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" onchange="calculateEditTotal()">
                         </div>
                         
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Payment Method</label>
-                            <select name="payment_method" id="edit_shipping_payment_method" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                                <option value="">Select Payment Method</option>
-                                <option value="Cash">Cash</option>
-                                <option value="Bank Transfer">Bank Transfer</option>
-                                <option value="Check">Check</option>
-                                <option value="Credit">Credit</option>
-                            </select>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Interest (₱)</label>
+                            <input type="number" name="interest" id="edit_shipping_interest" step="0.01" min="0" placeholder="0.00" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" onchange="calculateEditTotal()">
                         </div>
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
-                            <select name="status" id="edit_shipping_status" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                                <option value="">Select Status</option>
-                                <option value="Paid">Paid</option>
-                                <option value="Pending">Pending</option>
-                                <option value="Overdue">Overdue</option>
-                            </select>
-                        </div>
+                    </div>
+                    
+                    <div class="mt-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Total Amount (₱)</label>
+                        <input type="number" id="edit_shipping_total" name="total" step="0.01" readonly class="w-full px-3 py-2.5 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-lg font-semibold text-gray-900 dark:text-white">
                     </div>
                 </div>
                 
@@ -481,6 +524,36 @@
             document.getElementById('addShippingEntryForm').reset();
         }
 
+        // Calculate total amount for edit modal
+        function calculateEditTotal() {
+            const form = document.getElementById('editShippingEntryForm');
+            if (!form) return;
+            
+            const mvStar1 = parseFloat(form.mv_everwin_star_1?.value) || 0;
+            const mvStar2 = parseFloat(form.mv_everwin_star_2?.value) || 0;
+            const mvStar3 = parseFloat(form.mv_everwin_star_3?.value) || 0;
+            const mvStar4 = parseFloat(form.mv_everwin_star_4?.value) || 0;
+            const mvStar5 = parseFloat(form.mv_everwin_star_5?.value) || 0;
+            
+            const mvStar1Other = parseFloat(form.mv_everwin_star_1_other?.value) || 0;
+            const mvStar2Other = parseFloat(form.mv_everwin_star_2_other?.value) || 0;
+            const mvStar3Other = parseFloat(form.mv_everwin_star_3_other?.value) || 0;
+            const mvStar4Other = parseFloat(form.mv_everwin_star_4_other?.value) || 0;
+            const mvStar5Other = parseFloat(form.mv_everwin_star_5_other?.value) || 0;
+            
+            const wharfagePayables = parseFloat(form.wharfage_payables?.value) || 0;
+            const interest = parseFloat(form.interest?.value) || 0;
+            
+            const total = mvStar1 + mvStar2 + mvStar3 + mvStar4 + mvStar5 + 
+                         mvStar1Other + mvStar2Other + mvStar3Other + mvStar4Other + mvStar5Other +
+                         wharfagePayables + interest;
+            
+            const totalField = document.getElementById('edit_shipping_total');
+            if (totalField) {
+                totalField.value = total.toFixed(2);
+            }
+        }
+
         // Calculate total amount
         function calculateTotal() {
             const form = document.getElementById('addShippingEntryForm');
@@ -524,15 +597,29 @@
                 if (data.success) {
                     const entry = data.entry;
                     document.getElementById('edit_shipping_entry_id').value = entry.id;
-                    document.getElementById('edit_shipping_entry_date').value = entry.entry_date;
-                    document.getElementById('edit_shipping_dccr_number').value = entry.dccr_number || '';
+                    document.getElementById('edit_shipping_ar').value = entry.ar || '';
+                    document.getElementById('edit_shipping_or').value = entry.or || '';
                     document.getElementById('edit_shipping_customer_name').value = entry.customer_name;
                     document.getElementById('edit_shipping_customer_id').value = entry.customer_id || '';
-                    document.getElementById('edit_shipping_vessel').value = entry.vessel || '';
-                    document.getElementById('edit_shipping_container_parcel').value = entry.container_parcel || '';
+                    
+                    // Populate all the MV EVERWIN STAR fields
+                    document.getElementById('edit_shipping_mv_everwin_star_1').value = entry.mv_everwin_star_1 || '';
+                    document.getElementById('edit_shipping_mv_everwin_star_2').value = entry.mv_everwin_star_2 || '';
+                    document.getElementById('edit_shipping_mv_everwin_star_3').value = entry.mv_everwin_star_3 || '';
+                    document.getElementById('edit_shipping_mv_everwin_star_4').value = entry.mv_everwin_star_4 || '';
+                    document.getElementById('edit_shipping_mv_everwin_star_5').value = entry.mv_everwin_star_5 || '';
+                    
+                    // Populate other income fields
+                    document.getElementById('edit_shipping_mv_everwin_star_1_other').value = entry.mv_everwin_star_1_other || '';
+                    document.getElementById('edit_shipping_mv_everwin_star_2_other').value = entry.mv_everwin_star_2_other || '';
+                    document.getElementById('edit_shipping_mv_everwin_star_3_other').value = entry.mv_everwin_star_3_other || '';
+                    document.getElementById('edit_shipping_mv_everwin_star_4_other').value = entry.mv_everwin_star_4_other || '';
+                    document.getElementById('edit_shipping_mv_everwin_star_5_other').value = entry.mv_everwin_star_5_other || '';
+                    
+                    // Populate additional fields
+                    document.getElementById('edit_shipping_wharfage_payables').value = entry.wharfage_payables || '';
+                    document.getElementById('edit_shipping_interest').value = entry.interest || '';
                     document.getElementById('edit_shipping_total').value = entry.total;
-                    document.getElementById('edit_shipping_payment_method').value = entry.payment_method || '';
-                    document.getElementById('edit_shipping_status').value = entry.status || '';
                     document.getElementById('edit_shipping_remark').value = entry.remark || '';
                     
                     document.getElementById('editShippingEntryModal').classList.remove('hidden');
