@@ -202,9 +202,9 @@
                             <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
                             <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
                             <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
-                            <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
                             <p style="margin: 0; line-height: 1.3; border-bottom: 2px solid black; padding-bottom: 3px; text-align: center;">&nbsp;</p>
-                            <p style="margin: 0; line-height: 1.3; border-bottom: 1px solid black; padding-bottom: 3px; text-align: center;">&nbsp;</p>
+                            <p style="margin: 0; line-height: 1.3; border-bottom: 2px solid black; padding-bottom: 3px; text-align: center;">&nbsp;</p>
+                            <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
                         </div>
                         <div style="width: 25%; padding: 3px; text-align: right; font-family: 'Cambria', serif;">
                             <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
@@ -279,9 +279,9 @@
                     <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
                     <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
                     <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
-                    <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
                     <p style="margin: 0; line-height: 1.3; border-bottom: 2px solid black; padding-bottom: 3px; text-align: center;">&nbsp;</p>
-                    <p style="margin: 0; line-height: 1.3; border-bottom: 1px solid black; padding-bottom: 3px; text-align: center;">&nbsp;</p>
+                    <p style="margin: 0; line-height: 1.3; border-bottom: 2px solid black; padding-bottom: 3px; text-align: center;">&nbsp;</p>
+                    <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>
                 </div>
                 <div style="width: 25%; padding: 3px; text-align: right; font-family: 'Cambria', serif;">
                     <p style="margin: 0; line-height: 1.3; text-align: center;">&nbsp;</p>

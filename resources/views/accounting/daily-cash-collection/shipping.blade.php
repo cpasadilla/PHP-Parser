@@ -186,159 +186,188 @@
                 <div class="w-full h-px bg-gray-300 dark:bg-gray-600 mt-3"></div>
             </div>
             
-            <form id="addShippingEntryForm">
-                @csrf
-                <input type="hidden" name="type" value="shipping">
-                
-                <!-- Basic Information Section -->
-                <div class="mb-6">
-                    <h4 class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-3 flex items-center">
-                        <svg class="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            <div id="multipleEntriesContainer">
+                <!-- Entry Counter Display -->
+                <div class="mb-4 flex justify-between items-center">
+                    <div class="text-sm text-gray-600 dark:text-gray-400">
+                        <span id="entryCounter">Entry 1 of 1</span>
+                    </div>
+                    <button type="button" onclick="addAnotherShippingEntry()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors flex items-center">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                         </svg>
-                        Basic Information
-                    </h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date *</label>
-                            <input type="date" name="entry_date" required class="w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">AR</label>
-                            <input type="text" name="ar" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Enter AR number...">
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">OR</label>
-                            <input type="text" name="or" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Enter OR number...">
-                        </div>
-                    </div>
-                    
-                    <div class="mt-4 relative">
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Customer Name *</label>
-                        <input type="text" name="customer_name" id="shipping_customer_name" required autocomplete="off" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Start typing customer name...">
-                        <div id="shippingCustomerDropdown" class="absolute z-50 w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg mt-1 hidden max-h-48 overflow-y-auto">
-                            <!-- Customer suggestions will appear here -->
-                        </div>
-                        <input type="hidden" name="customer_id" id="shipping_customer_id">
-                    </div>
-                </div>
-                
-                <!-- Financial Information Section -->
-                <div class="mb-6">
-                    <h4 class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-3 flex items-center">
-                        <svg class="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
-                        </svg>
-                        Financial Details
-                    </h4>
-                    
-                    <!-- Freight Charges Row -->
-                    <div class="mb-4">
-                        <h5 class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Freight Charges (₱)</h5>
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">MV EVERWIN STAR 1</label>
-                                <input type="number" name="mv_everwin_star_1" step="0.01" min="0" placeholder="0.00" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" onchange="calculateTotal()">
-                            </div>
-                            
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">MV EVERWIN STAR 2</label>
-                                <input type="number" name="mv_everwin_star_2" step="0.01" min="0" placeholder="0.00" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" onchange="calculateTotal()">
-                            </div>
-                            
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">MV EVERWIN STAR 3</label>
-                                <input type="number" name="mv_everwin_star_3" step="0.01" min="0" placeholder="0.00" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" onchange="calculateTotal()">
-                            </div>
-                            
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">MV EVERWIN STAR 4</label>
-                                <input type="number" name="mv_everwin_star_4" step="0.01" min="0" placeholder="0.00" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" onchange="calculateTotal()">
-                            </div>
-                            
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">MV EVERWIN STAR 5</label>
-                                <input type="number" name="mv_everwin_star_5" step="0.01" min="0" placeholder="0.00" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" onchange="calculateTotal()">
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Other Income Row -->
-                    <div class="mb-4">
-                        <h5 class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Other Income (₱)</h5>
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">MV EVERWIN STAR 1</label>
-                                <input type="number" name="mv_everwin_star_1_other" step="0.01" min="0" placeholder="0.00" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" onchange="calculateTotal()">
-                            </div>
-                            
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">MV EVERWIN STAR 2</label>
-                                <input type="number" name="mv_everwin_star_2_other" step="0.01" min="0" placeholder="0.00" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" onchange="calculateTotal()">
-                            </div>
-                            
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">MV EVERWIN STAR 3</label>
-                                <input type="number" name="mv_everwin_star_3_other" step="0.01" min="0" placeholder="0.00" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" onchange="calculateTotal()">
-                            </div>
-                            
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">MV EVERWIN STAR 4</label>
-                                <input type="number" name="mv_everwin_star_4_other" step="0.01" min="0" placeholder="0.00" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" onchange="calculateTotal()">
-                            </div>
-                            
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">MV EVERWIN STAR 5</label>
-                                <input type="number" name="mv_everwin_star_5_other" step="0.01" min="0" placeholder="0.00" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" onchange="calculateTotal()">
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Additional Charges Row -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Wharfage Payables (₱)</label>
-                            <input type="number" name="wharfage_payables" step="0.01" min="0" placeholder="0.00" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" onchange="calculateTotal()">
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Interest (₱)</label>
-                            <input type="number" name="interest" step="0.01" min="0" placeholder="0.00" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" onchange="calculateTotal()">
-                        </div>
-                    </div>
-                    
-                    <div class="mt-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Total Amount (₱)</label>
-                        <input type="number" id="totalAmount" name="total" step="0.01" readonly class="w-full px-3 py-2.5 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-lg font-semibold text-gray-900 dark:text-white">
-                    </div>
-                </div>
-                
-                <!-- Additional Information Section -->
-                <div class="mb-6">
-                    <h4 class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-3 flex items-center">
-                        <svg class="w-5 h-5 mr-2 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path>
-                        </svg>
-                        Additional Information
-                    </h4>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Remark</label>
-                        <textarea name="remark" rows="3" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Enter any additional remarks or notes..."></textarea>
-                    </div>
-                </div>
-                
-                <!-- Action Buttons -->
-                <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-600">
-                    <button type="button" onclick="closeAddShippingEntryModal()" class="px-6 py-2.5 bg-gray-500 text-white rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors">
-                        Cancel
-                    </button>
-                    <button type="submit" class="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors">
-                        Save Entry
+                        Add Another Entry
                     </button>
                 </div>
-            </form>
+
+                <form id="addShippingEntryForm">
+                    @csrf
+                    <input type="hidden" name="type" value="shipping">
+                    
+                    <div class="entry-form" data-entry-index="0">
+                        <div class="entry-header flex justify-between items-center mb-4">
+                            <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Entry #1</h4>
+                            <button type="button" onclick="removeShippingEntry(0)" class="remove-entry-btn px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 text-sm hidden">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                                Remove
+                            </button>
+                        </div>
+                
+                        <!-- Basic Information Section -->
+                        <div class="mb-6">
+                            <h5 class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-3 flex items-center">
+                                <svg class="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                Basic Information
+                            </h5>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date *</label>
+                                    <input type="date" name="entries[0][entry_date]" required class="w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">AR</label>
+                                    <input type="text" name="entries[0][ar]" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Enter AR number...">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">OR</label>
+                                    <input type="text" name="entries[0][or]" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Enter OR number...">
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4 relative">
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Customer Name *</label>
+                                <input type="text" name="entries[0][customer_name]" class="customer-name-input w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required autocomplete="off" placeholder="Start typing customer name...">
+                                <div class="customer-dropdown absolute z-50 w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg mt-1 hidden max-h-48 overflow-y-auto">
+                                    <!-- Customer suggestions will appear here -->
+                                </div>
+                                <input type="hidden" name="entries[0][customer_id]" class="customer-id-input">
+                            </div>
+                        </div>
+                
+                        <!-- Financial Information Section -->
+                        <div class="mb-6">
+                            <h5 class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-3 flex items-center">
+                                <svg class="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                                </svg>
+                                Financial Details
+                            </h5>
+                            
+                            <!-- Freight Charges Row -->
+                            <div class="mb-4">
+                                <h6 class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Freight Charges (₱)</h6>
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">MV EVERWIN STAR 1</label>
+                                        <input type="number" name="entries[0][mv_everwin_star_1]" step="0.01" min="0" placeholder="0.00" class="financial-input w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" onchange="calculateEntryTotal(0)">
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">MV EVERWIN STAR 2</label>
+                                        <input type="number" name="entries[0][mv_everwin_star_2]" step="0.01" min="0" placeholder="0.00" class="financial-input w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" onchange="calculateEntryTotal(0)">
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">MV EVERWIN STAR 3</label>
+                                        <input type="number" name="entries[0][mv_everwin_star_3]" step="0.01" min="0" placeholder="0.00" class="financial-input w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" onchange="calculateEntryTotal(0)">
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">MV EVERWIN STAR 4</label>
+                                        <input type="number" name="entries[0][mv_everwin_star_4]" step="0.01" min="0" placeholder="0.00" class="financial-input w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" onchange="calculateEntryTotal(0)">
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">MV EVERWIN STAR 5</label>
+                                        <input type="number" name="entries[0][mv_everwin_star_5]" step="0.01" min="0" placeholder="0.00" class="financial-input w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" onchange="calculateEntryTotal(0)">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Other Income Row -->
+                            <div class="mb-4">
+                                <h6 class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Other Income (₱)</h6>
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">MV EVERWIN STAR 1</label>
+                                        <input type="number" name="entries[0][mv_everwin_star_1_other]" step="0.01" min="0" placeholder="0.00" class="financial-input w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" onchange="calculateEntryTotal(0)">
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">MV EVERWIN STAR 2</label>
+                                        <input type="number" name="entries[0][mv_everwin_star_2_other]" step="0.01" min="0" placeholder="0.00" class="financial-input w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" onchange="calculateEntryTotal(0)">
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">MV EVERWIN STAR 3</label>
+                                        <input type="number" name="entries[0][mv_everwin_star_3_other]" step="0.01" min="0" placeholder="0.00" class="financial-input w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" onchange="calculateEntryTotal(0)">
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">MV EVERWIN STAR 4</label>
+                                        <input type="number" name="entries[0][mv_everwin_star_4_other]" step="0.01" min="0" placeholder="0.00" class="financial-input w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" onchange="calculateEntryTotal(0)">
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">MV EVERWIN STAR 5</label>
+                                        <input type="number" name="entries[0][mv_everwin_star_5_other]" step="0.01" min="0" placeholder="0.00" class="financial-input w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" onchange="calculateEntryTotal(0)">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Additional Charges Row -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Wharfage Payables (₱)</label>
+                                    <input type="number" name="entries[0][wharfage_payables]" step="0.01" min="0" placeholder="0.00" class="financial-input w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" onchange="calculateEntryTotal(0)">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Interest (₱)</label>
+                                    <input type="number" name="entries[0][interest]" step="0.01" min="0" placeholder="0.00" class="financial-input w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" onchange="calculateEntryTotal(0)">
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Total Amount (₱)</label>
+                                <input type="number" class="entry-total w-full px-3 py-2.5 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-lg font-semibold text-gray-900 dark:text-white" name="entries[0][total]" step="0.01" readonly>
+                            </div>
+                        </div>
+                        
+                        <!-- Additional Information Section -->
+                        <div class="mb-6">
+                            <h5 class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-3 flex items-center">
+                                <svg class="w-5 h-5 mr-2 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path>
+                                </svg>
+                                Additional Information
+                            </h5>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Remark</label>
+                                <textarea name="entries[0][remark]" rows="3" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Enter any additional remarks or notes..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Additional entry forms will be added here -->
+                </form>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-600">
+                <button type="button" onclick="closeAddShippingEntryModal()" class="px-6 py-2.5 bg-gray-500 text-white rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors">
+                    Cancel
+                </button>
+                <button type="button" onclick="submitAllShippingEntries()" class="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors">
+                    <span id="submitBtnText">Save Entry</span>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -511,77 +540,324 @@
 
     <script>
         // Modal functions for shipping
+        let shippingEntryCount = 1;
+        
         function openAddShippingEntryModal() {
             document.getElementById('addShippingEntryModal').classList.remove('hidden');
-            // Set today's date as default
-            document.querySelector('#addShippingEntryForm input[name="entry_date"]').value = new Date().toISOString().split('T')[0];
-            // Reset total
-            document.getElementById('totalAmount').value = '0.00';
+            // Set today's date as default for the first entry
+            const firstDateInput = document.querySelector('input[name="entries[0][entry_date]"]');
+            if (firstDateInput) {
+                firstDateInput.value = new Date().toISOString().split('T')[0];
+            }
+            // Reset form
+            resetShippingForm();
+            updateShippingEntryCounter();
         }
 
         function closeAddShippingEntryModal() {
             document.getElementById('addShippingEntryModal').classList.add('hidden');
-            document.getElementById('addShippingEntryForm').reset();
+            // Reset to single entry
+            resetShippingForm();
         }
-
-        // Calculate total amount for edit modal
-        function calculateEditTotal() {
-            const form = document.getElementById('editShippingEntryForm');
-            if (!form) return;
-            
-            const mvStar1 = parseFloat(form.mv_everwin_star_1?.value) || 0;
-            const mvStar2 = parseFloat(form.mv_everwin_star_2?.value) || 0;
-            const mvStar3 = parseFloat(form.mv_everwin_star_3?.value) || 0;
-            const mvStar4 = parseFloat(form.mv_everwin_star_4?.value) || 0;
-            const mvStar5 = parseFloat(form.mv_everwin_star_5?.value) || 0;
-            
-            const mvStar1Other = parseFloat(form.mv_everwin_star_1_other?.value) || 0;
-            const mvStar2Other = parseFloat(form.mv_everwin_star_2_other?.value) || 0;
-            const mvStar3Other = parseFloat(form.mv_everwin_star_3_other?.value) || 0;
-            const mvStar4Other = parseFloat(form.mv_everwin_star_4_other?.value) || 0;
-            const mvStar5Other = parseFloat(form.mv_everwin_star_5_other?.value) || 0;
-            
-            const wharfagePayables = parseFloat(form.wharfage_payables?.value) || 0;
-            const interest = parseFloat(form.interest?.value) || 0;
-            
-            const total = mvStar1 + mvStar2 + mvStar3 + mvStar4 + mvStar5 + 
-                         mvStar1Other + mvStar2Other + mvStar3Other + mvStar4Other + mvStar5Other +
-                         wharfagePayables + interest;
-            
-            const totalField = document.getElementById('edit_shipping_total');
-            if (totalField) {
-                totalField.value = total.toFixed(2);
-            }
-        }
-
-        // Calculate total amount
-        function calculateTotal() {
+        
+        function resetShippingForm() {
+            // Remove all additional entries
+            const container = document.getElementById('multipleEntriesContainer');
             const form = document.getElementById('addShippingEntryForm');
-            if (!form) return;
+            const additionalEntries = form.querySelectorAll('.entry-form:not([data-entry-index="0"])');
+            additionalEntries.forEach(entry => entry.remove());
             
-            const mvStar1 = parseFloat(form.mv_everwin_star_1?.value) || 0;
-            const mvStar2 = parseFloat(form.mv_everwin_star_2?.value) || 0;
-            const mvStar3 = parseFloat(form.mv_everwin_star_3?.value) || 0;
-            const mvStar4 = parseFloat(form.mv_everwin_star_4?.value) || 0;
-            const mvStar5 = parseFloat(form.mv_everwin_star_5?.value) || 0;
+            // Reset first entry
+            const firstEntry = form.querySelector('.entry-form[data-entry-index="0"]');
+            if (firstEntry) {
+                firstEntry.querySelectorAll('input, textarea').forEach(input => {
+                    if (input.type !== 'hidden') {
+                        input.value = '';
+                    }
+                });
+                firstEntry.querySelector('.remove-entry-btn').classList.add('hidden');
+            }
             
-            const mvStar1Other = parseFloat(form.mv_everwin_star_1_other?.value) || 0;
-            const mvStar2Other = parseFloat(form.mv_everwin_star_2_other?.value) || 0;
-            const mvStar3Other = parseFloat(form.mv_everwin_star_3_other?.value) || 0;
-            const mvStar4Other = parseFloat(form.mv_everwin_star_4_other?.value) || 0;
-            const mvStar5Other = parseFloat(form.mv_everwin_star_5_other?.value) || 0;
+            shippingEntryCount = 1;
+            updateShippingEntryCounter();
+            updateShippingSubmitButton();
+        }
+        
+        function addAnotherShippingEntry() {
+            const form = document.getElementById('addShippingEntryForm');
+            const entryIndex = shippingEntryCount;
             
-            const wharfagePayables = parseFloat(form.wharfage_payables?.value) || 0;
-            const interest = parseFloat(form.interest?.value) || 0;
+            // Get the first entry as a template
+            const firstEntry = form.querySelector('.entry-form[data-entry-index="0"]');
+            const newEntry = firstEntry.cloneNode(true);
+            
+            // Update the new entry
+            newEntry.setAttribute('data-entry-index', entryIndex);
+            newEntry.querySelector('.entry-header h4').textContent = `Entry #${entryIndex + 1}`;
+            
+            // Update all input names and ids
+            newEntry.querySelectorAll('input, textarea').forEach(input => {
+                if (input.name) {
+                    input.name = input.name.replace(/entries\[0\]/, `entries[${entryIndex}]`);
+                }
+                if (input.id) {
+                    input.id = input.id.replace(/0/, entryIndex);
+                }
+                // Clear values except hidden inputs
+                if (input.type !== 'hidden') {
+                    input.value = '';
+                }
+                // Set default date
+                if (input.name.includes('entry_date')) {
+                    input.value = new Date().toISOString().split('T')[0];
+                }
+                // Update onchange events
+                if (input.classList.contains('financial-input')) {
+                    input.setAttribute('onchange', `calculateEntryTotal(${entryIndex})`);
+                }
+            });
+            
+            // Update customer dropdown class
+            const customerDropdown = newEntry.querySelector('.customer-dropdown');
+            if (customerDropdown) {
+                customerDropdown.classList.add('hidden');
+                customerDropdown.innerHTML = '';
+            }
+            
+            // Show remove button
+            const removeBtn = newEntry.querySelector('.remove-entry-btn');
+            removeBtn.classList.remove('hidden');
+            removeBtn.setAttribute('onclick', `removeShippingEntry(${entryIndex})`);
+            
+            // Add border to separate entries
+            newEntry.classList.add('border-t', 'border-gray-200', 'dark:border-gray-600', 'pt-6', 'mt-6');
+            
+            // Append the new entry
+            form.appendChild(newEntry);
+            
+            shippingEntryCount++;
+            updateShippingEntryCounter();
+            updateShippingSubmitButton();
+            
+            // Show remove button for first entry if more than one entry
+            if (shippingEntryCount > 1) {
+                const firstRemoveBtn = form.querySelector('.entry-form[data-entry-index="0"] .remove-entry-btn');
+                if (firstRemoveBtn) {
+                    firstRemoveBtn.classList.remove('hidden');
+                }
+            }
+            
+            // Setup customer search for the new entry
+            setupDynamicCustomerSearch();
+        }
+        
+        function removeShippingEntry(entryIndex) {
+            const form = document.getElementById('addShippingEntryForm');
+            const entryToRemove = form.querySelector(`.entry-form[data-entry-index="${entryIndex}"]`);
+            
+            if (entryToRemove && shippingEntryCount > 1) {
+                entryToRemove.remove();
+                shippingEntryCount--;
+                updateShippingEntryCounter();
+                updateShippingSubmitButton();
+                
+                // Hide remove button for first entry if only one entry left
+                if (shippingEntryCount === 1) {
+                    const firstRemoveBtn = form.querySelector('.entry-form[data-entry-index="0"] .remove-entry-btn');
+                    if (firstRemoveBtn) {
+                        firstRemoveBtn.classList.add('hidden');
+                    }
+                }
+                
+                // Renumber remaining entries
+                renumberShippingEntries();
+            }
+        }
+        
+        function renumberShippingEntries() {
+            const form = document.getElementById('addShippingEntryForm');
+            const entries = form.querySelectorAll('.entry-form');
+            
+            entries.forEach((entry, index) => {
+                entry.setAttribute('data-entry-index', index);
+                entry.querySelector('.entry-header h4').textContent = `Entry #${index + 1}`;
+                
+                // Update input names
+                entry.querySelectorAll('input, textarea').forEach(input => {
+                    if (input.name) {
+                        input.name = input.name.replace(/entries\[\d+\]/, `entries[${index}]`);
+                    }
+                    // Update onchange events for financial inputs
+                    if (input.classList.contains('financial-input')) {
+                        input.setAttribute('onchange', `calculateEntryTotal(${index})`);
+                    }
+                });
+                
+                // Update remove button onclick
+                const removeBtn = entry.querySelector('.remove-entry-btn');
+                if (removeBtn) {
+                    removeBtn.setAttribute('onclick', `removeShippingEntry(${index})`);
+                }
+            });
+            
+            shippingEntryCount = entries.length;
+        }
+        
+        function updateShippingEntryCounter() {
+            const counter = document.getElementById('entryCounter');
+            if (counter) {
+                counter.textContent = `Entry 1 of ${shippingEntryCount}`;
+            }
+        }
+        
+        function updateShippingSubmitButton() {
+            const submitBtn = document.getElementById('submitBtnText');
+            if (submitBtn) {
+                submitBtn.textContent = shippingEntryCount > 1 ? `Save ${shippingEntryCount} Entries` : 'Save Entry';
+            }
+        }
+
+        // Calculate total amount for a specific entry
+        function calculateEntryTotal(entryIndex) {
+            const form = document.getElementById('addShippingEntryForm');
+            const entry = form.querySelector(`.entry-form[data-entry-index="${entryIndex}"]`);
+            if (!entry) return;
+            
+            const mvStar1 = parseFloat(entry.querySelector(`input[name="entries[${entryIndex}][mv_everwin_star_1]"]`)?.value) || 0;
+            const mvStar2 = parseFloat(entry.querySelector(`input[name="entries[${entryIndex}][mv_everwin_star_2]"]`)?.value) || 0;
+            const mvStar3 = parseFloat(entry.querySelector(`input[name="entries[${entryIndex}][mv_everwin_star_3]"]`)?.value) || 0;
+            const mvStar4 = parseFloat(entry.querySelector(`input[name="entries[${entryIndex}][mv_everwin_star_4]"]`)?.value) || 0;
+            const mvStar5 = parseFloat(entry.querySelector(`input[name="entries[${entryIndex}][mv_everwin_star_5]"]`)?.value) || 0;
+            
+            const mvStar1Other = parseFloat(entry.querySelector(`input[name="entries[${entryIndex}][mv_everwin_star_1_other]"]`)?.value) || 0;
+            const mvStar2Other = parseFloat(entry.querySelector(`input[name="entries[${entryIndex}][mv_everwin_star_2_other]"]`)?.value) || 0;
+            const mvStar3Other = parseFloat(entry.querySelector(`input[name="entries[${entryIndex}][mv_everwin_star_3_other]"]`)?.value) || 0;
+            const mvStar4Other = parseFloat(entry.querySelector(`input[name="entries[${entryIndex}][mv_everwin_star_4_other]"]`)?.value) || 0;
+            const mvStar5Other = parseFloat(entry.querySelector(`input[name="entries[${entryIndex}][mv_everwin_star_5_other]"]`)?.value) || 0;
+            
+            const wharfagePayables = parseFloat(entry.querySelector(`input[name="entries[${entryIndex}][wharfage_payables]"]`)?.value) || 0;
+            const interest = parseFloat(entry.querySelector(`input[name="entries[${entryIndex}][interest]"]`)?.value) || 0;
             
             const total = mvStar1 + mvStar2 + mvStar3 + mvStar4 + mvStar5 + 
                          mvStar1Other + mvStar2Other + mvStar3Other + mvStar4Other + mvStar5Other +
                          wharfagePayables + interest;
             
-            const totalField = document.getElementById('totalAmount');
+            const totalField = entry.querySelector(`input[name="entries[${entryIndex}][total]"]`);
             if (totalField) {
                 totalField.value = total.toFixed(2);
             }
+        }
+
+        // Calculate total amount (legacy function for compatibility)
+        function calculateTotal() {
+            calculateEntryTotal(0);
+        }
+
+        // Submit all shipping entries
+        function submitAllShippingEntries() {
+            const form = document.getElementById('addShippingEntryForm');
+            const formData = new FormData(form);
+            
+            // Add multiple entries flag
+            formData.append('multiple_entries', 'true');
+            
+            fetch('{{ route("accounting.daily-cash-collection.store") }}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message || `${shippingEntryCount} entries created successfully!`);
+                    closeAddShippingEntryModal();
+                    location.reload();
+                } else {
+                    alert('Error creating entries: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error creating entries');
+            });
+        }
+
+        // Dynamic customer search setup for all entries
+        function setupDynamicCustomerSearch() {
+            const form = document.getElementById('addShippingEntryForm');
+            const customerInputs = form.querySelectorAll('.customer-name-input');
+            
+            customerInputs.forEach(input => {
+                // Skip if already has event listeners
+                if (input.hasAttribute('data-search-setup')) return;
+                input.setAttribute('data-search-setup', 'true');
+                
+                const dropdown = input.parentNode.querySelector('.customer-dropdown');
+                const idField = input.parentNode.querySelector('.customer-id-input');
+                let searchTimeout;
+                
+                input.addEventListener('input', function() {
+                    const query = this.value.trim();
+                    
+                    clearTimeout(searchTimeout);
+                    
+                    if (query.length === 0) {
+                        dropdown.innerHTML = '';
+                        dropdown.classList.add('hidden');
+                        idField.value = '';
+                        return;
+                    }
+                    
+                    const delay = query.length === 1 ? 0 : 300;
+                    
+                    searchTimeout = setTimeout(() => {
+                        fetch(`{{ route("accounting.search-customers") }}?q=${encodeURIComponent(query)}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            dropdown.innerHTML = '';
+                            
+                            if (data.length === 0) {
+                                dropdown.innerHTML = '<div class="px-4 py-2 text-gray-500">No customers found</div>';
+                                dropdown.classList.remove('hidden');
+                                return;
+                            }
+                            
+                            data.slice(0, 10).forEach(customer => {
+                                const div = document.createElement('div');
+                                div.className = 'px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600';
+                                div.textContent = customer.name;
+                                div.dataset.id = customer.id;
+                                div.dataset.name = customer.name;
+                                
+                                div.addEventListener('click', function() {
+                                    input.value = customer.name;
+                                    idField.value = customer.id;
+                                    dropdown.classList.add('hidden');
+                                });
+                                
+                                dropdown.appendChild(div);
+                            });
+                            
+                            dropdown.classList.remove('hidden');
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            dropdown.innerHTML = '<div class="px-4 py-2 text-red-500">Error loading customers</div>';
+                            dropdown.classList.remove('hidden');
+                        });
+                    }, delay);
+                });
+                
+                // Hide dropdown when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!input.contains(e.target) && !dropdown.contains(e.target)) {
+                        dropdown.classList.add('hidden');
+                    }
+                });
+            });
         }
 
         function openEditShippingModal(entryId) {
@@ -808,34 +1084,10 @@
             });
         }
 
-        // Form submissions for shipping
+        // Form submissions for shipping - legacy handler (kept for compatibility)
         document.getElementById('addShippingEntryForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            
-            const formData = new FormData(this);
-            
-            fetch('{{ route("accounting.daily-cash-collection.store") }}', {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Entry created successfully!');
-                    closeAddShippingEntryModal();
-                    location.reload();
-                } else {
-                    alert('Error creating entry: ' + (data.message || 'Unknown error'));
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error creating entry');
-            });
+            submitAllShippingEntries();
         });
 
         document.getElementById('editShippingEntryForm').addEventListener('submit', function(e) {
@@ -869,6 +1121,12 @@
             });
         });
 
+        // Initialize customer search when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            setupDynamicCustomerSearch();
+            setupShippingCustomerSearch('edit_shipping_customer_name', 'editShippingCustomerDropdown', 'edit_shipping_customer_id');
+        });
+
         // Date filtering functions
         function filterByDate() {
             const selectedDate = document.getElementById('filterDate').value;
@@ -897,11 +1155,5 @@
             url.searchParams.delete('date');
             window.location.href = url.toString();
         }
-
-        // Initialize customer search when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            setupShippingCustomerSearch('shipping_customer_name', 'shippingCustomerDropdown', 'shipping_customer_id');
-            setupShippingCustomerSearch('edit_shipping_customer_name', 'editShippingCustomerDropdown', 'edit_shipping_customer_id');
-        });
     </script>
 </x-app-layout>

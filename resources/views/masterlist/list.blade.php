@@ -267,7 +267,10 @@
                                     <span class="transferred-indicator" title="Transferred Order">↗</span>
                                 @endif
                             </td>
-                            <td class="p-2">{{ \Carbon\Carbon::parse($order->created_at)->format('F d, Y') }}</td>
+                            <td class="p-2">
+                                <div>{{ \Carbon\Carbon::parse($order->created_at)->format('F d, Y') }}</div>
+                                <div class="text-sm text-gray-600 dark:text-gray-400">{{ \Carbon\Carbon::parse($order->created_at)->format('h:i A') }}</div>
+                            </td>
                             <td class="p-2 container-cell" data-column="container">
                                 @if(Auth::user()->hasSubpagePermission('masterlist', 'list', 'edit'))
                                 <textarea 
