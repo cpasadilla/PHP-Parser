@@ -322,14 +322,35 @@
                                         </td>
                                         <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">{{ $entry->onsite_in ? number_format($entry->onsite_in, 2) : '' }}</td>
                                         <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">{{ $entry->actual_out ? number_format($entry->actual_out, 3) : '' }}</td>
-                                        <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 font-semibold text-gray-900 dark:text-gray-100">{{ $entry->onsite_balance !== null ? number_format($entry->onsite_balance, 2) : '' }}</td>
-                                        <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">
-                                            @if($entry->out && $entry->actual_out)
-                                                {{ number_format($entry->out - $entry->actual_out, 3) }}
-                                            @elseif($entry->out && !$entry->actual_out)
-                                                {{ number_format($entry->out, 3) }}
+                                        <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 font-semibold text-gray-900 dark:text-gray-100">
+                                            @if(isset($hollowblockSizeMap[$item]))
+                                                {{ $entry->onsite_balance !== null ? number_format($entry->onsite_balance, 2) : '' }}
                                             @else
-                                                
+                                                {{ $entry->onsite_balance !== null ? number_format($entry->onsite_balance, 2) : ($entry->balance !== null ? number_format($entry->balance, 2) : '') }}
+                                            @endif
+                                        </td>
+                                        <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">
+                                            @if(isset($hollowblockSizeMap[$item]))
+                                                @php
+                                                    $sizeInfo = $hollowblockSizeMap[$item];
+                                                    $outField = 'hollowblock_' . str_replace('_inch', '', $sizeInfo['size']) . '_inch_out';
+                                                    $outValue = $entry->$outField;
+                                                @endphp
+                                                @if($outValue && $entry->actual_out)
+                                                    {{ number_format($outValue - $entry->actual_out, 3) }}
+                                                @elseif($outValue && !$entry->actual_out)
+                                                    {{ number_format($outValue, 3) }}
+                                                @else
+                                                    
+                                                @endif
+                                            @else
+                                                @if($entry->out && $entry->actual_out)
+                                                    {{ number_format($entry->out - $entry->actual_out, 3) }}
+                                                @elseif($entry->out && !$entry->actual_out)
+                                                    {{ number_format($entry->out, 3) }}
+                                                @else
+                                                    
+                                                @endif
                                             @endif
                                         </td>
                                         <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-center">
@@ -528,6 +549,59 @@
                     <button type="submit" class="px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded hover:bg-blue-700 dark:hover:bg-blue-800 transition-colors duration-200">Save</button>
                 </div>
             </form>
+            
+            <script>
+            // Add debug logging to edit form
+            document.addEventListener('DOMContentLoaded', function() {
+                const editForm = document.getElementById('editInventoryForm');
+                if (editForm) {
+                    editForm.addEventListener('submit', function(e) {
+                        console.log('=== EDIT FORM SUBMISSION DEBUG ===');
+                        console.log('Form action:', this.action);
+                        console.log('Form method:', this.method);
+                        
+                        const formData = new FormData(this);
+                        console.log('Form data being submitted:');
+                        for (let [key, value] of formData.entries()) {
+                            console.log(key + ': ' + value);
+                        }
+                        
+                        // Special logging for HOLLOWBLOCK entries
+                        const itemField = this.querySelector('input[name="item"]');
+                        if (itemField && itemField.value === 'HOLLOWBLOCKS') {
+                            console.log('=== HOLLOWBLOCK SPECIFIC FIELDS ===');
+                            const sizeField = this.querySelector('select[name="hollowblock_size"]');
+                            console.log('Selected size:', sizeField ? sizeField.value : 'NOT FOUND');
+                            
+                            ['4_inch', '5_inch', '6_inch'].forEach(size => {
+                                const inField = this.querySelector(`input[name="hollowblock_${size}_in"]`);
+                                const outField = this.querySelector(`input[name="hollowblock_${size}_out"]`);
+                                const balanceField = this.querySelector(`input[name="hollowblock_${size}_balance"]`);
+                                console.log(`${size} - IN: ${inField ? inField.value : 'N/A'}, OUT: ${outField ? outField.value : 'N/A'}, BALANCE: ${balanceField ? balanceField.value : 'N/A'}`);
+                            });
+                        }
+                        
+                        const actualOutField = this.querySelector('input[name="actual_out"]');
+                        if (actualOutField) {
+                            console.log('ACTUAL OUT field value:', actualOutField.value);
+                            console.log('ACTUAL OUT field type:', actualOutField.type);
+                            console.log('ACTUAL OUT field name:', actualOutField.name);
+                        } else {
+                            console.log('ACTUAL OUT field not found in form');
+                        }
+                        
+                        // Check if actual_out is in form data
+                        const actualOutInFormData = formData.get('actual_out');
+                        console.log('actual_out in FormData:', actualOutInFormData);
+                        
+                        console.log('=== END DEBUG ===');
+                        
+                        // Don't prevent submission, just log
+                        return true;
+                    });
+                }
+            });
+            </script>
         </div>
     </div>
     @endif
@@ -659,11 +733,32 @@
         // Global variables to store current balances
         var currentBalances = @json($entries->groupBy('item')->map(function($items) {
             $latest = $items->sortByDesc('date')->sortByDesc('created_at')->first();
-            return [
+            $balanceData = [
                 'balance' => $latest ? $latest->balance : 0,
                 'onsite_balance' => $latest ? $latest->onsite_balance : 0
             ];
+            
+            // Add hollowblock-specific balances if this is HOLLOWBLOCKS
+            if ($latest && $latest->item === 'HOLLOWBLOCKS') {
+                $balanceData['hollowblock_4_inch_balance'] = $latest->hollowblock_4_inch_balance ?? 0;
+                $balanceData['hollowblock_5_inch_balance'] = $latest->hollowblock_5_inch_balance ?? 0;
+                $balanceData['hollowblock_6_inch_balance'] = $latest->hollowblock_6_inch_balance ?? 0;
+            }
+            
+            return $balanceData;
         }));
+        
+        // Global variables to store current balances for each hollowblock size
+        @php
+            $hollowblock4InchLatest = $entries->where('item', 'HOLLOWBLOCKS')->filter(function($e) { return $e->hollowblock_size === '4_inch'; })->sortByDesc('date')->sortByDesc('created_at')->first();
+            $hollowblock5InchLatest = $entries->where('item', 'HOLLOWBLOCKS')->filter(function($e) { return $e->hollowblock_size === '5_inch'; })->sortByDesc('date')->sortByDesc('created_at')->first();
+            $hollowblock6InchLatest = $entries->where('item', 'HOLLOWBLOCKS')->filter(function($e) { return $e->hollowblock_size === '6_inch'; })->sortByDesc('date')->sortByDesc('created_at')->first();
+        @endphp
+        var hollowblockSizeBalances = {
+            'HOLLOWBLOCKS 4 INCH': {{ $hollowblock4InchLatest?->hollowblock_4_inch_balance ?? 0 }},
+            'HOLLOWBLOCKS 5 INCH': {{ $hollowblock5InchLatest?->hollowblock_5_inch_balance ?? 0 }},
+            'HOLLOWBLOCKS 6 INCH': {{ $hollowblock6InchLatest?->hollowblock_6_inch_balance ?? 0 }}
+        };
 
         function loadCurrentBalances() {
             var itemSelect = document.querySelector('#inventoryModal select[name="item"]');
@@ -735,7 +830,17 @@
                 }
             }
             
-            var currentBalance = currentBalances[item] ? currentBalances[item].balance : 0;
+            // Determine the current balance to use
+            var currentBalance = 0;
+            if (item === 'HOLLOWBLOCKS' && hollowblockSize) {
+                // For hollowblocks, use the size-specific balance
+                var hollowblockItemKey = 'HOLLOWBLOCKS ' + hollowblockSize.replace('_inch', ' INCH').toUpperCase();
+                currentBalance = hollowblockSizeBalances[hollowblockItemKey] || 0;
+                console.log(`Using hollowblock ${hollowblockSize} balance: ${currentBalance}`);
+            } else {
+                // For other items, use the general balance
+                currentBalance = currentBalances[item] ? currentBalances[item].balance : 0;
+            }
             
             // Calculate main balance using converted OUT value: current balance + IN - OUT (in cubic)
             var newBalance = currentBalance + inValue - convertedOutValue;
@@ -885,9 +990,9 @@
                     if (hollowblockSize === '4_inch') {
                         priceMultiplier = (vatType === 'with_vat') ? 73.92 : 66.00;
                     } else if (hollowblockSize === '5_inch') {
-                        priceMultiplier = (vatType === 'with_vat') ? 80.08 : 71.00;
+                        priceMultiplier = (vatType === 'with_vat') ? 80.08 : 71.50;
                     } else if (hollowblockSize === '6_inch') {
-                        priceMultiplier = (vatType === 'with_vat') ? 86.24 : 77.00;
+                        priceMultiplier = (vatType === 'with_vat') ? 80.08 : 71.50;
                     }
                     break;
                     
@@ -897,6 +1002,16 @@
             
             var calculatedAmount = calculationOutValue * priceMultiplier;
             amountInput.value = calculatedAmount.toFixed(2);
+        }
+
+        // Function to get initial balance value for edit modal
+        function getInitialBalanceValue(found) {
+            if (found.item === 'HOLLOWBLOCKS' && found.hollowblock_size) {
+                // Get the size-specific balance field from the entry itself
+                var balanceField = 'hollowblock_' + found.hollowblock_size + '_balance';
+                return found[balanceField] || 0;
+            }
+            return found.balance || '';
         }
 
     function openEditModal(id) {
@@ -974,44 +1089,44 @@
                         Manual amount
                     </label>
                 </div>
-                <input type='number' step='0.01' name='amount' id='editAmountInput' value='${found.amount ?? ''}' class='w-full mt-1 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 ${editManualChecked ? 'bg-white dark:bg-gray-700' : 'bg-gray-100 dark:bg-gray-600'} text-gray-900 dark:text-gray-100' min='0' max='999999.99' ${editManualChecked ? '' : 'readonly'} />
+                <input type='number' step='0.01' name='amount' id='editAmountInput' value='${found.amount || ''}' class='w-full mt-1 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 ${editManualChecked ? 'bg-white dark:bg-gray-700' : 'bg-gray-100 dark:bg-gray-600'} text-gray-900 dark:text-gray-100' min='0' max='999999.99' ${editManualChecked ? '' : 'readonly'} />
             </div>`;
             fields += `<div class='mb-2 grid grid-cols-2 gap-2'>
                 <div>
                     <label class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>OR/AR</label>
-                    <input type='text' name='or_ar' value='${found.or_ar ?? ''}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' />
+                    <input type='text' name='or_ar' value='${found.or_ar || ''}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' oninput="updateEditAmountCalculation()" />
                 </div>
                 <div>
                     <label class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>DR#</label>
-                    <input type='text' name='dr_number' value='${found.dr_number ?? ''}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' />
+                    <input type='text' name='dr_number' value='${found.dr_number || ''}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' oninput="updateEditAmountCalculation()" />
                 </div>
             </div>`;
             fields += `<div class='mb-2 grid grid-cols-3 gap-2'>
                 <div>
                     <label class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>IN</label>
-                    <input type='number' step='0.0001' name='in' value='${found.in ?? ''}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' />
+                    <input type='number' step='0.0001' name='in' value='${found.in || ''}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' oninput="updateEditBalance()" />
                 </div>
                 <div>
                     <label class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>OUT</label>
-                    <input type='number' step='0.0001' name='out' value='${found.out ?? ''}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' oninput="updateEditAmountCalculation()" />
+                    <input type='number' step='0.0001' name='out' value='${found.out || ''}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' oninput="updateEditBalance(); updateEditAmountCalculation()" />
                 </div>
                 <div>
                     <label class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>BALANCE</label>
-                    <input type='number' step='0.0001' name='balance' value='${found.balance ?? ''}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' />
+                    <input type='number' step='0.0001' name='balance' value='${getInitialBalanceValue(found)}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' />
                 </div>
             </div>`;
             fields += `<div class='mb-2 grid grid-cols-3 gap-2'>
                 <div>
                     <label class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>ONSITE IN</label>
-                    <input type='number' step='0.0001' name='onsite_in' value='${found.onsite_in ?? ''}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' />
+                    <input type='number' step='0.0001' name='onsite_in' value='${found.onsite_in || ''}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' />
                 </div>
                 <div>
                     <label class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>ACTUAL OUT</label>
-                    <input type='number' step='0.0001' name='actual_out' value='${found.actual_out ?? ''}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' />
+                    <input type='number' step='0.0001' name='actual_out' value='${found.actual_out || ''}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' />
                 </div>
                 <div>
                     <label class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>ONSITE BALANCE</label>
-                    <input type='number' step='0.0001' name='onsite_balance' value='${found.onsite_balance ?? ''}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' />
+                    <input type='number' step='0.0001' name='onsite_balance' value='${found.onsite_balance || ''}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' />
                 </div>
             </div>`;
             // Add Onsite Date field - accessible to everyone
@@ -1020,6 +1135,18 @@
                 <label class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>Onsite Date</label>
                 <input type='date' name='onsite_date' value='${currentDate}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' />
             </div>`;
+            
+            // Add hidden fields for hollowblock sizes
+            fields += `<input type='hidden' name='hollowblock_4_inch_in' id='edit_hollowblock_4_inch_in' value='${found.hollowblock_4_inch_in || ''}' />`;
+            fields += `<input type='hidden' name='hollowblock_4_inch_out' id='edit_hollowblock_4_inch_out' value='${found.hollowblock_4_inch_out || ''}' />`;
+            fields += `<input type='hidden' name='hollowblock_4_inch_balance' id='edit_hollowblock_4_inch_balance' value='${found.hollowblock_4_inch_balance || ''}' />`;
+            fields += `<input type='hidden' name='hollowblock_5_inch_in' id='edit_hollowblock_5_inch_in' value='${found.hollowblock_5_inch_in || ''}' />`;
+            fields += `<input type='hidden' name='hollowblock_5_inch_out' id='edit_hollowblock_5_inch_out' value='${found.hollowblock_5_inch_out || ''}' />`;
+            fields += `<input type='hidden' name='hollowblock_5_inch_balance' id='edit_hollowblock_5_inch_balance' value='${found.hollowblock_5_inch_balance || ''}' />`;
+            fields += `<input type='hidden' name='hollowblock_6_inch_in' id='edit_hollowblock_6_inch_in' value='${found.hollowblock_6_inch_in || ''}' />`;
+            fields += `<input type='hidden' name='hollowblock_6_inch_out' id='edit_hollowblock_6_inch_out' value='${found.hollowblock_6_inch_out || ''}' />`;
+            fields += `<input type='hidden' name='hollowblock_6_inch_balance' id='edit_hollowblock_6_inch_balance' value='${found.hollowblock_6_inch_balance || ''}' />`;
+            
             document.getElementById('editInventoryFields').innerHTML = fields;
             document.getElementById('editInventoryModal').classList.remove('hidden');
             // Initialize edit amount state based on pickup_delivery_type or existing manual toggle
@@ -1027,6 +1154,20 @@
             // Add event listeners for onsite balance calculation
             document.querySelector('#editInventoryModal input[name="onsite_in"]').addEventListener('input', updateOnsiteBalance);
             document.querySelector('#editInventoryModal input[name="actual_out"]').addEventListener('input', updateOnsiteBalance);
+            // Add event listeners for hollowblock balance recalculation
+            if (found.item === 'HOLLOWBLOCKS') {
+                document.querySelector('#editInventoryModal input[name="in"]').addEventListener('input', updateEditHollowblockBalance);
+                document.querySelector('#editInventoryModal input[name="out"]').addEventListener('input', updateEditHollowblockBalance);
+                document.querySelector('#editInventoryModal select[name="hollowblock_size"]').addEventListener('change', updateEditHollowblockBalance);
+                
+                // Add event listener for manual balance changes
+                document.querySelector('#editInventoryModal input[name="balance"]').addEventListener('input', function() {
+                    handleManualHollowblockBalanceChange();
+                });
+                
+                // Initialize hollowblock fields based on current entry data
+                updateEditHollowblockBalance();
+            }
             // Initial calculation
             updateOnsiteBalance();
         }
@@ -1049,11 +1190,8 @@
             var vatType = vatSelect ? vatSelect.value : '';
             var hollowblockSize = hollowblockSizeSelect ? hollowblockSizeSelect.value : '';
             
-            // Convert OUT value if it's per_bag for calculation
+            // In edit mode, OUT value is already in cubic meters, so no conversion needed
             var calculationOutValue = outValue;
-            if (pickupDeliveryType === 'per_bag') {
-                calculationOutValue = outValue / 36; // Convert bags to cubic
-            }
             
             // Manual amount if toggle is on OR per_bag type
             if ((manualToggle && manualToggle.checked) || pickupDeliveryType === 'per_bag') {
@@ -1137,9 +1275,9 @@
                     if (hollowblockSize === '4_inch') {
                         priceMultiplier = (vatType === 'with_vat') ? 73.92 : 66.00;
                     } else if (hollowblockSize === '5_inch') {
-                        priceMultiplier = (vatType === 'with_vat') ? 80.08 : 71.00;
+                        priceMultiplier = (vatType === 'with_vat') ? 80.08 : 71.50;
                     } else if (hollowblockSize === '6_inch') {
-                        priceMultiplier = (vatType === 'with_vat') ? 86.24 : 77.00;
+                        priceMultiplier = (vatType === 'with_vat') ? 80.08 : 71.50;
                     }
                     break;
                     
@@ -1164,6 +1302,107 @@
             var onsiteBalance = previousBalance + onsiteIn - actualOut;
             
             onsiteBalanceInput.value = onsiteBalance.toFixed(4);
+        }
+        
+        // Function to update hollowblock fields during edit
+        function updateEditHollowblockBalance() {
+            var itemInput = document.querySelector('#editInventoryModal input[name="item"]');
+            var inInput = document.querySelector('#editInventoryModal input[name="in"]');
+            var outInput = document.querySelector('#editInventoryModal input[name="out"]');
+            var balanceInput = document.querySelector('#editInventoryModal input[name="balance"]');
+            var hollowblockSizeSelect = document.querySelector('#editInventoryModal select[name="hollowblock_size"]');
+            var pickupDeliverySelect = document.querySelector('#editInventoryModal select[name="pickup_delivery_type"]');
+            
+            if (!itemInput || itemInput.value !== 'HOLLOWBLOCKS') return;
+            
+            var inValue = parseFloat(inInput.value) || 0;
+            var outValue = parseFloat(outInput.value) || 0;
+            var hollowblockSize = hollowblockSizeSelect ? hollowblockSizeSelect.value : '';
+            var pickupDeliveryType = pickupDeliverySelect ? pickupDeliverySelect.value : '';
+            
+            // Handle PER BAG conversion
+            var convertedOutValue = outValue;
+            if (pickupDeliveryType === 'per_bag' && outValue > 0) {
+                convertedOutValue = outValue / 36; // Convert bags to cubic meters
+            }
+            
+            if (!hollowblockSize) return;
+            
+            // Get the current entry data
+            var entryId = document.querySelector('#editInventoryForm').action.split('/').pop();
+            var entryData = @json($entries);
+            var currentEntry = entryData.find(e => e.id == entryId);
+            
+            // Clear all size-specific fields first
+            document.getElementById('edit_hollowblock_4_inch_in').value = '';
+            document.getElementById('edit_hollowblock_4_inch_out').value = '';
+            document.getElementById('edit_hollowblock_4_inch_balance').value = '';
+            document.getElementById('edit_hollowblock_5_inch_in').value = '';
+            document.getElementById('edit_hollowblock_5_inch_out').value = '';
+            document.getElementById('edit_hollowblock_5_inch_balance').value = '';
+            document.getElementById('edit_hollowblock_6_inch_in').value = '';
+            document.getElementById('edit_hollowblock_6_inch_out').value = '';
+            document.getElementById('edit_hollowblock_6_inch_balance').value = '';
+            
+            // Set values for the specific size being edited
+            if (hollowblockSize === '4_inch') {
+                document.getElementById('edit_hollowblock_4_inch_in').value = inValue;
+                document.getElementById('edit_hollowblock_4_inch_out').value = convertedOutValue;
+                // Calculate new balance: previous balance + new in - new out
+                var originalIn = parseFloat(currentEntry.hollowblock_4_inch_in) || 0;
+                var originalOut = parseFloat(currentEntry.hollowblock_4_inch_out) || 0;
+                var currentBalance = parseFloat(currentEntry.hollowblock_4_inch_balance) || 0;
+                var previousBalance = currentBalance - originalIn + originalOut;
+                var newBalance = previousBalance + inValue - convertedOutValue;
+                document.getElementById('edit_hollowblock_4_inch_balance').value = newBalance.toFixed(4);
+                if (balanceInput) balanceInput.value = newBalance.toFixed(4);
+            } else if (hollowblockSize === '5_inch') {
+                document.getElementById('edit_hollowblock_5_inch_in').value = inValue;
+                document.getElementById('edit_hollowblock_5_inch_out').value = convertedOutValue;
+                var originalIn = parseFloat(currentEntry.hollowblock_5_inch_in) || 0;
+                var originalOut = parseFloat(currentEntry.hollowblock_5_inch_out) || 0;
+                var currentBalance = parseFloat(currentEntry.hollowblock_5_inch_balance) || 0;
+                var previousBalance = currentBalance - originalIn + originalOut;
+                var newBalance = previousBalance + inValue - convertedOutValue;
+                document.getElementById('edit_hollowblock_5_inch_balance').value = newBalance.toFixed(4);
+                if (balanceInput) balanceInput.value = newBalance.toFixed(4);
+            } else if (hollowblockSize === '6_inch') {
+                document.getElementById('edit_hollowblock_6_inch_in').value = inValue;
+                document.getElementById('edit_hollowblock_6_inch_out').value = convertedOutValue;
+                var originalIn = parseFloat(currentEntry.hollowblock_6_inch_in) || 0;
+                var originalOut = parseFloat(currentEntry.hollowblock_6_inch_out) || 0;
+                var currentBalance = parseFloat(currentEntry.hollowblock_6_inch_balance) || 0;
+                var previousBalance = currentBalance - originalIn + originalOut;
+                var newBalance = previousBalance + inValue - convertedOutValue;
+                document.getElementById('edit_hollowblock_6_inch_balance').value = newBalance.toFixed(4);
+                if (balanceInput) balanceInput.value = newBalance.toFixed(4);
+            }
+            
+            console.log(`Edit: Updated hollowblock ${hollowblockSize} fields - IN: ${inValue}, OUT: ${convertedOutValue}`);
+        }
+
+        // Function to handle manual balance changes for HOLLOWBLOCKS
+        function handleManualHollowblockBalanceChange() {
+            var balanceInput = document.querySelector('#editInventoryModal input[name="balance"]');
+            var hollowblockSizeSelect = document.querySelector('#editInventoryModal select[name="hollowblock_size"]');
+            
+            if (!balanceInput || !hollowblockSizeSelect) return;
+            
+            var newBalance = parseFloat(balanceInput.value) || 0;
+            var hollowblockSize = hollowblockSizeSelect.value;
+            
+            if (!hollowblockSize) return;
+            
+            console.log(`Manual balance change for ${hollowblockSize}: ${newBalance}`);
+            
+            // Update the appropriate size-specific balance field
+            if (hollowblockSize === '4_inch') {
+                document.getElementById('edit_hollowblock_4_inch_balance').value = newBalance.toFixed(4);
+            } else if (hollowblockSize === '5_inch') {
+                document.getElementById('edit_hollowblock_5_inch_balance').value = newBalance.toFixed(4);
+            } else if (hollowblockSize === '6_inch') {
+                document.getElementById('edit_hollowblock_6_inch_balance').value = newBalance.toFixed(4);
+            }
         }
 
         // Delete confirmation function
@@ -1190,6 +1429,51 @@
                 
                 document.body.appendChild(form);
                 form.submit();
+            }
+        }
+
+        // Function to update balance in edit modal for non-hollowblock items
+        function updateEditBalance() {
+            var itemInput = document.querySelector('#editInventoryModal input[name="item"]');
+            var inInput = document.querySelector('#editInventoryModal input[name="in"]');
+            var outInput = document.querySelector('#editInventoryModal input[name="out"]');
+            var balanceInput = document.querySelector('#editInventoryModal input[name="balance"]');
+            var pickupDeliverySelect = document.querySelector('#editInventoryModal select[name="pickup_delivery_type"]');
+            
+            if (!itemInput || !balanceInput) return;
+            
+            var item = itemInput.value;
+            
+            // Only handle balance recalculation for non-hollowblock items
+            if (item === 'HOLLOWBLOCKS') {
+                // For hollowblocks, use the specialized function
+                updateEditHollowblockBalance();
+                return;
+            }
+            
+            var inValue = parseFloat(inInput.value) || 0;
+            var outValue = parseFloat(outInput.value) || 0;
+            var pickupDeliveryType = pickupDeliverySelect ? pickupDeliverySelect.value : '';
+            
+            // For edit mode, the OUT value is already in cubic meters (not bags)
+            // So we don't need to convert it again, regardless of pickup_delivery_type
+            var convertedOutValue = outValue;
+            
+            // Get the previous balance (balance before this entry)
+            var entryId = document.querySelector('#editInventoryForm').action.split('/').pop();
+            var entryData = @json($entries);
+            var currentEntry = entryData.find(e => e.id == entryId);
+            
+            if (currentEntry && currentBalances[item]) {
+                var currentItemBalance = currentBalances[item].balance || 0;
+                // Calculate what the previous balance was
+                var originalIn = parseFloat(currentEntry.in) || 0;
+                var originalOut = parseFloat(currentEntry.out) || 0;
+                var previousBalance = currentItemBalance - originalIn + originalOut;
+                
+                // Calculate new balance with updated values
+                var newBalance = previousBalance + inValue - convertedOutValue;
+                balanceInput.value = newBalance.toFixed(4);
             }
         }
 

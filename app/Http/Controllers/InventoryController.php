@@ -168,12 +168,31 @@ class InventoryController extends Controller
             ->first();
             
         if ($item === 'HOLLOWBLOCKS') {
+            // For hollowblocks, get the latest entry for each size separately
+            $latest4Inch = \App\Models\InventoryEntry::where('item', 'HOLLOWBLOCKS')
+                ->where('hollowblock_size', '4_inch')
+                ->orderBy('date', 'desc')
+                ->orderBy('created_at', 'desc')
+                ->first();
+                
+            $latest5Inch = \App\Models\InventoryEntry::where('item', 'HOLLOWBLOCKS')
+                ->where('hollowblock_size', '5_inch')
+                ->orderBy('date', 'desc')
+                ->orderBy('created_at', 'desc')
+                ->first();
+                
+            $latest6Inch = \App\Models\InventoryEntry::where('item', 'HOLLOWBLOCKS')
+                ->where('hollowblock_size', '6_inch')
+                ->orderBy('date', 'desc')
+                ->orderBy('created_at', 'desc')
+                ->first();
+            
             return [
                 'balance' => $lastEntry ? $lastEntry->balance : 0,
                 'onsite_balance' => $lastEntry ? $lastEntry->onsite_balance : 0,
-                'hollowblock_4_inch_balance' => $lastEntry ? $lastEntry->hollowblock_4_inch_balance : 0,
-                'hollowblock_5_inch_balance' => $lastEntry ? $lastEntry->hollowblock_5_inch_balance : 0,
-                'hollowblock_6_inch_balance' => $lastEntry ? $lastEntry->hollowblock_6_inch_balance : 0,
+                'hollowblock_4_inch_balance' => $latest4Inch ? $latest4Inch->hollowblock_4_inch_balance : 0,
+                'hollowblock_5_inch_balance' => $latest5Inch ? $latest5Inch->hollowblock_5_inch_balance : 0,
+                'hollowblock_6_inch_balance' => $latest6Inch ? $latest6Inch->hollowblock_6_inch_balance : 0,
             ];
         }
             
@@ -190,30 +209,102 @@ class InventoryController extends Controller
     {
         $currentBalances = $this->getCurrentBalances('HOLLOWBLOCKS');
         
-        // Calculate balances for each size
-        if (isset($data['hollowblock_4_inch_in']) || isset($data['hollowblock_4_inch_out'])) {
-            $previousBalance = $currentBalances['hollowblock_4_inch_balance'];
-            $inValue = floatval($data['hollowblock_4_inch_in'] ?? 0);
-            $outValue = floatval($data['hollowblock_4_inch_out'] ?? 0);
-            $data['hollowblock_4_inch_balance'] = $previousBalance + $inValue - $outValue;
-        }
+        // Debug logging
+        \Log::info('Processing Hollowblock Balances', [
+            'data_received' => $data,
+            'current_balances' => $currentBalances
+        ]);
         
-        if (isset($data['hollowblock_5_inch_in']) || isset($data['hollowblock_5_inch_out'])) {
-            $previousBalance = $currentBalances['hollowblock_5_inch_balance'];
-            $inValue = floatval($data['hollowblock_5_inch_in'] ?? 0);
-            $outValue = floatval($data['hollowblock_5_inch_out'] ?? 0);
-            $data['hollowblock_5_inch_balance'] = $previousBalance + $inValue - $outValue;
-        }
+        // For HOLLOWBLOCKS updates, we need to handle the specific size being updated
+        $hollowblockSize = $data['hollowblock_size'] ?? '';
         
-        if (isset($data['hollowblock_6_inch_in']) || isset($data['hollowblock_6_inch_out'])) {
-            $previousBalance = $currentBalances['hollowblock_6_inch_balance'];
-            $inValue = floatval($data['hollowblock_6_inch_in'] ?? 0);
-            $outValue = floatval($data['hollowblock_6_inch_out'] ?? 0);
-            $data['hollowblock_6_inch_balance'] = $previousBalance + $inValue - $outValue;
+        if ($hollowblockSize) {
+            // Clear all size fields first
+            $data['hollowblock_4_inch_in'] = 0;
+            $data['hollowblock_4_inch_out'] = 0;
+            $data['hollowblock_5_inch_in'] = 0;
+            $data['hollowblock_5_inch_out'] = 0;
+            $data['hollowblock_6_inch_in'] = 0;
+            $data['hollowblock_6_inch_out'] = 0;
+            
+            // Set the values for the specific size being updated
+            $inValue = floatval($data['in'] ?? 0);
+            $outValue = floatval($data['out'] ?? 0);
+            
+            $sizeFieldIn = 'hollowblock_' . $hollowblockSize . '_in';
+            $sizeFieldOut = 'hollowblock_' . $hollowblockSize . '_out';
+            $sizeFieldBalance = 'hollowblock_' . $hollowblockSize . '_balance';
+            
+            $data[$sizeFieldIn] = $inValue;
+            $data[$sizeFieldOut] = $outValue;
+            
+            // Check if a manual balance was provided for this specific size
+            if (isset($data[$sizeFieldBalance]) && $data[$sizeFieldBalance] !== null && $data[$sizeFieldBalance] !== '') {
+                // Use the manually provided balance
+                $data[$sizeFieldBalance] = floatval($data[$sizeFieldBalance]);
+                \Log::info('Using manual balance for ' . $hollowblockSize, ['balance' => $data[$sizeFieldBalance]]);
+            } else {
+                // Calculate balance based on previous balance + IN - OUT
+                $currentSizeBalance = $currentBalances['hollowblock_' . $hollowblockSize . '_balance'] ?? 0;
+                $data[$sizeFieldBalance] = $currentSizeBalance + $inValue - $outValue;
+                \Log::info('Calculated balance for ' . $hollowblockSize, ['balance' => $data[$sizeFieldBalance]]);
+            }
+            
+            // Set balance fields for other sizes to their current values
+            foreach (['4_inch', '5_inch', '6_inch'] as $size) {
+                if ($size !== $hollowblockSize) {
+                    $balanceField = 'hollowblock_' . $size . '_balance';
+                    $data[$balanceField] = $currentBalances[$balanceField] ?? 0;
+                }
+            }
+        } else {
+            // Fallback to original logic if no specific size
+            // Calculate balances for each size
+            if (isset($data['hollowblock_4_inch_in']) || isset($data['hollowblock_4_inch_out'])) {
+                $previousBalance = $currentBalances['hollowblock_4_inch_balance'];
+                $inValue = floatval($data['hollowblock_4_inch_in'] ?? 0);
+                $outValue = floatval($data['hollowblock_4_inch_out'] ?? 0);
+                
+                // If balance is provided directly, use it; otherwise calculate
+                if (isset($data['hollowblock_4_inch_balance']) && $data['hollowblock_4_inch_balance'] !== null) {
+                    $data['hollowblock_4_inch_balance'] = floatval($data['hollowblock_4_inch_balance']);
+                } else {
+                    $data['hollowblock_4_inch_balance'] = $previousBalance + $inValue - $outValue;
+                }
+            }
+            
+            if (isset($data['hollowblock_5_inch_in']) || isset($data['hollowblock_5_inch_out'])) {
+                $previousBalance = $currentBalances['hollowblock_5_inch_balance'];
+                $inValue = floatval($data['hollowblock_5_inch_in'] ?? 0);
+                $outValue = floatval($data['hollowblock_5_inch_out'] ?? 0);
+                
+                // If balance is provided directly, use it; otherwise calculate
+                if (isset($data['hollowblock_5_inch_balance']) && $data['hollowblock_5_inch_balance'] !== null) {
+                    $data['hollowblock_5_inch_balance'] = floatval($data['hollowblock_5_inch_balance']);
+                } else {
+                    $data['hollowblock_5_inch_balance'] = $previousBalance + $inValue - $outValue;
+                }
+            }
+            
+            if (isset($data['hollowblock_6_inch_in']) || isset($data['hollowblock_6_inch_out'])) {
+                $previousBalance = $currentBalances['hollowblock_6_inch_balance'];
+                $inValue = floatval($data['hollowblock_6_inch_in'] ?? 0);
+                $outValue = floatval($data['hollowblock_6_inch_out'] ?? 0);
+                
+                // If balance is provided directly, use it; otherwise calculate
+                if (isset($data['hollowblock_6_inch_balance']) && $data['hollowblock_6_inch_balance'] !== null) {
+                    $data['hollowblock_6_inch_balance'] = floatval($data['hollowblock_6_inch_balance']);
+                } else {
+                    $data['hollowblock_6_inch_balance'] = $previousBalance + $inValue - $outValue;
+                }
+            }
         }
         
         // Calculate overall balance for hollowblocks (sum of all sizes)
-        $previousBalance = $currentBalances['balance'];
+        $totalBalance = ($data['hollowblock_4_inch_balance'] ?? 0) + 
+                       ($data['hollowblock_5_inch_balance'] ?? 0) + 
+                       ($data['hollowblock_6_inch_balance'] ?? 0);
+        
         $totalIn = floatval($data['hollowblock_4_inch_in'] ?? 0) + 
                    floatval($data['hollowblock_5_inch_in'] ?? 0) + 
                    floatval($data['hollowblock_6_inch_in'] ?? 0);
@@ -223,7 +314,11 @@ class InventoryController extends Controller
         
         $data['in'] = $totalIn;
         $data['out'] = $totalOut;
-        $data['balance'] = $previousBalance + $totalIn - $totalOut;
+        $data['balance'] = $totalBalance;
+        
+        \Log::info('Final processed hollowblock data', [
+            'final_data' => $data
+        ]);
     }
 
     /**
@@ -232,6 +327,19 @@ class InventoryController extends Controller
     public function update(Request $request, $id)
     {
         $entry = \App\Models\InventoryEntry::findOrFail($id);
+        
+        // Debug logging
+        \Log::info('Inventory Update Request - HOLLOWBLOCK Debug', [
+            'entry_id' => $id,
+            'item' => $request->input('item'),
+            'is_hollowblock' => $request->input('item') === 'HOLLOWBLOCKS',
+            'hollowblock_size' => $request->input('hollowblock_size'),
+            'balance_input' => $request->input('balance'),
+            'hollowblock_4_inch_balance' => $request->input('hollowblock_4_inch_balance'),
+            'hollowblock_5_inch_balance' => $request->input('hollowblock_5_inch_balance'),
+            'hollowblock_6_inch_balance' => $request->input('hollowblock_6_inch_balance'),
+            'all_request_data' => $request->all()
+        ]);
         
         $data = $request->validate([
             'item' => 'required|string',
@@ -254,10 +362,13 @@ class InventoryController extends Controller
             // Hollowblock specific fields
             'hollowblock_4_inch_in' => 'nullable|numeric',
             'hollowblock_4_inch_out' => 'nullable|numeric',
+            'hollowblock_4_inch_balance' => 'nullable|numeric',
             'hollowblock_5_inch_in' => 'nullable|numeric',
             'hollowblock_5_inch_out' => 'nullable|numeric',
+            'hollowblock_5_inch_balance' => 'nullable|numeric',
             'hollowblock_6_inch_in' => 'nullable|numeric',
             'hollowblock_6_inch_out' => 'nullable|numeric',
+            'hollowblock_6_inch_balance' => 'nullable|numeric',
         ]);
 
         // Determine customer type
@@ -269,12 +380,9 @@ class InventoryController extends Controller
             $data['customer_id'] = str_replace('sub-', '', $data['customer_id']);
         }
         
-        // Handle PER BAG conversion: 1 BAG = 0.028 cubic (BAG / 36)
-        $pickupDeliveryType = $data['pickup_delivery_type'] ?? '';
-        if ($pickupDeliveryType === 'per_bag' && isset($data['out']) && $data['out'] > 0) {
-            $data['out_original_bags'] = $data['out']; // Store original bag count
-            $data['out'] = $data['out'] / 36; // Convert bags to cubic (1 bag = 0.028 cubic)
-        }
+        // For UPDATE operations, we don't apply PER BAG conversion
+        // because the stored values are already in cubic meters
+        // The conversion only happens during CREATE operations
         
         // Handle HOLLOWBLOCKS - process separate size columns
         if ($data['item'] === 'HOLLOWBLOCKS') {
@@ -299,6 +407,18 @@ class InventoryController extends Controller
         }
 
         $entry->update($data);
+        
+        // Debug logging after update
+        $entry->refresh();
+        \Log::info('Inventory Update Complete - HOLLOWBLOCK Debug', [
+            'entry_id' => $id,
+            'final_balance' => $entry->balance,
+            'final_hollowblock_4_inch_balance' => $entry->hollowblock_4_inch_balance,
+            'final_hollowblock_5_inch_balance' => $entry->hollowblock_5_inch_balance,
+            'final_hollowblock_6_inch_balance' => $entry->hollowblock_6_inch_balance,
+            'data_processed' => $data
+        ]);
+        
         return redirect()->route('inventory')->with('success', 'Inventory entry updated!');
     }
 
@@ -375,9 +495,9 @@ class InventoryController extends Controller
                 if ($hollowblockSize === '4_inch') {
                     $priceMultiplier = ($vatType === 'with_vat') ? 73.92 : 66.00;
                 } elseif ($hollowblockSize === '5_inch') {
-                    $priceMultiplier = ($vatType === 'with_vat') ? 80.08 : 71.00;
+                    $priceMultiplier = ($vatType === 'with_vat') ? 80.08 : 71.50;
                 } elseif ($hollowblockSize === '6_inch') {
-                    $priceMultiplier = ($vatType === 'with_vat') ? 86.24 : 77.00;
+                    $priceMultiplier = ($vatType === 'with_vat') ? 80.08 : 71.50;
                 }
                 break;
                 
