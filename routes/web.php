@@ -378,6 +378,61 @@ Route::middleware(['auth', 'page.permission:dashboard'])->group(function() {
     Route::get('/buttons/text-icon', function () {
         return view('buttons-showcase.text-icon');
     })->name('buttons.text-icon');
+
+    // Crew Management routes
+    Route::middleware('subpage.permission:crew,crew-management')->group(function () {
+        Route::resource('crew', \App\Http\Controllers\CrewController::class);
+        Route::post('/crew/{crew}/transfer', [\App\Http\Controllers\CrewController::class, 'transfer'])->name('crew.transfer');
+        Route::patch('/crew/{crew}/status', [\App\Http\Controllers\CrewController::class, 'updateStatus'])->name('crew.status');
+        Route::get('/crew/{crew}/leave-credits', [\App\Http\Controllers\LeaveApplicationController::class, 'getCrewLeaveCredits'])->name('crew.leave-credits');
+        
+        // Export routes
+        Route::get('/crew/export/pdf', [\App\Http\Controllers\CrewController::class, 'exportPdf'])->name('crew.export.pdf');
+        Route::get('/crew/export/excel', [\App\Http\Controllers\CrewController::class, 'exportExcel'])->name('crew.export.excel');
+    });
+
+    // Crew Embarkation routes
+    Route::middleware('subpage.permission:crew,crew-management')->group(function () {
+        Route::resource('crew-embarkations', \App\Http\Controllers\CrewEmbarkationController::class);
+        Route::patch('/crew-embarkations/{crewEmbarkation}/disembark', [\App\Http\Controllers\CrewEmbarkationController::class, 'disembark'])->name('crew-embarkations.disembark');
+    });
+
+    // Crew Document routes
+    Route::middleware('subpage.permission:crew,document-management')->group(function () {
+        Route::resource('crew-documents', \App\Http\Controllers\CrewDocumentController::class);
+        Route::post('/crew-documents/{crewDocument}/verify', [\App\Http\Controllers\CrewDocumentController::class, 'verify'])->name('crew-documents.verify');
+        Route::get('/crew-documents/{crewDocument}/download', [\App\Http\Controllers\CrewDocumentController::class, 'download'])->name('crew-documents.download');
+        Route::get('/crew-documents/{crewDocument}/view', [\App\Http\Controllers\CrewDocumentController::class, 'viewFile'])->name('crew-documents.view');
+    });
+
+    // Expiring Documents route
+    Route::middleware('subpage.permission:crew,expiring-documents')->group(function () {
+        Route::get('/crew-documents-expiring', [\App\Http\Controllers\CrewDocumentController::class, 'expiring'])->name('crew-documents.expiring');
+    });
+
+    // Leave Application routes
+    Route::middleware('subpage.permission:crew,leave-applications')->group(function () {
+        Route::resource('leave-applications', \App\Http\Controllers\LeaveApplicationController::class);
+        Route::post('/leave-applications/{leaveApplication}/approve', [\App\Http\Controllers\LeaveApplicationController::class, 'approve'])->name('leave-applications.approve');
+        Route::post('/leave-applications/{leaveApplication}/reject', [\App\Http\Controllers\LeaveApplicationController::class, 'reject'])->name('leave-applications.reject');
+        Route::post('/leave-applications/{leaveApplication}/hr-review', [\App\Http\Controllers\LeaveApplicationController::class, 'hrReview'])->name('leave-applications.hr-review');
+        Route::post('/leave-applications/{leaveApplication}/final-approval', [\App\Http\Controllers\LeaveApplicationController::class, 'finalApproval'])->name('leave-applications.final-approval');
+        Route::get('/leave-applications/{leaveApplication}/download', [\App\Http\Controllers\LeaveApplicationController::class, 'download'])->name('leave-applications.download');
+    });
+
+    // Upload Sick Leave routes
+    Route::middleware('subpage.permission:crew,upload-sick-leave')->group(function () {
+        Route::match(['GET', 'POST'], '/upload-sick-leave', [\App\Http\Controllers\LeaveApplicationController::class, 'uploadSickLeave'])->name('leave-applications.upload-sick-leave');
+    });
+
+    // Leave Credits Management routes
+    Route::middleware('subpage.permission:crew,leave-credits')->group(function () {
+        Route::get('/leave-credits', [\App\Http\Controllers\LeaveCreditsController::class, 'index'])->name('leave-credits.index');
+        Route::get('/leave-credits/{crew}/edit', [\App\Http\Controllers\LeaveCreditsController::class, 'edit'])->name('leave-credits.edit');
+        Route::put('/leave-credits/{crew}', [\App\Http\Controllers\LeaveCreditsController::class, 'update'])->name('leave-credits.update');
+        Route::get('/leave-credits/bulk/edit', [\App\Http\Controllers\LeaveCreditsController::class, 'bulkEdit'])->name('leave-credits.bulk-edit');
+        Route::post('/leave-credits/bulk/update', [\App\Http\Controllers\LeaveCreditsController::class, 'bulkUpdate'])->name('leave-credits.bulk-update');
+    });
 });
 
 require __DIR__ . '/auth.php';

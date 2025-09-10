@@ -45,7 +45,13 @@ class AppServiceProvider extends ServiceProvider
         
         // Share ships with all views to prevent undefined variable errors
         View::composer('*', function ($view) {
-            $view->with('ships', Ship::all());
+            try {
+                $ships = Ship::all();
+                $view->with('ships', $ships);
+            } catch (\Exception $e) {
+                // If there's a database error, provide an empty collection
+                $view->with('ships', collect([]));
+            }
         });
     }
 }

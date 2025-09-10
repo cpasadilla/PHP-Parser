@@ -114,6 +114,36 @@
                         'operations' => ['access', 'create', 'delete']
                     ]
                 ]
+            ],
+            'crew' => [
+                'name' => 'Crew Management',
+                'operations' => ['access', 'create', 'edit', 'delete'],
+                'pages' => [
+                    'crew-management' => [
+                        'name' => 'Crew Management',
+                        'operations' => ['access', 'create', 'edit', 'delete']
+                    ],
+                    'document-management' => [
+                        'name' => 'Document Management',
+                        'operations' => ['access', 'create', 'edit', 'delete']
+                    ],
+                    'expiring-documents' => [
+                        'name' => 'Expiring Documents',
+                        'operations' => ['access', 'create', 'edit', 'delete']
+                    ],
+                    'leave-applications' => [
+                        'name' => 'Leave Applications',
+                        'operations' => ['access', 'create', 'edit', 'delete']
+                    ],
+                    'upload-sick-leave' => [
+                        'name' => 'Upload Sick Leave Form',
+                        'operations' => ['access', 'create', 'edit', 'delete']
+                    ],
+                    'leave-credits' => [
+                        'name' => 'Leave Credits Management',
+                        'operations' => ['access', 'create', 'edit', 'delete']
+                    ]
+                ]
             ]
         ];
         

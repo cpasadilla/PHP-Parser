@@ -78,15 +78,17 @@
             />
             @endif
 
-            @foreach($ships as $ship)
-                @if(Auth::user()->hasSubpagePermission('masterlist', 'voyage'))
-                <x-sidebar.sublink
-                    title="M/V Everwin Star {{ $ship->ship_number }}"
-                    href="{{ route('masterlist.voyage', ['id' => $ship->id]) }}"
-                    :active="request()->routeIs('masterlist.voyage') && request()->ship == $ship->id"
-                />
-                @endif
-            @endforeach
+            @if(isset($ships) && $ships->isNotEmpty())
+                @foreach($ships as $ship)
+                    @if(Auth::user()->hasSubpagePermission('masterlist', 'voyage'))
+                    <x-sidebar.sublink
+                        title="M/V Everwin Star {{ $ship->ship_number }}"
+                        href="{{ route('masterlist.voyage', ['id' => $ship->id]) }}"
+                        :active="request()->routeIs('masterlist.voyage') && request()->ship == $ship->id"
+                    />
+                    @endif
+                @endforeach
+            @endif
 
             @if(Auth::user()->hasSubpagePermission('masterlist', 'customer'))
             <x-sidebar.sublink
@@ -332,6 +334,68 @@
                 <x-heroicon-o-cube class="flex-shrink-0 w-6 h-6" aria-hidden="true" />
             </x-slot>
     </x-sidebar.link>
+    @endif
+
+    @if(Auth::user()->hasPagePermission('crew') || Auth::user()->hasPermission('crew', 'access'))
+    <x-sidebar.dropdown
+        title="Crew Management"
+        :active="Str::startsWith(request()->route()->uri(), 'crew') || 
+                 Str::startsWith(request()->route()->uri(), 'leave-applications') ||
+                 Str::startsWith(request()->route()->uri(), 'leave-credits') ||
+                 Str::startsWith(request()->route()->uri(), 'crew-documents')"
+        >
+            <x-slot name="icon">
+                <x-heroicon-o-user-group class="flex-shrink-0 w-6 h-6" aria-hidden="true" />
+            </x-slot>
+
+            @if(Auth::user()->hasPagePermission('crew') || Auth::user()->hasPermission('crew', 'access') || Auth::user()->hasSubpagePermission('crew', 'crew-management', 'access'))
+            <x-sidebar.sublink
+                title="Crew List"
+                href="{{ route('crew.index') }}"
+                :active="request()->routeIs('crew.*')"
+            />
+            @endif
+
+            @if(Auth::user()->hasPagePermission('crew-documents') || Auth::user()->hasPermission('crew', 'access') || Auth::user()->hasSubpagePermission('crew', 'document-management', 'access'))
+            <x-sidebar.sublink
+                title="Document Management"
+                href="{{ route('crew-documents.index') }}"
+                :active="request()->routeIs('crew-documents.*')"
+            />
+            @endif
+
+            @if(Auth::user()->hasPagePermission('crew-documents') || Auth::user()->hasPermission('crew', 'access') || Auth::user()->hasSubpagePermission('crew', 'expiring-documents', 'access'))
+            <x-sidebar.sublink
+                title="Expiring Documents"
+                href="{{ route('crew-documents.expiring') }}"
+                :active="request()->routeIs('crew-documents.expiring')"
+            />
+            @endif
+
+            @if(Auth::user()->hasPagePermission('leave-applications') || Auth::user()->hasPermission('crew', 'access') || Auth::user()->hasSubpagePermission('crew', 'leave-applications', 'access'))
+            <x-sidebar.sublink
+                title="Leave Applications"
+                href="{{ route('leave-applications.index') }}"
+                :active="request()->routeIs('leave-applications.*') && !request()->routeIs('leave-applications.upload-sick-leave')"
+            />
+            @endif
+
+            @if(Auth::user()->hasPagePermission('leave-applications') || Auth::user()->hasPermission('crew', 'access') || Auth::user()->hasSubpagePermission('crew', 'upload-sick-leave', 'access'))
+            <x-sidebar.sublink
+                title="Upload Sick Leave Form"
+                href="{{ route('leave-applications.upload-sick-leave') }}"
+                :active="request()->routeIs('leave-applications.upload-sick-leave')"
+            />
+            @endif
+
+            @if(Auth::user()->hasPagePermission('leave-applications') || Auth::user()->hasPermission('crew', 'access') || Auth::user()->hasSubpagePermission('crew', 'leave-credits', 'access'))
+            <x-sidebar.sublink
+                title="Leave Credits Management"
+                href="{{ route('leave-credits.index') }}"
+                :active="request()->routeIs('leave-credits.*')"
+            />
+            @endif
+    </x-sidebar.dropdown>
     @endif
     
     

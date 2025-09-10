@@ -59,7 +59,18 @@ class UserPermissionController extends Controller
                 'pricelist' => ['access', 'create', 'edit', 'delete'], 
                 'users' => ['access', 'create', 'edit', 'delete'],
                 'history' => ['access'],
-                'profile' => ['access', 'edit']
+                'profile' => ['access', 'edit'],
+                'crew' => [
+                    'operations' => ['access', 'create', 'edit', 'delete'],
+                    'pages' => [
+                        'crew-management' => ['access', 'create', 'edit', 'delete'],
+                        'document-management' => ['access', 'create', 'edit', 'delete'],
+                        'expiring-documents' => ['access', 'create', 'edit', 'delete'],
+                        'leave-applications' => ['access', 'create', 'edit', 'delete'],
+                        'upload-sick-leave' => ['access', 'create', 'edit', 'delete'],
+                        'leave-credits' => ['access', 'create', 'edit', 'delete']
+                    ]
+                ]
             ];
             
             // Process each user
