@@ -157,7 +157,7 @@
                 </table>
                 @if($order->blStatus === 'PAID')
                     <div class="paid-stamp" style="position: absolute; bottom: 210px; right: 10px; color: red; border: 3px solid rgb(128, 0, 0); color: rgb(128, 0, 0); font-size: 16px; font-weight: bold; font-family: 'Bebas Neue', sans-serif; padding: 5px; text-align: center; background-color: none; z-index: 1000; width: 220px; height: 50px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-                        <span>PAID IN SFXSSLI {{ $order->updated_location }}</span>
+                        <span>PAID IN {{ strtoupper($order->display_updated_location ?? $order->updated_location ?? '') }}</span>
                         @if(!empty($order->AR) && !empty($order->OR))
                             <span>OR#: {{ $order->OR }} | AR#: {{ $order->AR }}</span>
                         @elseif(!empty($order->AR))

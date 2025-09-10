@@ -417,6 +417,17 @@ class MasterListController extends Controller
         // Fetch the order by ID
         $order = Order::findOrFail($orderId);
 
+        // Enhance order with proper AR/OR display information
+        $displayInfo = $this->getArOrDisplayInfo($order);
+        $order->display_updated_by = $displayInfo['updated_by'];
+        $order->display_updated_location = $displayInfo['updated_location'];
+        $order->display_or_ar_date = $displayInfo['or_ar_date'];
+        $order->last_updated_field = $displayInfo['last_updated_field'];
+        
+        // Add separate AR and OR display information
+        $order->ar_display_info = $displayInfo['ar_display_info'];
+        $order->or_display_info = $displayInfo['or_display_info'];
+
         // Fetch related parcels using the orderId
         $parcels = Parcel::where('orderId', $order->id)->get();
         // Determine display ship/voyage: if this order was transferred from another, show original
