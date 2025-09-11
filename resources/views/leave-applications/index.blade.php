@@ -115,11 +115,19 @@
                                 @forelse($applications as $application)
                                     <tr>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
-                                            {{ $application->crew->full_name }}
-                                            <div class="text-xs text-gray-500 dark:text-gray-400">{{ $application->crew->employee_id }}</div>
-                                            <div class="text-xs text-gray-500 dark:text-gray-400">
-                                                Available: {{ $application->crew->available_leave_credits }} days
-                                            </div>
+                                            @if($application->crew)
+                                                {{ $application->crew->full_name }}
+                                                <div class="text-xs text-gray-500 dark:text-gray-400">{{ $application->crew->employee_id }}</div>
+                                                <div class="text-xs text-gray-500 dark:text-gray-400">
+                                                    Available: {{ $application->crew->available_leave_credits }} days
+                                                </div>
+                                            @else
+                                                <span class="text-red-600 dark:text-red-400">Crew Record Not Found</span>
+                                                <div class="text-xs text-gray-500 dark:text-gray-400">ID: {{ $application->crew_id }}</div>
+                                                <div class="text-xs text-red-500 dark:text-red-400">
+                                                    Data integrity issue
+                                                </div>
+                                            @endif
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                                             {{ $application->leave_type_name }}

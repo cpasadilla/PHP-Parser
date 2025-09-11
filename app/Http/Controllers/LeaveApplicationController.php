@@ -15,6 +15,7 @@ class LeaveApplicationController extends Controller
         $status = $request->get('status');
         $search = $request->get('search');
 
+        // Get applications with crew data, handling potential orphaned records
         $applications = LeaveApplication::with(['crew', 'approvedBy'])
             ->when($status, function ($query) use ($status) {
                 $query->where('status', $status);
@@ -28,6 +29,12 @@ class LeaveApplicationController extends Controller
             })
             ->orderBy('created_at', 'desc')
             ->paginate(20);
+
+        // Log any orphaned leave applications for debugging
+        $orphanedCount = LeaveApplication::whereDoesntHave('crew')->count();
+        if ($orphanedCount > 0) {
+            \Log::warning("Found {$orphanedCount} leave applications with missing crew records");
+        }
 
         return view('leave-applications.index', compact('applications', 'status', 'search'));
     }

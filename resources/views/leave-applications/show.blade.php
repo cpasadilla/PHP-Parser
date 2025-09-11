@@ -44,7 +44,13 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Name of Employee</label>
-                                <p class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $leaveApplication->crew->full_name }}</p>
+                                <p class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                                    @if($leaveApplication->crew)
+                                        {{ $leaveApplication->crew->full_name }}
+                                    @else
+                                        <span class="text-red-600 dark:text-red-400">Crew Record Not Found (ID: {{ $leaveApplication->crew_id }})</span>
+                                    @endif
+                                </p>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Date Applied</label>
@@ -52,11 +58,23 @@
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Designation/Position</label>
-                                <p class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $leaveApplication->crew->position }}</p>
+                                <p class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                                    @if($leaveApplication->crew)
+                                        {{ $leaveApplication->crew->position }}
+                                    @else
+                                        <span class="text-gray-500 dark:text-gray-400">N/A</span>
+                                    @endif
+                                </p>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Vessel Number</label>
-                                <p class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $leaveApplication->crew->ship?->name ?? 'N/A' }}</p>
+                                <p class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                                    @if($leaveApplication->crew)
+                                        {{ $leaveApplication->crew->ship?->name ?? 'N/A' }}
+                                    @else
+                                        <span class="text-gray-500 dark:text-gray-400">N/A</span>
+                                    @endif
+                                </p>
                             </div>
                         </div>
                     </div>

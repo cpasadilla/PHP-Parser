@@ -71,7 +71,7 @@
                                     <label for="position_display" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Position</label>
                                     <input type="text" id="position_display" 
                                            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 shadow-sm text-gray-500 dark:text-gray-400" 
-                                           value="{{ $leaveApplication->crew->position }}" readonly>
+                                           value="{{ $leaveApplication->crew ? $leaveApplication->crew->position : 'N/A' }}" readonly>
                                 </div>
                             </div>
 
@@ -80,14 +80,14 @@
                                     <label for="department_display" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Department</label>
                                     <input type="text" id="department_display" 
                                            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 shadow-sm text-gray-500 dark:text-gray-400" 
-                                           value="{{ $leaveApplication->crew->department_name }}" readonly>
+                                           value="{{ $leaveApplication->crew ? $leaveApplication->crew->department_name : 'N/A' }}" readonly>
                                 </div>
 
-                                <div id="vessel_field" style="display: {{ $leaveApplication->crew->ship ? 'block' : 'none' }};">
+                                <div id="vessel_field" style="display: {{ ($leaveApplication->crew && $leaveApplication->crew->ship) ? 'block' : 'none' }};">
                                     <label for="vessel_number" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Vessel Number</label>
                                     <input type="text" id="vessel_number" 
                                            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 shadow-sm text-gray-500 dark:text-gray-400" 
-                                           value="{{ $leaveApplication->crew->ship ? 'MV EVERWIN STAR ' . $leaveApplication->crew->ship->ship_number : '' }}" readonly>
+                                           value="{{ ($leaveApplication->crew && $leaveApplication->crew->ship) ? 'MV EVERWIN STAR ' . $leaveApplication->crew->ship->ship_number : '' }}" readonly>
                                 </div>
                             </div>
                         </div>
