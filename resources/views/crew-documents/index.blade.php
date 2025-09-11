@@ -25,12 +25,21 @@
             <h2 class="font-semibold text-xl text-gray-800 dark:text-white leading-tight">
                 {{ __('Document Management') }}
             </h2>
-            @if(auth()->user()->hasPermission('crew', 'create') || auth()->user()->hasSubpagePermission('crew', 'document-management', 'create'))
-            <a href="{{ route('crew-documents.create') }}" 
-               class="bg-blue-500 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 text-white font-bold py-2 px-4 rounded">
-                Upload Document
-            </a>
-            @endif
+            <div class="flex space-x-2">
+                <a href="{{ route('crew-documents.deleted') }}" 
+                   class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded inline-flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                    Deleted Documents
+                </a>
+                @if(auth()->user()->hasPermission('crew', 'create') || auth()->user()->hasSubpagePermission('crew', 'document-management', 'create'))
+                <a href="{{ route('crew-documents.create') }}" 
+                   class="bg-blue-500 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 text-white font-bold py-2 px-4 rounded">
+                    Upload Document
+                </a>
+                @endif
+            </div>
         </div>
     </x-slot>
 
@@ -198,6 +207,10 @@
                                                 <a href="{{ route('crew-documents.edit', $document) }}" 
                                                    class="text-yellow-600 dark:text-yellow-400 hover:text-yellow-900 dark:hover:text-yellow-300">Edit</a>
                                                 @endif
+                                                @if(auth()->user()->hasPermission('crew', 'delete') || auth()->user()->hasSubpagePermission('crew', 'document-management', 'delete'))
+                                                <button onclick="showDeleteModal({{ $document->id }}, '{{ $document->document_name }}', '{{ $document->crew->full_name }}')" 
+                                                        class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">Delete</button>
+                                                @endif
                                             </div>
                                         </td>
                                     </tr>
@@ -269,6 +282,74 @@
         function hideVerifyModal() {
             document.getElementById('verifyModal').classList.add('hidden');
         }
+
+        function showDeleteModal(documentId, documentName, crewName) {
+            document.getElementById('deleteForm').action = `/crew-documents/${documentId}`;
+            document.getElementById('deleteDocumentName').textContent = documentName;
+            document.getElementById('deleteCrewName').textContent = crewName;
+            document.getElementById('deleteModal').classList.remove('hidden');
+        }
+
+        function hideDeleteModal() {
+            document.getElementById('deleteModal').classList.add('hidden');
+        }
+
+        // Close modals on escape key
+        document.addEventListener('keydown', function(e) {
+            const verifyModal = document.getElementById('verifyModal');
+            const deleteModal = document.getElementById('deleteModal');
+            
+            if (!verifyModal.classList.contains('hidden') && e.key === 'Escape') {
+                hideVerifyModal();
+            }
+            
+            if (!deleteModal.classList.contains('hidden') && e.key === 'Escape') {
+                hideDeleteModal();
+            }
+        });
+
+        // Close modals when clicking outside
+        document.getElementById('verifyModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                hideVerifyModal();
+            }
+        });
+        
+        document.getElementById('deleteModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                hideDeleteModal();
+            }
+        });
     </script>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-4 z-50 hidden">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 max-w-lg relative w-full">
+            <div class="mt-3">
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Delete Document</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    Are you sure you want to delete the document "<span id="deleteDocumentName" class="font-semibold text-gray-900 dark:text-white"></span>" 
+                    for <span id="deleteCrewName" class="font-semibold text-gray-900 dark:text-white"></span>?
+                </p>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                    This action will soft delete the document. The record can be restored later if needed.
+                </p>
+                <form id="deleteForm" method="POST">
+                    @csrf
+                    @method('DELETE')
+                    <div class="flex justify-end space-x-2">
+                        <button type="button" onclick="hideDeleteModal()" 
+                                class="bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 text-gray-800 dark:text-white font-bold py-2 px-4 rounded">
+                            Cancel
+                        </button>
+                        <button type="submit" 
+                                class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                            Delete Document
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </x-app-layout>
 @endif

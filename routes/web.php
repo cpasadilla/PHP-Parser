@@ -381,14 +381,17 @@ Route::middleware(['auth', 'page.permission:dashboard'])->group(function() {
 
     // Crew Management routes
     Route::middleware('subpage.permission:crew,crew-management')->group(function () {
+        // Custom routes that should come before resource routes to avoid conflicts
+        Route::get('/crew/deleted', [\App\Http\Controllers\CrewController::class, 'deletedList'])->name('crew.deleted');
+        Route::post('/crew/restore/{deleteLogId}', [\App\Http\Controllers\CrewController::class, 'restore'])->name('crew.restore');
+        Route::get('/crew/export/pdf', [\App\Http\Controllers\CrewController::class, 'exportPdf'])->name('crew.export.pdf');
+        Route::get('/crew/export/excel', [\App\Http\Controllers\CrewController::class, 'exportExcel'])->name('crew.export.excel');
+        
+        // Resource routes (these create /crew/{crew} patterns)
         Route::resource('crew', \App\Http\Controllers\CrewController::class);
         Route::post('/crew/{crew}/transfer', [\App\Http\Controllers\CrewController::class, 'transfer'])->name('crew.transfer');
         Route::patch('/crew/{crew}/status', [\App\Http\Controllers\CrewController::class, 'updateStatus'])->name('crew.status');
         Route::get('/crew/{crew}/leave-credits', [\App\Http\Controllers\LeaveApplicationController::class, 'getCrewLeaveCredits'])->name('crew.leave-credits');
-        
-        // Export routes
-        Route::get('/crew/export/pdf', [\App\Http\Controllers\CrewController::class, 'exportPdf'])->name('crew.export.pdf');
-        Route::get('/crew/export/excel', [\App\Http\Controllers\CrewController::class, 'exportExcel'])->name('crew.export.excel');
     });
 
     // Crew Embarkation routes
@@ -399,6 +402,11 @@ Route::middleware(['auth', 'page.permission:dashboard'])->group(function() {
 
     // Crew Document routes
     Route::middleware('subpage.permission:crew,document-management')->group(function () {
+        // Custom routes that should come before resource routes to avoid conflicts
+        Route::get('/crew-documents/deleted', [\App\Http\Controllers\CrewDocumentController::class, 'deletedList'])->name('crew-documents.deleted');
+        Route::post('/crew-documents/restore/{deleteLogId}', [\App\Http\Controllers\CrewDocumentController::class, 'restore'])->name('crew-documents.restore');
+        
+        // Resource routes
         Route::resource('crew-documents', \App\Http\Controllers\CrewDocumentController::class);
         Route::post('/crew-documents/{crewDocument}/verify', [\App\Http\Controllers\CrewDocumentController::class, 'verify'])->name('crew-documents.verify');
         Route::get('/crew-documents/{crewDocument}/download', [\App\Http\Controllers\CrewDocumentController::class, 'download'])->name('crew-documents.download');

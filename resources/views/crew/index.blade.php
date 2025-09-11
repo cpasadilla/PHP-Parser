@@ -27,6 +27,13 @@
                 {{ __('Crew Management') }}
             </h2>
             <div class="flex space-x-2">
+                <a href="{{ route('crew.deleted') }}" 
+                   class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded inline-flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                    Deleted Crew
+                </a>
                 <div class="relative">
                     <button type="button" onclick="toggleExportDropdown()" 
                             class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded inline-flex items-center">
@@ -326,6 +333,10 @@
                                                 <button onclick="showTransferModal({{ $crew->id }}, '{{ $crew->full_name }}', '{{ $crew->ship ? 'MV EVERWIN STAR ' . $crew->ship->ship_number : 'Office/Shore' }}', {{ $crew->ship_id ?: 'null' }})" 
                                                         class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300">Transfer</button>
                                                 @endif
+                                                @if(auth()->user()->hasPermission('crew', 'delete') || auth()->user()->hasSubpagePermission('crew', 'crew-management', 'delete'))
+                                                <button onclick="showDeleteModal({{ $crew->id }}, '{{ $crew->full_name }}', '{{ $crew->employee_id }}')" 
+                                                        class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">Delete</button>
+                                                @endif
                                             </div>
                                         </td>
                                     </tr>
@@ -571,8 +582,11 @@
             
             // Keyboard navigation for modal
             document.addEventListener('keydown', function(e) {
-                const modal = document.getElementById('transferModal');
-                if (!modal.classList.contains('hidden')) {
+                const transferModal = document.getElementById('transferModal');
+                const deleteModal = document.getElementById('deleteModal');
+                const statusModal = document.getElementById('statusChangeModal');
+                
+                if (!transferModal.classList.contains('hidden')) {
                     if (e.key === 'Escape') {
                         hideTransferModal();
                     } else if (e.key === 'Enter' && e.ctrlKey) {
@@ -580,13 +594,39 @@
                         transferForm.submit();
                     }
                 }
+                
+                if (!deleteModal.classList.contains('hidden')) {
+                    if (e.key === 'Escape') {
+                        hideDeleteModal();
+                    }
+                }
+                
+                if (!statusModal.classList.contains('hidden')) {
+                    if (e.key === 'Escape') {
+                        hideStatusChangeModal();
+                    }
+                }
             });
             
-            // Click outside to close modal
+            // Click outside to close modals
             const transferModal = document.getElementById('transferModal');
             transferModal.addEventListener('click', function(e) {
                 if (e.target === transferModal) {
                     hideTransferModal();
+                }
+            });
+            
+            const deleteModal = document.getElementById('deleteModal');
+            deleteModal.addEventListener('click', function(e) {
+                if (e.target === deleteModal) {
+                    hideDeleteModal();
+                }
+            });
+            
+            const statusModal = document.getElementById('statusChangeModal');
+            statusModal.addEventListener('click', function(e) {
+                if (e.target === statusModal) {
+                    hideStatusChangeModal();
                 }
             });
             
@@ -625,7 +665,48 @@
         function hideStatusChangeModal() {
             document.getElementById('statusChangeModal').classList.add('hidden');
         }
+
+        function showDeleteModal(crewId, crewName, employeeId) {
+            document.getElementById('deleteForm').action = `/crew/${crewId}`;
+            document.getElementById('deleteCrewName').textContent = crewName;
+            document.getElementById('deleteEmployeeId').textContent = employeeId;
+            document.getElementById('deleteModal').classList.remove('hidden');
+        }
+
+        function hideDeleteModal() {
+            document.getElementById('deleteModal').classList.add('hidden');
+        }
     </script>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-4 z-50 hidden">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 max-w-lg relative w-full">
+            <div class="mt-3">
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Delete Crew Member</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    Are you sure you want to delete <span id="deleteCrewName" class="font-semibold text-gray-900 dark:text-white"></span> 
+                    (Employee ID: <span id="deleteEmployeeId" class="font-semibold text-gray-900 dark:text-white"></span>)?
+                </p>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                    This action will soft delete the crew member. The record can be restored later if needed.
+                </p>
+                <form id="deleteForm" method="POST">
+                    @csrf
+                    @method('DELETE')
+                    <div class="flex justify-end space-x-2">
+                        <button type="button" onclick="hideDeleteModal()" 
+                                class="bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 text-gray-800 dark:text-white font-bold py-2 px-4 rounded">
+                            Cancel
+                        </button>
+                        <button type="submit" 
+                                class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                            Delete Crew Member
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
     <!-- Status Change Modal -->
     <div id="statusChangeModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-4 z-50 hidden">

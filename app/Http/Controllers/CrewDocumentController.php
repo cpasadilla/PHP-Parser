@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Crew;
 use App\Models\CrewDocument;
+use App\Models\CrewDocumentDeleteLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class CrewDocumentController extends Controller
 {
@@ -139,12 +141,46 @@ class CrewDocumentController extends Controller
 
     public function destroy(CrewDocument $crewDocument)
     {
-        if ($crewDocument->file_path) {
-            Storage::disk('public')->delete($crewDocument->file_path);
+        try {
+            // Get authenticated user for logging
+            $user = Auth::user();
+            $deletedBy = $user ? $user->fName . ' ' . $user->lName : 'Unknown User';
+            
+            // Load crew information
+            $crewDocument->load('crew');
+            
+            // Create delete log before actual deletion
+            CrewDocumentDeleteLog::create([
+                'document_id' => $crewDocument->id,
+                'crew_id' => $crewDocument->crew_id,
+                'crew_name' => $crewDocument->crew ? $crewDocument->crew->full_name : 'Unknown',
+                'employee_id' => $crewDocument->crew ? $crewDocument->crew->employee_id : 'Unknown',
+                'document_type' => $crewDocument->document_type,
+                'document_name' => $crewDocument->document_name,
+                'file_name' => $crewDocument->file_name,
+                'file_path' => $crewDocument->file_path,
+                'expiry_date' => $crewDocument->expiry_date,
+                'status' => $crewDocument->status,
+                'deleted_by' => $deletedBy,
+                'document_data' => $crewDocument->toArray(), // Store complete document data for restore
+            ]);
+            
+            // Note: We don't delete the actual file yet, in case we need to restore
+            // The file will be deleted only when permanently removing or after a certain period
+            
+            // Soft delete the document record
+            $crewDocument->delete();
+            
+            return redirect()->route('crew-documents.index')->with('success', 'Document deleted successfully. Document can be restored if needed.');
+            
+        } catch (\Exception $e) {
+            Log::error('Error deleting crew document:', [
+                'document_id' => $crewDocument->id,
+                'error' => $e->getMessage(),
+            ]);
+            
+            return redirect()->route('crew-documents.index')->with('error', 'Error deleting document: ' . $e->getMessage());
         }
-
-        $crewDocument->delete();
-        return redirect()->route('crew-documents.index')->with('success', 'Document deleted successfully');
     }
 
     public function verify(Request $request, CrewDocument $crewDocument)
@@ -196,5 +232,68 @@ class CrewDocumentController extends Controller
             'Content-Type' => $mimeType,
             'Content-Disposition' => 'inline; filename="' . $crewDocument->file_name . '"'
         ]);
+    }
+
+    public function restore($deleteLogId)
+    {
+        try {
+            $deleteLog = CrewDocumentDeleteLog::findOrFail($deleteLogId);
+            
+            // Check if already restored
+            if ($deleteLog->restored_at) {
+                return redirect()->back()->with('error', 'This document has already been restored!');
+            }
+            
+            // Check if we have document data to restore
+            if (!$deleteLog->document_data) {
+                return redirect()->back()->with('error', 'Cannot restore document: No document data found in delete log!');
+            }
+            
+            $user = Auth::user();
+            $restoredBy = $user ? $user->fName . ' ' . $user->lName : 'Unknown User';
+            
+            // Restore the document
+            $documentData = $deleteLog->document_data;
+            
+            // Ensure documentData is an array
+            if (!is_array($documentData)) {
+                return redirect()->back()->with('error', 'Cannot restore document: Invalid document data format!');
+            }
+            
+            // Remove fields that shouldn't be copied
+            unset($documentData['id']); // Remove the original ID to create a new one
+            unset($documentData['created_at']); // Let Laravel set new timestamps
+            unset($documentData['updated_at']);
+            unset($documentData['deleted_at']); // Remove soft delete timestamp
+            
+            $restoredDocument = CrewDocument::create($documentData);
+            
+            // Update the delete log to mark as restored
+            $deleteLog->update([
+                'restored_at' => now(),
+                'restored_by' => $restoredBy,
+                'restored_document_id' => $restoredDocument->id,
+            ]);
+            
+            return redirect()->back()->with('success', 'Document restored successfully! New Document ID: ' . $restoredDocument->id);
+            
+        } catch (\Exception $e) {
+            Log::error('Error restoring crew document:', [
+                'delete_log_id' => $deleteLogId,
+                'error' => $e->getMessage(),
+                'document_data' => $deleteLog->document_data ?? null,
+            ]);
+            
+            return redirect()->back()->with('error', 'Error restoring document: ' . $e->getMessage());
+        }
+    }
+
+    public function deletedList()
+    {
+        $deletedDocuments = CrewDocumentDeleteLog::whereNull('restored_at')
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+            
+        return view('crew-documents.deleted', compact('deletedDocuments'));
     }
 }

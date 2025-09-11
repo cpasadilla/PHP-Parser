@@ -5,9 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Crew;
 use App\Models\Ship;
 use App\Models\CrewLeave;
+use App\Models\CrewDeleteLog;
+use App\Models\CrewDocument;
 use App\Exports\CrewExport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -197,8 +201,45 @@ class CrewController extends Controller
 
     public function destroy(Crew $crew)
     {
-        $crew->delete();
-        return redirect()->route('crew.index')->with('success', 'Crew member deleted successfully');
+        try {
+            // Get authenticated user for logging
+            $user = Auth::user();
+            $deletedBy = $user ? $user->fName . ' ' . $user->lName : 'Unknown User';
+            
+            // Get ship name for logging
+            $shipName = $crew->ship ? 'MV EVERWIN STAR ' . $crew->ship->ship_number : 'Office/Shore';
+            
+            // Load related data before deletion
+            $crew->load(['documents', 'leaves', 'leaveApplications']);
+            
+            // Create delete log before actual deletion
+            CrewDeleteLog::create([
+                'crew_id' => $crew->id,
+                'employee_id' => $crew->employee_id,
+                'full_name' => $crew->full_name,
+                'position' => $crew->position,
+                'department' => $crew->department,
+                'ship_name' => $shipName,
+                'employment_status' => $crew->employment_status,
+                'deleted_by' => $deletedBy,
+                'crew_data' => $crew->toArray(), // Store complete crew data for restore
+                'documents_data' => $crew->documents->toArray(), // Store documents data for restore
+                'leaves_data' => $crew->leaves->toArray(), // Store leave credits data for restore
+            ]);
+            
+            // Soft delete the crew record
+            $crew->delete();
+            
+            return redirect()->route('crew.index')->with('success', 'Crew member deleted successfully. Record can be restored if needed.');
+            
+        } catch (\Exception $e) {
+            Log::error('Error deleting crew member:', [
+                'crew_id' => $crew->id,
+                'error' => $e->getMessage(),
+            ]);
+            
+            return redirect()->route('crew.index')->with('error', 'Error deleting crew member: ' . $e->getMessage());
+        }
     }
 
     public function transfer(Request $request, Crew $crew)
@@ -260,6 +301,102 @@ class CrewController extends Controller
         $crew->update(['notes' => $existingNotes . $statusChangeNote]);
 
         return redirect()->back()->with('success', "Crew member status updated to " . ucfirst($newStatus) . " successfully");
+    }
+
+    public function restore($deleteLogId)
+    {
+        try {
+            $deleteLog = CrewDeleteLog::findOrFail($deleteLogId);
+            
+            // Check if already restored
+            if ($deleteLog->restored_at) {
+                return redirect()->back()->with('error', 'This crew member has already been restored!');
+            }
+            
+            // Check if we have crew data to restore
+            if (!$deleteLog->crew_data) {
+                return redirect()->back()->with('error', 'Cannot restore crew member: No crew data found in delete log!');
+            }
+            
+            $user = Auth::user();
+            $restoredBy = $user ? $user->fName . ' ' . $user->lName : 'Unknown User';
+            
+            // Restore the crew member
+            $crewData = $deleteLog->crew_data;
+            
+            // Ensure crewData is an array
+            if (!is_array($crewData)) {
+                return redirect()->back()->with('error', 'Cannot restore crew member: Invalid crew data format!');
+            }
+            
+            // Remove fields that shouldn't be copied
+            unset($crewData['id']); // Remove the original ID to create a new one
+            unset($crewData['created_at']); // Let Laravel set new timestamps
+            unset($crewData['updated_at']);
+            unset($crewData['deleted_at']); // Remove soft delete timestamp
+            
+            $restoredCrew = Crew::create($crewData);
+            
+            // Restore the documents
+            if ($deleteLog->documents_data && is_array($deleteLog->documents_data)) {
+                foreach ($deleteLog->documents_data as $documentData) {
+                    if (is_array($documentData)) {
+                        // Remove fields that shouldn't be copied
+                        unset($documentData['id']); // Remove the original ID
+                        unset($documentData['created_at']);
+                        unset($documentData['updated_at']);
+                        unset($documentData['deleted_at']); // Remove soft delete timestamp
+                        $documentData['crew_id'] = $restoredCrew->id; // Link to new crew
+                        
+                        CrewDocument::create($documentData);
+                    }
+                }
+            }
+            
+            // Restore the leave credits
+            if ($deleteLog->leaves_data && is_array($deleteLog->leaves_data)) {
+                foreach ($deleteLog->leaves_data as $leaveData) {
+                    if (is_array($leaveData)) {
+                        // Remove fields that shouldn't be copied
+                        unset($leaveData['id']); // Remove the original ID
+                        unset($leaveData['created_at']);
+                        unset($leaveData['updated_at']);
+                        $leaveData['crew_id'] = $restoredCrew->id; // Link to new crew
+                        
+                        CrewLeave::create($leaveData);
+                    }
+                }
+            }
+            
+            // Update the delete log to mark as restored
+            $deleteLog->update([
+                'restored_at' => now(),
+                'restored_by' => $restoredBy,
+                'restored_crew_id' => $restoredCrew->id,
+            ]);
+            
+            return redirect()->back()->with('success', 'Crew member restored successfully! New ID: ' . $restoredCrew->id);
+            
+        } catch (\Exception $e) {
+            Log::error('Error restoring crew member:', [
+                'delete_log_id' => $deleteLogId,
+                'error' => $e->getMessage(),
+                'crew_data' => $deleteLog->crew_data ?? null,
+                'documents_data' => $deleteLog->documents_data ?? null,
+                'leaves_data' => $deleteLog->leaves_data ?? null,
+            ]);
+            
+            return redirect()->back()->with('error', 'Error restoring crew member: ' . $e->getMessage());
+        }
+    }
+
+    public function deletedList()
+    {
+        $deletedCrew = CrewDeleteLog::whereNull('restored_at')
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+            
+        return view('crew.deleted', compact('deletedCrew'));
     }
 
     public function exportPdf(Request $request)
