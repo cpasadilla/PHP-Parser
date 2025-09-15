@@ -105,6 +105,8 @@ class InventoryController extends Controller
         \App\Models\InventoryEntry::create($data);
         // Recalculate onsite balances for this item
         $this->recalculateOnsiteBalances($data['item']);
+        // Recalculate main balances for this item
+        $this->recalculateBalances($data['item']);
         return redirect()->route('inventory')->with('success', 'Inventory entry saved!');
     }
     
@@ -164,6 +166,8 @@ class InventoryController extends Controller
 
         // Recalculate onsite balances for this item
         $this->recalculateOnsiteBalances($data['item']);
+        // Recalculate main balances for this item
+        $this->recalculateBalances($data['item']);
 
         return redirect()->route('inventory')->with('success', 'Starting balance set successfully!');
     }
@@ -211,6 +215,26 @@ class InventoryController extends Controller
             'balance' => $lastEntry ? $lastEntry->balance : 0,
             'onsite_balance' => $lastEntry ? $lastEntry->onsite_balance : 0,
         ];
+    }
+    
+    /**
+     * Get the balance of the entry that comes before the given entry.
+     */
+    private function getPreviousEntryBalance($entry)
+    {
+        $previousEntry = \App\Models\InventoryEntry::where('item', $entry->item)
+            ->where(function($query) use ($entry) {
+                $query->where('date', '<', $entry->date)
+                    ->orWhere(function($q) use ($entry) {
+                        $q->where('date', '=', $entry->date)
+                          ->where('created_at', '<', $entry->created_at);
+                    });
+            })
+            ->orderBy('date', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->first();
+            
+        return $previousEntry ? $previousEntry->balance : 0;
     }
     
     /**
@@ -410,6 +434,14 @@ class InventoryController extends Controller
         // Handle HOLLOWBLOCKS - process separate size columns
         if ($data['item'] === 'HOLLOWBLOCKS') {
             $this->processHollowblockBalances($data);
+        } else {
+            // For non-hollowblock items, recalculate balance if not manually provided
+            if (!isset($data['balance']) || $data['balance'] === null) {
+                $previousBalance = $this->getPreviousEntryBalance($entry);
+                $inValue = floatval($data['in'] ?? 0);
+                $outValue = floatval($data['out'] ?? 0);
+                $data['balance'] = $previousBalance + $inValue - $outValue;
+            }
         }
 
         // Respect manual amount toggle; otherwise calculate
@@ -444,6 +476,8 @@ class InventoryController extends Controller
         ]);
         // Recalculate onsite balances for this item
         $this->recalculateOnsiteBalances($entry->item);
+        // Recalculate main balances for this item
+        $this->recalculateBalances($entry->item);
         return redirect()->route('inventory')->with('success', 'Inventory entry updated!');
     }
 
@@ -522,6 +556,87 @@ class InventoryController extends Controller
             // Always update onsite_balance to match the formula
             if ($entry->onsite_balance != $newBalance) {
                 $entry->onsite_balance = $newBalance;
+                $entry->save();
+            }
+            $lastBalance = $newBalance;
+        }
+    }
+
+    /**
+     * Recalculate BALANCE for all entries of an item after a change.
+     * For hollowblocks, recalculates balances separately for each size.
+     * Preserves the first entry's BALANCE and applies the formula to all following entries.
+     */
+    private function recalculateBalances($item)
+    {
+        if ($item === 'HOLLOWBLOCKS') {
+            // For hollowblocks, recalculate balances for each size separately
+            $sizes = ['4_inch', '5_inch', '6_inch'];
+            foreach ($sizes as $size) {
+                $this->recalculateBalancesForHollowblockSize($size);
+            }
+            return;
+        }
+
+        // For non-hollowblock items, use the original logic
+        $entries = \App\Models\InventoryEntry::where('item', $item)
+            ->orderBy('date', 'asc')
+            ->orderBy('id', 'asc')
+            ->get();
+
+        if ($entries->isEmpty()) return;
+
+        // Always start from the first entry and propagate balances forward
+        $lastBalance = null;
+        foreach ($entries as $idx => $entry) {
+            if ($idx === 0) {
+                // Preserve the first entry's balance
+                $lastBalance = $entry->balance;
+                continue;
+            }
+
+            $outValue = floatval($entry->out ?? 0);
+            $inValue = floatval($entry->in ?? 0);
+            $newBalance = floatval($lastBalance) - $outValue + $inValue;
+
+            // Always update balance to match the formula
+            if ($entry->balance != $newBalance) {
+                $entry->balance = $newBalance;
+                $entry->save();
+            }
+            $lastBalance = $newBalance;
+        }
+    }
+
+    /**
+     * Recalculate BALANCE for a specific hollowblock size.
+     */
+    private function recalculateBalancesForHollowblockSize($size)
+    {
+        $entries = \App\Models\InventoryEntry::where('item', 'HOLLOWBLOCKS')
+            ->where('hollowblock_size', $size)
+            ->orderBy('date', 'asc')
+            ->orderBy('id', 'asc')
+            ->get();
+
+        if ($entries->isEmpty()) return;
+
+        // Always start from the first entry and propagate balances forward
+        $lastBalance = null;
+        foreach ($entries as $idx => $entry) {
+            if ($idx === 0) {
+                // Preserve the first entry's balance
+                $lastBalance = $entry->balance;
+                continue;
+            }
+
+            $outValue = floatval($entry->out ?? 0);
+            $inValue = floatval($entry->in ?? 0);
+            $newBalance = floatval($lastBalance) - $outValue + $inValue;
+
+            // Always update balance to match the formula
+            if ($entry->balance != $newBalance) {
+                $entry->balance = $newBalance;
                 $entry->save();
             }
             $lastBalance = $newBalance;
