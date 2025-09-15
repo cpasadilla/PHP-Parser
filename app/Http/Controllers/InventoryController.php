@@ -103,6 +103,8 @@ class InventoryController extends Controller
         $data['actual_out'] = null; // keep blank on create
         
         \App\Models\InventoryEntry::create($data);
+        // Recalculate onsite balances for this item
+        $this->recalculateOnsiteBalances($data['item']);
         return redirect()->route('inventory')->with('success', 'Inventory entry saved!');
     }
     
@@ -407,8 +409,6 @@ class InventoryController extends Controller
         }
 
         $entry->update($data);
-        
-        // Debug logging after update
         $entry->refresh();
         \Log::info('Inventory Update Complete - HOLLOWBLOCK Debug', [
             'entry_id' => $id,
@@ -418,8 +418,44 @@ class InventoryController extends Controller
             'final_hollowblock_6_inch_balance' => $entry->hollowblock_6_inch_balance,
             'data_processed' => $data
         ]);
-        
+        // Recalculate onsite balances for this item
+        $this->recalculateOnsiteBalances($entry->item);
         return redirect()->route('inventory')->with('success', 'Inventory entry updated!');
+    }
+
+    /**
+     * Recalculate ONSITE BALANCE for all entries of an item/category after a change.
+     * Preserves the first entry's ONSITE BALANCE and applies the formula to all following entries.
+     */
+    private function recalculateOnsiteBalances($item)
+    {
+        $entries = \App\Models\InventoryEntry::where('item', $item)
+            ->orderBy('date', 'asc')
+            ->orderBy('id', 'asc')
+            ->get();
+
+        if ($entries->isEmpty()) return;
+
+        // Always start from the first entry and propagate balances forward
+        $lastBalance = null;
+        foreach ($entries as $idx => $entry) {
+            if ($idx === 0) {
+                // Preserve the first entry's onsite_balance
+                $lastBalance = $entry->onsite_balance;
+                continue;
+            }
+
+            $actualOut = floatval($entry->actual_out ?? 0);
+            $inValue = floatval($entry->in ?? 0);
+            $newBalance = floatval($lastBalance) - $actualOut + $inValue;
+
+            // Always update onsite_balance to match the formula
+            if ($entry->onsite_balance != $newBalance) {
+                $entry->onsite_balance = $newBalance;
+                $entry->save();
+            }
+            $lastBalance = $newBalance;
+        }
     }
 
     /**
