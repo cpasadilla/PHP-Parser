@@ -425,11 +425,57 @@ class InventoryController extends Controller
 
     /**
      * Recalculate ONSITE BALANCE for all entries of an item/category after a change.
+     * For hollowblocks, recalculates onsite balances separately for each size.
      * Preserves the first entry's ONSITE BALANCE and applies the formula to all following entries.
      */
     private function recalculateOnsiteBalances($item)
     {
+        if ($item === 'HOLLOWBLOCKS') {
+            // For hollowblocks, recalculate onsite balances for each size separately
+            $sizes = ['4_inch', '5_inch', '6_inch'];
+            foreach ($sizes as $size) {
+                $this->recalculateOnsiteBalancesForHollowblockSize($size);
+            }
+            return;
+        }
+
+        // For non-hollowblock items, use the original logic
         $entries = \App\Models\InventoryEntry::where('item', $item)
+            ->orderBy('date', 'asc')
+            ->orderBy('id', 'asc')
+            ->get();
+
+        if ($entries->isEmpty()) return;
+
+        // Always start from the first entry and propagate balances forward
+        $lastBalance = null;
+        foreach ($entries as $idx => $entry) {
+            if ($idx === 0) {
+                // Preserve the first entry's onsite_balance
+                $lastBalance = $entry->onsite_balance;
+                continue;
+            }
+
+            $actualOut = floatval($entry->actual_out ?? 0);
+            $inValue = floatval($entry->in ?? 0);
+            $newBalance = floatval($lastBalance) - $actualOut + $inValue;
+
+            // Always update onsite_balance to match the formula
+            if ($entry->onsite_balance != $newBalance) {
+                $entry->onsite_balance = $newBalance;
+                $entry->save();
+            }
+            $lastBalance = $newBalance;
+        }
+    }
+
+    /**
+     * Recalculate ONSITE BALANCE for a specific hollowblock size.
+     */
+    private function recalculateOnsiteBalancesForHollowblockSize($size)
+    {
+        $entries = \App\Models\InventoryEntry::where('item', 'HOLLOWBLOCKS')
+            ->where('hollowblock_size', $size)
             ->orderBy('date', 'asc')
             ->orderBy('id', 'asc')
             ->get();
