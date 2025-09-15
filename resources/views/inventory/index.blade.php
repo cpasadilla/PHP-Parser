@@ -239,6 +239,7 @@
                                 <tbody>
                                     @php
                                         $currentMonth = null;
+                                        $runningBalance = null; // Initialize running balance for calculation
                                         // For hollowblock sizes, filter by the original HOLLOWBLOCKS item and the specific size
                                         if (isset($hollowblockSizeMap[$item])) {
                                             $sizeInfo = $hollowblockSizeMap[$item];
@@ -255,11 +256,16 @@
                                         @endphp
                                         @if($currentMonth !== $entryMonth)
                                             @php $currentMonth = $entryMonth; @endphp
-                                            <tr class="bg-gray-50 dark:bg-gray-700">
+                                            <tr style="background-color: rgb(210, 180, 140);">
                                                 <td colspan="16" class="border border-gray-300 dark:border-gray-600 px-2 py-1 font-bold text-center text-gray-900 dark:text-gray-100">{{ strtoupper($entryMonth) }}</td>
                                             </tr>
                                         @endif
-                                    <tr class="{{ $entry->is_starting_balance ? 'bg-yellow-50 dark:bg-yellow-900/30' : 'bg-white dark:bg-gray-800' }}">
+                                        @php
+                                            $hasIn = isset($hollowblockSizeMap[$item]) ? 
+                                                ($entry->{'hollowblock_' . str_replace('_inch', '', $hollowblockSizeMap[$item]['size']) . '_inch_in'} ?? false) : 
+                                                $entry->in;
+                                        @endphp
+                                    <tr style="background-color: {{ ($entry->is_starting_balance || $hasIn) ? 'rgb(173, 216, 230)' : 'rgb(255, 255, 255)' }};">
                                         <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">
                                             @if($entry->is_starting_balance)
                                                 {{ strtoupper(\Carbon\Carbon::parse($entry->date)->format('F')) }}
@@ -301,14 +307,31 @@
                                             @endif
                                         </td>
                                         <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 font-semibold text-gray-900 dark:text-gray-100">
-                                            @if(isset($hollowblockSizeMap[$item]))
-                                                @php
-                                                    $balanceField = 'hollowblock_' . str_replace('_inch', '', $sizeInfo['size']) . '_inch_balance';
-                                                @endphp
-                                                {{ number_format($entry->$balanceField ?? 0, 2) }}
-                                            @else
-                                                {{ number_format($entry->balance, 2) }}
-                                            @endif
+                                            @php
+                                                // Calculate running balance using the formula: last balance - OUT + IN
+                                                if ($runningBalance === null) {
+                                                    // For first entry, use stored balance as starting point
+                                                    if (isset($hollowblockSizeMap[$item])) {
+                                                        $balanceField = 'hollowblock_' . str_replace('_inch', '', $sizeInfo['size']) . '_inch_balance';
+                                                        $runningBalance = $entry->$balanceField ?? 0;
+                                                    } else {
+                                                        $runningBalance = $entry->balance ?? 0;
+                                                    }
+                                                } else {
+                                                    // For subsequent entries, calculate using formula
+                                                    if (isset($hollowblockSizeMap[$item])) {
+                                                        $inField = 'hollowblock_' . str_replace('_inch', '', $sizeInfo['size']) . '_inch_in';
+                                                        $outField = 'hollowblock_' . str_replace('_inch', '', $sizeInfo['size']) . '_inch_out';
+                                                        $inValue = $entry->$inField ?? 0;
+                                                        $outValue = $entry->$outField ?? 0;
+                                                    } else {
+                                                        $inValue = $entry->in ?? 0;
+                                                        $outValue = $entry->out ?? 0;
+                                                    }
+                                                    $runningBalance = $runningBalance - $outValue + $inValue;
+                                                }
+                                            @endphp
+                                            {{ number_format($runningBalance, 2) }}
                                         </td>
                                         <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">{{ $entry->amount ? number_format($entry->amount, 2) : '' }}</td>
                                         <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">{{ $entry->or_ar }}</td>
@@ -1134,6 +1157,13 @@
             fields += `<div class='mb-2'>
                 <label class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>Onsite Date</label>
                 <input type='date' name='onsite_date' value='${currentDate}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' />
+            </div>`;
+            
+            // Add Updated Onsite Date field - accessible to everyone
+            var updatedOnsiteDate = found.updated_onsite_date || '';
+            fields += `<div class='mb-2'>
+                <label class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>Updated Onsite Date</label>
+                <input type='date' name='updated_onsite_date' value='${updatedOnsiteDate}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' />
             </div>`;
             
             // Add hidden fields for hollowblock sizes

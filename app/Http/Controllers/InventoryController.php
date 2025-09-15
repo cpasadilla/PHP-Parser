@@ -125,37 +125,46 @@ class InventoryController extends Controller
             'hollowblock_5_inch_in' => 'nullable|numeric',
             'hollowblock_6_inch_in' => 'nullable|numeric',
         ]);
-        
-        // For starting balance, we put the balance amount in the IN column
-        // and leave customer fields empty
+
+        // Get current balances to add to them
+        $currentBalances = $this->getCurrentBalances($data['item']);
+
+        // For starting balance, we put the NEW balance amount in the IN column
+        // and add it to the current balance
         $data['in'] = $data['balance'];
+        $data['balance'] = $currentBalances['balance'] + $data['balance'];
         $data['onsite_in'] = $data['onsite_balance'];
-        
+        $data['onsite_balance'] = ($currentBalances['onsite_balance'] ?? 0) + $data['onsite_balance'];
+
         // Handle hollowblock sizes for starting balance
         if ($data['item'] === 'HOLLOWBLOCKS' && isset($data['hollowblock_size'])) {
             $size = $data['hollowblock_size'];
-            
-            // Set the appropriate hollowblock size fields
+
+            // Set the appropriate hollowblock size fields - add to current balance
             if ($size === '4_inch') {
                 $data['hollowblock_4_inch_in'] = $data['balance'];
-                $data['hollowblock_4_inch_balance'] = $data['balance'];
+                $data['hollowblock_4_inch_balance'] = $currentBalances['hollowblock_4_inch_balance'] + $data['balance'];
             } elseif ($size === '5_inch') {
                 $data['hollowblock_5_inch_in'] = $data['balance'];
-                $data['hollowblock_5_inch_balance'] = $data['balance'];
+                $data['hollowblock_5_inch_balance'] = $currentBalances['hollowblock_5_inch_balance'] + $data['balance'];
             } elseif ($size === '6_inch') {
                 $data['hollowblock_6_inch_in'] = $data['balance'];
-                $data['hollowblock_6_inch_balance'] = $data['balance'];
+                $data['hollowblock_6_inch_balance'] = $currentBalances['hollowblock_6_inch_balance'] + $data['balance'];
             }
         }
-        
+
         // For starting balance, avoid FK/user coupling: use safe defaults to prevent DB NOT NULL errors
         // customer_id column may be non-nullable in some deployments. Use 0 as a sentinel value.
         $data['customer_id'] = 0;
         // customer_type column may be non-nullable; use empty string instead of null
         $data['customer_type'] = '';
         $data['is_starting_balance'] = true;
-        
+
         \App\Models\InventoryEntry::create($data);
+
+        // Recalculate onsite balances for this item
+        $this->recalculateOnsiteBalances($data['item']);
+
         return redirect()->route('inventory')->with('success', 'Starting balance set successfully!');
     }
     
@@ -329,7 +338,18 @@ class InventoryController extends Controller
     public function update(Request $request, $id)
     {
         $entry = \App\Models\InventoryEntry::findOrFail($id);
-        
+
+        // Debug logging - check what data is being received
+        \Log::info('Inventory Update Request Data', [
+            'request_all' => $request->all(),
+            'onsite_date_received' => $request->input('onsite_date'),
+            'updated_onsite_date_received' => $request->input('updated_onsite_date'),
+            'has_onsite_date' => $request->has('onsite_date'),
+            'has_updated_onsite_date' => $request->has('updated_onsite_date'),
+            'user_id' => auth()->id(),
+            'user_roles' => auth()->user()->roles ?? null
+        ]);
+
         // Debug logging
         \Log::info('Inventory Update Request - HOLLOWBLOCK Debug', [
             'entry_id' => $id,
@@ -358,6 +378,7 @@ class InventoryController extends Controller
             'actual_out' => 'nullable|numeric',
             'onsite_balance' => 'nullable|numeric',
             'onsite_date' => 'nullable|date',
+            'updated_onsite_date' => 'nullable|date',
             'pickup_delivery_type' => 'nullable|string',
             'vat_type' => 'nullable|string',
             'hollowblock_size' => 'nullable|string',
@@ -399,17 +420,20 @@ class InventoryController extends Controller
             $data['amount'] = $this->calculateAmount($data);
         }
 
-        // Check if user is admin for onsite_date editing
-        $user = auth()->user();
-        $isAdmin = $user->roles && in_array(strtoupper(trim($user->roles->roles)), ['ADMIN', 'ADMINISTRATOR']);
-        
-        // If not admin, keep the current onsite_date or set to current date if null
-        if (!$isAdmin) {
-            $data['onsite_date'] = $entry->onsite_date ?: now()->format('Y-m-d');
-        }
-
         $entry->update($data);
         $entry->refresh();
+        
+        // Debug logging - check what was actually saved
+        \Log::info('Inventory Update - After Save', [
+            'entry_id' => $id,
+            'onsite_date_before' => $entry->getOriginal('onsite_date'),
+            'onsite_date_after' => $entry->onsite_date,
+            'updated_onsite_date_before' => $entry->getOriginal('updated_onsite_date'),
+            'updated_onsite_date_after' => $entry->updated_onsite_date,
+            'data_being_saved' => $data,
+            'all_entry_attributes' => $entry->getAttributes()
+        ]);
+        
         \Log::info('Inventory Update Complete - HOLLOWBLOCK Debug', [
             'entry_id' => $id,
             'final_balance' => $entry->balance,
