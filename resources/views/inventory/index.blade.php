@@ -262,8 +262,8 @@
                                         @endif
                                         @php
                                             $hasIn = isset($hollowblockSizeMap[$item]) ? 
-                                                ($entry->{'hollowblock_' . str_replace('_inch', '', $hollowblockSizeMap[$item]['size']) . '_inch_in'} ?? false) : 
-                                                $entry->in;
+                                                (($entry->{'hollowblock_' . str_replace('_inch', '', $hollowblockSizeMap[$item]['size']) . '_inch_in'} ?? 0) > 0) : 
+                                                (($entry->in ?? 0) > 0);
                                         @endphp
                                     <tr style="background-color: {{ ($entry->is_starting_balance || $hasIn) ? 'rgb(173, 216, 230)' : 'rgb(255, 255, 255)' }};">
                                         <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">
