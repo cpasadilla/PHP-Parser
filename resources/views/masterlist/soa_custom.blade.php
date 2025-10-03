@@ -208,7 +208,7 @@
                     </div>
                 @endforeach
             </div>
-                        <div class="main-content">
+            <div class="main-content">
                 <div style="display: flex; align-items: flex-start; gap: 0; margin-bottom: 0; border: 1px solid #000; padding: 10px;">
                     <div style="flex: 0 0 auto; display: flex; align-items: flex-start; margin-left: 40px;">
                         <img style="height: 90px; width: auto;" src="{{ asset('images/logo.png') }}" alt="Logo">
@@ -229,48 +229,48 @@
                 </div>
                 <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 0; margin-bottom: 0; border: 1px solid #000; border-top: none; border-bottom: none; padding: 0;">
                     <div style="margin-left : 10px; flex: 0 0 8%; line-height: 1; text-align: left; display: flex; flex-direction: column;">
-                        <p style="margin: 0; font-size: 12px; line-height: 1.2; font-weight: bold;">BILLED TO: </p>
-                        <p style="margin: 0; font-size: 12px; line-height: 1.2; font-weight: bold;">ADDRESS:</p>
+                        <p style="margin: 0; font-size: 13px; line-height: 1.2; font-weight: bold;">BILLED TO: </p>
+                        <p style="margin: 0; font-size: 13px; line-height: 1.2; font-weight: bold;">ADDRESS:</p>
                     </div>
                     <div style="flex: 0 0 92%; line-height: 1; text-align: left; display: flex; flex-direction: column;">
-                        <p style="margin: 0; font-size: 13px;"><span style="padding: 2px 5px; font-family: 'Courier New', 'Consolas', 'Monaco', monospace;">{{ !empty($customer->first_name) || !empty($customer->last_name) ? $customer->first_name . ' ' . $customer->last_name : $customer->company_name }}</span></p>
-                        <p style="margin: 0; font-size: 13px;"><span style="padding: 2px 5px; font-family: 'Courier New', 'Consolas', 'Monaco', monospace;">BASCO, BATANES</span></p>
+                        <p style="margin: 0; font-size: 13.5px;"><span style="padding: 2px 5px; font-family: 'Courier New', 'Consolas', 'Monaco', monospace;">{{ !empty($customer->first_name) || !empty($customer->last_name) ? $customer->first_name . ' ' . $customer->last_name : $customer->company_name }}</span></p>
+                        <p style="margin: 0; font-size: 13.5px;"><span style="padding: 2px 5px; font-family: 'Courier New', 'Consolas', 'Monaco', monospace;">BASCO, BATANES</span></p>
                     </div>
                 </div>
                 <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 0; margin-bottom: 0; border: 1px solid #000; border-top: none; padding: 0;">
                     <div style="margin-left : 10px; flex: 0 0 8%; line-height: 1; text-align: left; display: flex; flex-direction: column;">
-                        <p style="margin: 0; font-size: 12px; line-height: 1.2; font-weight: bold;">CONSIGNEE:</p>
+                        <p style="margin: 0; font-size: 13px; line-height: 1.2; font-weight: bold;">CONSIGNEE:</p>
                     </div>
                     <div style="flex: 0 0 25%; line-height: 1; text-align: left; display: flex; flex-direction: column;">
-                        <p style="margin: 0; font-size: 13px;"><span style="padding: 2px 5px; line-height: 1.2; font-family: 'Courier New', 'Consolas', 'Monaco', monospace;">{{ collect($orders)->pluck('recName')->filter()->unique()->implode(', ') }}</span></p>
+                        <p style="margin: 0; font-size: 13.5px;"><span style="padding: 2px 5px; line-height: 1.2; font-family: 'Courier New', 'Consolas', 'Monaco', monospace;">{{ collect($orders)->pluck('recName')->filter()->unique()->implode(', ') }}</span></p>
                     </div>
                     <div style="flex: 0 0 5%; line-height: 1; text-align: left; display: flex; flex-direction: column;">
-                        <p style="margin: 0; font-size: 12px; line-height: 1.2; font-weight: bold;">SHIPPER:</p>
+                        <p style="margin: 0; font-size: 13px; line-height: 1.2; font-weight: bold;">SHIPPER:</p>
                     </div>
                     <div style="flex: 0 0 62%; line-height: 1; text-align: left; display: flex; flex-direction: column;">
-                        <p style="margin: 0; font-size: 13px;"><span style="padding: 2px 5px; line-height: 1.2; font-family: 'Courier New', 'Consolas', 'Monaco', monospace;">{{ collect($orders)->pluck('shipperName')->filter()->unique()->implode(', ') }}</span></p>
+                        <p style="margin: 0; font-size: 13.5px;"><span style="padding: 2px 5px; line-height: 1.2; font-family: 'Courier New', 'Consolas', 'Monaco', monospace;">{{ collect($orders)->pluck('shipperName')->filter()->unique()->implode(', ') }}</span></p>
                     </div>
                 </div>
                 <div style="display: flex; align-items: stretch; gap: 0; margin-bottom: 0; padding: 0;">
                     <div style="flex: 0 0 13%; box-sizing: border-box; line-height: 1; text-align: center; display: flex; flex-direction: column;">
-                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; font-weight: bold; border-bottom: 1px solid #000; border-left: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: center; background-color: #A9D08E;">VESSEL</p>
-                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; border: none; border-bottom: 1px solid #000; border-left: 1px solid #000; min-height: 80px; display: flex; align-items: center; justify-content: center; flex: 1;">M/V EVERWIN STAR {{ $ship }}</p>
+                        <p style="margin: 0; font-size: 13px; padding: 2px 5px; font-weight: bold; border-bottom: 1px solid #000; border-left: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: center; background-color: #A9D08E;">VESSEL</p>
+                        <p style="margin: 0; font-size: 13.5px; padding: 2px 5px; border: none; border-bottom: 1px solid #000; border-left: 1px solid #000; min-height: 80px; display: flex; align-items: center; justify-content: center; flex: 1;">M/V EVERWIN STAR {{ $ship }}</p>
                     </div>
                     <div style="flex: 0 0 17%; box-sizing: border-box; line-height: 1; text-align: center; display: flex; flex-direction: column;">
-                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; font-weight: bold; border-bottom: 1px solid #000; border-left: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: center; background-color: #A9D08E;">VOYAGE #</p>
-                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; border: none; border-bottom: 1px solid #000; border-left: 1px solid #000; min-height: 80px; display: flex; align-items: center; justify-content: center; flex: 1;">{{ htmlspecialchars_decode($voyage, ENT_QUOTES) }} {{ $origin }} - {{ $destination }}</p>
+                        <p style="margin: 0; font-size: 13px; padding: 2px 5px; font-weight: bold; border-bottom: 1px solid #000; border-left: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: center; background-color: #A9D08E;">VOYAGE #</p>
+                        <p style="margin: 0; font-size: 13.5px; padding: 2px 5px; border: none; border-bottom: 1px solid #000; border-left: 1px solid #000; min-height: 80px; display: flex; align-items: center; justify-content: center; flex: 1;">{{ htmlspecialchars_decode($voyage, ENT_QUOTES) }} {{ $origin }} - {{ $destination }}</p>
                     </div>
                     <div style="flex: 0 0 15%; box-sizing: border-box; line-height: 1; text-align: center; display: flex; flex-direction: column;">
-                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; font-weight: bold; border-bottom: 1px solid #000; border-left: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: center; background-color: #A9D08E;">BL #</p>
-                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; border: none; border-bottom: 1px solid #000; border-left: 1px solid #000; min-height: 80px; display: flex; align-items: center; justify-content: center; flex: 1; word-wrap: break-word; word-break: break-all;">
+                        <p style="margin: 0; font-size: 13px; padding: 2px 5px; font-weight: bold; border-bottom: 1px solid #000; border-left: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: center; background-color: #A9D08E;">BL #</p>
+                        <p style="margin: 0; font-size: 13.5px; padding: 2px 5px; border: none; border-bottom: 1px solid #000; border-left: 1px solid #000; min-height: 80px; display: flex; align-items: center; justify-content: center; flex: 1; word-wrap: break-word; word-break: break-all;">
                             @foreach($orders as $order)
                                 {{ $order->orderId }}@if(!$loop->last), @endif
                             @endforeach
                         </p>
                     </div>
                     <div style="flex: 0 0 55%; box-sizing: border-box; line-height: 1; text-align: center; display: flex; flex-direction: column;">
-                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; font-weight: bold; border-bottom: 1px solid #000; border-left: 1px solid #000; border-right: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: center; background-color: #A9D08E;">DESCRIPTION</p>
-                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; border-bottom: 1px solid #000; border-left: 1px solid #000; border-right: 1px solid #000; min-height: 80px; display: flex; align-items: center; justify-content: center; flex: 1; word-wrap: break-word; word-break: break-word;">
+                        <p style="margin: 0; font-size: 13px; padding: 2px 5px; font-weight: bold; border-bottom: 1px solid #000; border-left: 1px solid #000; border-right: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: center; background-color: #A9D08E;">DESCRIPTION</p>
+                        <p style="margin: 0; font-size: 13.5px; padding: 2px 5px; border-bottom: 1px solid #000; border-left: 1px solid #000; border-right: 1px solid #000; min-height: 80px; display: flex; align-items: center; justify-content: center; flex: 1; word-wrap: break-word; word-break: break-word;">
                             @php 
                                 $parcelItems = [];
                                 foreach($orders as $order) {
