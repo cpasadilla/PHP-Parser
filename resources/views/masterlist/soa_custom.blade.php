@@ -208,7 +208,7 @@
                     </div>
                 @endforeach
             </div>
-            <div class="main-content">
+                        <div class="main-content">
                 <div style="display: flex; align-items: flex-start; gap: 0; margin-bottom: 0; border: 1px solid #000; padding: 10px;">
                     <div style="flex: 0 0 auto; display: flex; align-items: flex-start; margin-left: 40px;">
                         <img style="height: 90px; width: auto;" src="{{ asset('images/logo.png') }}" alt="Logo">
@@ -397,25 +397,18 @@
                         <p style="margin: 0; font-size: 12px; background-color: #A9D08E; padding: 2px 5px; border-bottom: 1px solid #000; border-left: 1px solid #000; border-right: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: center; font-style: italic;">MM / DD / YR</p>
                     </div>
                 </div>
-            </div>
-
-
-
-
-
-<br><br>
-
-
-
+            </div><br><br>
         </div>
     </div><br>
 
-    <!-- For printing -->    <script>
+    <!-- For printing -->    
+    <script>
         function printContent(divId) {
             console.log("printContent function called");
             var printContainer = document.getElementById(divId);
             if (!printContainer) {
                 console.error("Print container not found");
+                alert("Print container not found. Please contact support.");
                 return;
             }
 
@@ -424,10 +417,10 @@
             inputs.forEach(function(input) {
                 input.style.fontFamily = "Arial, sans-serif";
                 if (!input.style.fontSize) {
-                    input.style.fontSize = "12px";
+                    input.style.fontSize = "13px";
                 }
                 // Ensure input value is preserved in the value attribute for printing
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             input.setAttribute('value', input.value);
+                input.setAttribute('value', input.value);
             });
 
             // Clone the print container to measure ONLY the main content
@@ -524,6 +517,10 @@
 
             // Open new print window
             var printWindow = window.open("", "", "width=1000,height=800");
+            if (!printWindow) {
+                alert("Unable to open print window. Please disable your popup blocker and try again.");
+                return;
+            }
             printWindow.document.write("<html><head><title>Statement of Account</title>");
             printWindow.document.write("<style>");
             printWindow.document.write(`
@@ -603,7 +600,7 @@
                     .non-printable { display: none; }
                     input { 
                         font-family: Arial, sans-serif; 
-                        font-size: 12px; 
+                        font-size: 13px; 
                         border: none !important; 
                         background: transparent !important; 
                         outline: none !important;
@@ -614,7 +611,7 @@
                     }
                     span {
                         font-family: Arial, sans-serif;
-                        font-size: 12px;
+                        font-size: 13px;
                         color: black !important;
                     }
                     /* Special styling for SOA number span */
@@ -627,7 +624,7 @@
                     /* Compact SOA section for print */
                     .print-container div[style*="background-color: #A9D08E"] {
                         line-height: 0.8 !important;
-                        min-height: 12px !important;
+                        min-height: 13px !important;
                     }
                     .print-container div[style*="background-color: #A9D08E"] p {
                         line-height: 0.8 !important;
@@ -650,11 +647,12 @@
             printWindow.document.close();
             printWindow.focus();
 
-            // Print and close
             printWindow.onload = function () {
                 printWindow.print();
                 printWindow.close();
             };
+        }
+
         // Variable to track if discount is active
         let discountActive = false;
 
@@ -810,122 +808,122 @@
             }
         }
 
-    // Event listener for penalty months input (guarded)
-    const penaltyMonthsEl = document.getElementById('penaltyMonths');
-    if (penaltyMonthsEl) penaltyMonthsEl.addEventListener('input', updatePenaltyCalculation);
+        // Event listener for penalty months input (guarded)
+        const penaltyMonthsEl = document.getElementById('penaltyMonths');
+        if (penaltyMonthsEl) penaltyMonthsEl.addEventListener('input', updatePenaltyCalculation);
 
-    // SOA Number auto-save functionality
-    let soaNumberTimeout;
-        
-    function saveSoaNumber() {
-            const soaInputElement = document.getElementById('soaNumberInput');
-            const soaNumber = soaInputElement.value.trim();
-            const statusElement = document.getElementById('soaNumberStatus');
+        // SOA Number auto-save functionality
+        let soaNumberTimeout;
             
-            console.log('Attempting to save SOA number:', soaNumber);
-            
-            // Don't save if empty
-            if (!soaNumber) {
-                console.log('SOA number is empty, not saving');
-                return;
-            }
-            
-            // Show saving status
-            statusElement.textContent = '💾 Saving...';
-            statusElement.style.color = 'orange';
-            statusElement.style.display = 'inline';
-            
-            // Prepare the data
-            const requestData = {
-                customer_id: {{ $customer->id }},
-                ship: '{{ $ship }}',
-                voyage: '{{ $voyage }}',
-                soa_number: soaNumber
-            };
-            
-            console.log('Request data:', requestData);
-            console.log('Route URL:', '{{ route("update-soa-number") }}');
-            
-            fetch('{{ route("update-soa-number") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                body: JSON.stringify(requestData)
-            })
-            .then(response => {
-                console.log('Response status:', response.status);
-                return response.json();
-            })
-            .then(data => {
-                console.log('Response data:', data);
-                if (data.success) {
-                    // Update the input field value to ensure it's saved and visible for print
-                    soaInputElement.value = soaNumber;
-                    soaInputElement.setAttribute('value', soaNumber);
-                    
-                    // Also update the defaultValue property to ensure consistency
-                    soaInputElement.defaultValue = soaNumber;
-                    
-                    statusElement.textContent = '✓ Saved';
-                    statusElement.style.color = 'green';
-                    
-                    // Log for debugging
-                    console.log('SOA number saved successfully and input updated for print:', soaNumber);
-                    console.log('Input value after save:', soaInputElement.value);
-                    console.log('Input value attribute after save:', soaInputElement.getAttribute('value'));
-                    
-                    setTimeout(() => {
-                        statusElement.style.display = 'none';
-                    }, 3000);
-                } else {
+        function saveSoaNumber() {
+                const soaInputElement = document.getElementById('soaNumberInput');
+                const soaNumber = soaInputElement.value.trim();
+                const statusElement = document.getElementById('soaNumberStatus');
+                
+                console.log('Attempting to save SOA number:', soaNumber);
+                
+                // Don't save if empty
+                if (!soaNumber) {
+                    console.log('SOA number is empty, not saving');
+                    return;
+                }
+                
+                // Show saving status
+                statusElement.textContent = '💾 Saving...';
+                statusElement.style.color = 'orange';
+                statusElement.style.display = 'inline';
+                
+                // Prepare the data
+                const requestData = {
+                    customer_id: {{ $customer->id }},
+                    ship: '{{ $ship }}',
+                    voyage: '{{ $voyage }}',
+                    soa_number: soaNumber
+                };
+                
+                console.log('Request data:', requestData);
+                console.log('Route URL:', '{{ route("update-soa-number") }}');
+                
+                fetch('{{ route("update-soa-number") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify(requestData)
+                })
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Response data:', data);
+                    if (data.success) {
+                        // Update the input field value to ensure it's saved and visible for print
+                        soaInputElement.value = soaNumber;
+                        soaInputElement.setAttribute('value', soaNumber);
+                        
+                        // Also update the defaultValue property to ensure consistency
+                        soaInputElement.defaultValue = soaNumber;
+                        
+                        statusElement.textContent = '✓ Saved';
+                        statusElement.style.color = 'green';
+                        
+                        // Log for debugging
+                        console.log('SOA number saved successfully and input updated for print:', soaNumber);
+                        console.log('Input value after save:', soaInputElement.value);
+                        console.log('Input value attribute after save:', soaInputElement.getAttribute('value'));
+                        
+                        setTimeout(() => {
+                            statusElement.style.display = 'none';
+                        }, 3000);
+                    } else {
+                        statusElement.textContent = '✗ Error';
+                        statusElement.style.color = 'red';
+                        console.error('Error saving SOA number:', data.message || 'Unknown error');
+                        console.error('Full response data:', data);
+                        
+                        setTimeout(() => {
+                            statusElement.style.display = 'none';
+                        }, 5000);
+                    }
+                })
+                .catch(error => {
                     statusElement.textContent = '✗ Error';
                     statusElement.style.color = 'red';
-                    console.error('Error saving SOA number:', data.message || 'Unknown error');
-                    console.error('Full response data:', data);
+                    console.error('Error saving SOA number:', error);
+                    console.error('Full error details:', {
+                        message: error.message,
+                        stack: error.stack,
+                        requestData: requestData
+                    });
                     
+                    // Show error message for longer time
                     setTimeout(() => {
                         statusElement.style.display = 'none';
                     }, 5000);
-                }
-            })
-            .catch(error => {
-                statusElement.textContent = '✗ Error';
-                statusElement.style.color = 'red';
-                console.error('Error saving SOA number:', error);
-                console.error('Full error details:', {
-                    message: error.message,
-                    stack: error.stack,
-                    requestData: requestData
                 });
-                
-                // Show error message for longer time
-                setTimeout(() => {
-                    statusElement.style.display = 'none';
-                }, 5000);
-            });
-        }
-        
-        // Add event listener for SOA number input
-        document.addEventListener('DOMContentLoaded', function() {
-            const soaInput = document.getElementById('soaNumberInput');
-            if (soaInput) {
-                console.log('SOA input element found, attaching event listener');
-                soaInput.addEventListener('input', function() {
-                    console.log('Input event triggered, value:', this.value);
-                    // Clear existing timeout
-                    clearTimeout(soaNumberTimeout);
-                    
-                    // Set new timeout to save after 1 second of no typing
-                    soaNumberTimeout = setTimeout(saveSoaNumber, 1000);
-                });
-            } else {
-                console.error('SOA number input element not found');
             }
-            // Initialize reactive totals on load
-            try { recalcTotals(); } catch (e) { /* no-op if recalcTotals not defined */ }
-        });
+            
+            // Add event listener for SOA number input
+            document.addEventListener('DOMContentLoaded', function() {
+                const soaInput = document.getElementById('soaNumberInput');
+                if (soaInput) {
+                    console.log('SOA input element found, attaching event listener');
+                    soaInput.addEventListener('input', function() {
+                        console.log('Input event triggered, value:', this.value);
+                        // Clear existing timeout
+                        clearTimeout(soaNumberTimeout);
+                        
+                        // Set new timeout to save after 1 second of no typing
+                        soaNumberTimeout = setTimeout(saveSoaNumber, 1000);
+                    });
+                } else {
+                    console.error('SOA number input element not found');
+                }
+                // Initialize reactive totals on load
+                try { recalcTotals(); } catch (e) { /* no-op if recalcTotals not defined */ }
+            });
     </script>
 
     <!-- Penalty Calculation Modal -->
