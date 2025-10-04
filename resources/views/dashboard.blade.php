@@ -304,11 +304,13 @@
     <div class="p-6" style="{{ auth()->user()->hasSubpagePermission('dashboard', 'pie-charts') || (auth()->user()->roles && in_array(strtoupper(trim(auth()->user()->roles->roles)), ['ADMIN', 'ADMINISTRATOR'])) ? '' : 'display: none;' }}">
         <div class="bg-white dark:bg-dark-eval-1 rounded-lg shadow-md p-6">
             <h2 class="text-lg font-semibold text-center text-gray-800 dark:text-gray-200">Number of BL Per Ship</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-6">
                 @foreach($ships as $ship)
-                <div class="flex flex-col items-center">
-                    <h3 class="text-md font-semibold text-gray-800 dark:text-gray-200">M/V Everwin Star {{ $ship->ship_number }}</h3>
-                    <canvas id="blDistributionChart{{ $loop->index }}" style="max-width: 250px; max-height: 250px;"></canvas>
+                <div class="flex flex-col items-center p-4 bg-white dark:bg-dark-eval-2 rounded-lg shadow-md">
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">M/V Everwin Star {{ $ship->ship_number }}</h3>
+                    <div class="w-full aspect-square">
+                        <canvas id="blDistributionChart{{ $loop->index }}" style="width: 100%; height: 100%; min-height: 300px;"></canvas>
+                    </div>
                 </div>
                 @endforeach
             </div>
@@ -934,10 +936,41 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    layout: {
+                        padding: {
+                            top: 20,
+                            bottom: 20,
+                            left: 20,
+                            right: 20
+                        }
+                    },
                     plugins: {
                         legend: {
-                            position: 'top',
-                            display: true
+                            position: 'right',
+                            display: true,
+                            align: 'center',
+                            labels: {
+                                padding: 15,
+                                usePointStyle: true,
+                                pointStyle: 'circle',
+                                font: {
+                                    size: 11
+                                },
+                                generateLabels: function(chart) {
+                                    const data = chart.data;
+                                    if (data.labels.length && data.datasets.length) {
+                                        return data.labels.map((label, i) => {
+                                            const value = data.datasets[0].data[i];
+                                            return {
+                                                text: `${label}: ${value} BL`,
+                                                fillStyle: data.datasets[0].backgroundColor[i],
+                                                index: i
+                                            };
+                                        });
+                                    }
+                                    return [];
+                                }
+                            }
                         },
                         tooltip: {
                             callbacks: {
@@ -946,9 +979,7 @@
                                     
                                     const label = context.label || '';
                                     const value = context.raw || 0;
-                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    const percentage = total ? Math.round((value / total) * 100) : 0;
-                                    return `${label}: ${value} BL (${percentage}%)`;
+                                    return `${label}: ${value} BL`;
                                 }
                             }
                         }
