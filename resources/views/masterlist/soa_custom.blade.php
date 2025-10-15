@@ -354,12 +354,12 @@
                 </div>
                 <div style="display: flex; align-items: stretch; gap: 0; margin-bottom: 0; border: 2px solid #000; border-right: 3px solid #000; border-top: none; border-bottom: none; padding: 0;">
                     <div style="flex: 0 0 10%; box-sizing: border-box; text-align: center; display: flex; flex-direction: column;">
-                        <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: bold; border-bottom: 2px solid #000; min-height: 12px; display: flex; align-items: center; justify-content: left; padding-bottom: 3.5px;">PNB:</p>
-                        <p style="margin: 0; font-size: 13.5px; padding: 1px 5px; font-weight: light; border-bottom: 2px solid #000; min-height: 12px; display: flex; align-items: center; justify-content: left;">LBP:</p>
+                        <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: bold; border-bottom: 2px solid #000; min-height: 12px; display: flex; align-items: center; justify-content: left; padding-bottom: 1.5px;">PNB:</p>
+                        <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: bold; border-bottom: 2px solid #000; min-height: 12px; display: flex; align-items: center; justify-content: left; padding-bottom: 1.5px;">LBP:</p>
                     </div>
                     <div style="flex: 0 0 20%; box-sizing: border-box; text-align: center; display: flex; flex-direction: column;">
-                        <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: bold; border-bottom: 2px solid #000; border-left: 2px solid #000; min-height: 12px; display: flex; align-items: center; justify-content: center; padding-bottom: 3.5px;">2277-7000-1147</p>
-                        <p style="margin: 0; font-size: 13.5px; padding: 1px 5px; font-weight: light; border-bottom: 2px solid #000; border-left: 2px solid #000; min-height: 12px; display: flex; align-items: center; justify-content: center;">1082-1039-76</p>
+                        <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: bold; border-bottom: 2px solid #000; border-left: 2px solid #000; min-height: 12px; display: flex; align-items: center; justify-content: center; padding-bottom: 1.5px;">2277-7000-1147</p>
+                        <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: bold; border-bottom: 2px solid #000; border-left: 2px solid #000; min-height: 12px; display: flex; align-items: center; justify-content: center; padding-bottom: 1.5px;">1082-1039-76</p>
                     </div>
                     <div style="flex: 0 0 20%; box-sizing: border-box; text-align: center; display: flex; flex-direction: column;">
                         <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: bold; border-left: 2px solid #000; min-height: 12px; display: flex; align-items: center; justify-content: left; color: #fff; padding-bottom: 2.5px;">.</p>
