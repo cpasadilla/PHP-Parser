@@ -209,69 +209,68 @@
                 @endforeach
             </div>
             <div class="main-content">
-                <div style="display: flex; align-items: flex-start; gap: 0; margin-bottom: 0; border: 2px solid #000; border-right: 3px solid #000; padding: 10px;">
+                <div style="display: flex; align-items: flex-start; gap: 0; margin-bottom: 0; border: 1px solid #000; padding: 10px;">
                     <div style="flex: 0 0 auto; display: flex; align-items: flex-start; margin-left: 40px;">
                         <img style="height: 90px; width: auto;" src="{{ asset('images/logo.png') }}" alt="Logo">
                     </div>
                     <div style="flex: 1 1 auto; line-height: 1; text-align: center; margin-right: 40px;">
                         <p style="margin: 0; font-size: 23px; font-weight: bold; color: #00B050; padding: 2px 5px;">ST. FRANCIS XAVIER STAR SHIPPING LINES, INC.</p>
                         <p style="margin: 0; font-size: 14px; padding: 2px 5px;">National Road Brgy. Kaychanarianan, Basco Batanes</p>
-                        <p style="margin: 0; font-size: 14px; padding: 2px 5px; font-style: italic;"> Vat Reg. TIN: 009-081-111-000 CP No: 0999-889-5851 Email Add: fxavier_2015@yahoo.com.ph</p>
+                        <p style="margin: 0; font-size: 14px; padding: 2px 5px; font-style: italic;"> Vat Reg. TIN: 009-081-111-000 CP No: 0999-889-5851    Email Add: fxavier_2015@yahoo.com.ph</p>
                         <p style="margin: 0; margin-bottom: 0; padding: 2px 5px; line-height: 1; font-size: 20px; color: blue; text-decoration: underline;">STATEMENT OF ACCOUNT</p>
                     </div>
                 </div>
-                <div style="display: flex; justify-content: flex-end; align-items: center; margin: 0; border: 2px solid #000; border-right: 3px solid #000; border-top: none; text-align: right; background-color: #A9D08E;">
-                    <p style="margin: 0; line-height: 1; font-size: 14px; display: flex; align-items: center; gap: 6px; padding: 2px 6px;">
-                        <strong>SOA NO.:</strong>
-                        <input type="text" id="soaNumberInput" style="border: 1px solid #ccc; height: 20px; padding: 0 6px; padding-right: 50px; width: 120px; font-family: Arial, sans-serif; font-size: 12px; color: red;" placeholder="Enter SOA No." value="{{ $soaNumber ?? '' }}">
-                        <span id="soaNumberStatus" style="font-size: 11px; color: green; display: none; margin-left: 6px;">✓ Saved</span>
-                        <button type="button" onclick="saveSoaNumber()" style="margin-left: 6px; height: 20px; line-height: 18px; padding: 0 6px; background: #007cba; color: white; border: none; border-radius: 3px; font-size: 10px; cursor: pointer;" title="Test Save">💾</button>
+                <div style="display: flex; justify-content: flex-end; margin: 0; border: 1px solid #000; border-top: none; text-align: right; background-color: #A9D08E;">
+                    <p style="margin-bottom: 0; line-height: 1; font-size: 16px;"><strong>SOA NO.:</strong> 
+                        <input type="text" id="soaNumberInput" style="border: 1px solid #ccc; padding: 2px 5px 2px 5px; padding-right: 50px; width: 120px; font-family: Arial, sans-serif; font-size: 12px; color: red;" placeholder="Enter SOA No." value="{{ $soaNumber ?? '' }}">
+                        <span id="soaNumberStatus" style="font-size: 12px; color: green; display: none; margin-left: 5px;">✓ Saved</span>
+                        <button type="button" onclick="saveSoaNumber()" style="margin-left: 5px; padding: 2px 5px; background: #007cba; color: white; border: none; border-radius: 3px; font-size: 10px; cursor: pointer;" title="Test Save">💾</button>
                     </p>
                 </div>
-                <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 0; margin-bottom: 0; border: 2px solid #000; border-right: 3px solid #000; border-top: none; border-bottom: none; padding: 0;">
+                <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 0; margin-bottom: 0; border: 1px solid #000; border-top: none; border-bottom: none; padding: 0;">
                     <div style="margin-left : 10px; flex: 0 0 8%; line-height: 1; text-align: left; display: flex; flex-direction: column;">
-                        <p style="margin: 0; font-size: 14px; line-height: 1.2; font-weight: bold;">BILLED TO: </p>
-                        <p style="margin: 0; font-size: 14px; line-height: 1.2; font-weight: bold;">ADDRESS:</p>
+                        <p style="margin: 0; font-size: 13px; line-height: 1.2; font-weight: bold;">BILLED TO: </p>
+                        <p style="margin: 0; font-size: 13px; line-height: 1.2; font-weight: bold;">ADDRESS:</p>
                     </div>
                     <div style="flex: 0 0 92%; line-height: 1; text-align: left; display: flex; flex-direction: column;">
-                        <p style="margin: 0; font-size: 15.5px;"><span style="padding: 2px 5px; line-height: 1; font-family: 'Courier New', 'Consolas', 'Monaco', monospace;">{{ !empty($customer->first_name) || !empty($customer->last_name) ? $customer->first_name . ' ' . $customer->last_name : $customer->company_name }}</span></p>
-                        <p style="margin: 0; font-size: 15.5px;"><span style="padding: 2px 5px; font-family: 'Courier New', 'Consolas', 'Monaco', monospace;">BASCO, BATANES</span></p>
+                        <p style="margin: 0; font-size: 13.5px;"><span style="padding: 2px 5px; font-family: 'Courier New', 'Consolas', 'Monaco', monospace;">{{ !empty($customer->first_name) || !empty($customer->last_name) ? $customer->first_name . ' ' . $customer->last_name : $customer->company_name }}</span></p>
+                        <p style="margin: 0; font-size: 13.5px;"><span style="padding: 2px 5px; font-family: 'Courier New', 'Consolas', 'Monaco', monospace;">BASCO, BATANES</span></p>
                     </div>
                 </div>
-                <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 0; margin-bottom: 0; border: 2px solid #000; border-right: 3px solid #000; border-top: none; padding: 0;">
+                <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 0; margin-bottom: 0; border: 1px solid #000; border-top: none; padding: 0;">
                     <div style="margin-left : 10px; flex: 0 0 8%; line-height: 1; text-align: left; display: flex; flex-direction: column;">
-                        <p style="margin: 0; font-size: 14px; line-height: 1.2; font-weight: bold;">CONSIGNEE:</p>
+                        <p style="margin: 0; font-size: 13px; line-height: 1.2; font-weight: bold;">CONSIGNEE:</p>
                     </div>
                     <div style="flex: 0 0 25%; line-height: 1; text-align: left; display: flex; flex-direction: column;">
-                        <p style="margin: 0; font-size: 15.5px;"><span style="padding: 2px 5px; font-family: 'Courier New', 'Consolas', 'Monaco', monospace;">{{ collect($orders)->pluck('recName')->filter()->unique()->implode(', ') }}</span></p>
+                        <p style="margin: 0; font-size: 13.5px;"><span style="padding: 2px 5px; line-height: 1.2; font-family: 'Courier New', 'Consolas', 'Monaco', monospace;">{{ collect($orders)->pluck('recName')->filter()->unique()->implode(', ') }}</span></p>
                     </div>
                     <div style="flex: 0 0 5%; line-height: 1; text-align: left; display: flex; flex-direction: column;">
-                        <p style="margin: 0; font-size: 14px; line-height: 1.2; font-weight: bold;">SHIPPER:</p>
+                        <p style="margin: 0; font-size: 13px; line-height: 1.2; font-weight: bold;">SHIPPER:</p>
                     </div>
                     <div style="flex: 0 0 62%; line-height: 1; text-align: left; display: flex; flex-direction: column;">
-                        <p style="margin: 0; font-size: 15.5px;"><span style="padding: 2px 5px; font-family: 'Courier New', 'Consolas', 'Monaco', monospace;">{{ collect($orders)->pluck('shipperName')->filter()->unique()->implode(', ') }}</span></p>
+                        <p style="margin: 0; font-size: 13.5px;"><span style="padding: 2px 5px; line-height: 1.2; font-family: 'Courier New', 'Consolas', 'Monaco', monospace;">{{ collect($orders)->pluck('shipperName')->filter()->unique()->implode(', ') }}</span></p>
                     </div>
                 </div>
-                <div style="display: flex; align-items: stretch; gap: 0; margin-bottom: 0; border: 2px solid #000; border-right: 3px solid #000; border-top: none; padding: 0;">
+                <div style="display: flex; align-items: stretch; gap: 0; margin-bottom: 0; padding: 0;">
                     <div style="flex: 0 0 13%; box-sizing: border-box; line-height: 1; text-align: center; display: flex; flex-direction: column;">
-                        <p style="margin: 0; font-size: 14px; padding: 2px 5px; font-weight: bold; border-bottom: 2px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: center; background-color: #A9D08E;">VESSEL</p>
-                        <p style="margin: 0; font-size: 15.5px; padding: 2px 5px; border: none; min-height: 80px; display: flex; align-items: center; justify-content: center; flex: 1;">M/V EVERWIN STAR {{ $ship }}</p>
+                        <p style="margin: 0; font-size: 13px; padding: 2px 5px; font-weight: bold; border-bottom: 1px solid #000; border-left: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: center; background-color: #A9D08E;">VESSEL</p>
+                        <p style="margin: 0; font-size: 13.5px; padding: 2px 5px; border: none; border-bottom: 1px solid #000; border-left: 1px solid #000; min-height: 80px; display: flex; align-items: center; justify-content: center; flex: 1;">M/V EVERWIN STAR {{ $ship }}</p>
                     </div>
                     <div style="flex: 0 0 17%; box-sizing: border-box; line-height: 1; text-align: center; display: flex; flex-direction: column;">
-                        <p style="margin: 0; font-size: 14px; padding: 2px 5px; font-weight: bold; border-bottom: 2px solid #000; border-left: 2px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: center; background-color: #A9D08E;">VOYAGE #</p>
-                        <p style="margin: 0; font-size: 15.5px; padding: 2px 5px; border: none; border-left: 2px solid #000; min-height: 80px; display: flex; align-items: center; justify-content: center; flex: 1;">{{ htmlspecialchars_decode($voyage, ENT_QUOTES) }} {{ $origin }} - {{ $destination }}</p>
+                        <p style="margin: 0; font-size: 13px; padding: 2px 5px; font-weight: bold; border-bottom: 1px solid #000; border-left: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: center; background-color: #A9D08E;">VOYAGE #</p>
+                        <p style="margin: 0; font-size: 13.5px; padding: 2px 5px; border: none; border-bottom: 1px solid #000; border-left: 1px solid #000; min-height: 80px; display: flex; align-items: center; justify-content: center; flex: 1;">{{ htmlspecialchars_decode($voyage, ENT_QUOTES) }} {{ $origin }} - {{ $destination }}</p>
                     </div>
                     <div style="flex: 0 0 15%; box-sizing: border-box; line-height: 1; text-align: center; display: flex; flex-direction: column;">
-                        <p style="margin: 0; font-size: 14px; padding: 2px 5px; font-weight: bold; border-bottom: 2px solid #000; border-left: 2px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: center; background-color: #A9D08E;">BL #</p>
-                        <p style="margin: 0; font-size: 15.5px; padding: 2px 5px; border: none; border-left: 2px solid #000; min-height: 80px; display: flex; align-items: center; justify-content: center; flex: 1; word-wrap: break-word; word-break: break-all;">
+                        <p style="margin: 0; font-size: 13px; padding: 2px 5px; font-weight: bold; border-bottom: 1px solid #000; border-left: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: center; background-color: #A9D08E;">BL #</p>
+                        <p style="margin: 0; font-size: 13.5px; padding: 2px 5px; border: none; border-bottom: 1px solid #000; border-left: 1px solid #000; min-height: 80px; display: flex; align-items: center; justify-content: center; flex: 1; word-wrap: break-word; word-break: break-all;">
                             @foreach($orders as $order)
                                 {{ $order->orderId }}@if(!$loop->last), @endif
                             @endforeach
                         </p>
                     </div>
                     <div style="flex: 0 0 55%; box-sizing: border-box; line-height: 1; text-align: center; display: flex; flex-direction: column;">
-                        <p style="margin: 0; font-size: 14px; padding: 2px 5px; font-weight: bold; border-bottom: 2px solid #000; border-left: 2px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: center; background-color: #A9D08E;">DESCRIPTION</p>
-                        <p style="margin: 0; font-size: 14.5px; padding: 2px 5px; border-left: 2px solid #000; min-height: 80px; display: flex; align-items: center; justify-content: center; flex: 1; word-wrap: break-word; word-break: break-word;">
+                        <p style="margin: 0; font-size: 13px; padding: 2px 5px; font-weight: bold; border-bottom: 1px solid #000; border-left: 1px solid #000; border-right: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: center; background-color: #A9D08E;">DESCRIPTION</p>
+                        <p style="margin: 0; font-size: 13.5px; padding: 2px 5px; border-bottom: 1px solid #000; border-left: 1px solid #000; border-right: 1px solid #000; min-height: 80px; display: flex; align-items: center; justify-content: center; flex: 1; word-wrap: break-word; word-break: break-word;">
                             @php 
                                 $parcelItems = [];
                                 foreach($orders as $order) {
@@ -284,25 +283,36 @@
                         </p>
                     </div>
                 </div>
-                <div style="display: flex; align-items: stretch; gap: 0; margin-bottom: 0; border: 2px solid #000; border-right: 3px solid #000; border-top: none; border-bottom: none; padding: 0;">
-                    <div style="flex: 0 0 50%; box-sizing: border-box; line-height: 1; text-align: center; display: flex; flex-direction: column;">
-                        <p style="margin: 0; font-size: 15.5px; padding: 2px 5px; font-weight: bold; border-bottom: 2px solid #A9D08E; min-height: 17px; display: flex; align-items: center; justify-content: left; background-color: #A9D08E;">SAY IN PESOS:</p>
-                        <p style="margin: 0; font-size: 15.5px; padding: 2px 5px; font-weight: bold; border-bottom: 2px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: left; background-color: #A9D08E; color: #A9D08E;">.</p>
-                        <p style="margin: 0; font-size: 13.5px; padding: 2px 5px; border-bottom: 2px solid #000; min-height: 63px; display: flex; align-items: center; justify-content: center; font-family: 'Courier New', 'Consolas', 'Monaco', monospace; text-transform: uppercase;">**{{ $amountInWords }}**</p>
+                <div style="display: flex; align-items: flex-start; gap: 0; margin-bottom: 0; padding: 0;">
+                    <div style="flex: 0 0 60%; box-sizing: border-box; line-height: 1; text-align: center; min-height: 17px;">
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; background-color: #A9D08E; font-weight: bold; border-bottom: 1px solid #A9D08E; border-left: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: left;">SAY IN PESOS: </p>
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; background-color: #A9D08E; border-bottom: 1px solid #000; border-left: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: center;"></p>
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; border-bottom: 1px solid #ffffffff; border-left: 1px solid #000; min-height: 6px; display: flex; align-items: center; justify-content: center;"></p>
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; border-bottom: 1px solid #ffffffff; border-left: 1px solid #000; min-height: 39px; display: flex; align-items: center; justify-content: center; font-family: 'Courier New', 'Consolas', 'Monaco', monospace; text-transform: uppercase;">**{{ $amountInWords }}**</p>
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; border-bottom: 1px solid #000; border-left: 1px solid #000; min-height: 6px; display: flex; align-items: center; justify-content: center;"></p>
+                        
                     </div>
-                    <div style="flex: 0 0 25%; box-sizing: border-box; line-height: 1; text-align: center; display: flex; flex-direction: column;">
-                        <p style="margin: 0; font-size: 15.5px; padding: 2px 5px; font-weight: bold; border-bottom: 2px solid #000; border-left: 2px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: left;">FREIGHT :</p>
-                        <p style="margin: 0; font-size: 15.5px; padding: 2px 5px; font-weight: bold; border-bottom: 2px solid #000; border-left: 2px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: left;">INSURANCE :</p>
-                        <p style="margin: 0; font-size: 15.5px; padding: 2px 5px; font-weight: bold; border-bottom: 2px solid #000; border-left: 2px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: left;">PPA MNL :</p>
-                        <p style="margin: 0; font-size: 15.5px; padding: 2px 5px; font-weight: bold; border-bottom: 2px solid #000; border-left: 2px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: left;">WHARFAGE :</p>
-                        <p style="margin: 0; font-size: 15.5px; padding: 2px 5px; font-weight: bold; border-bottom: 2px solid #000; border-left: 2px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: left; background-color: #ffff38ff;">GRAND TOTAL :</p>
+                    <div style="flex: 0 0 20%; box-sizing: border-box; line-height: 1; text-align: center; min-height: 17px;">
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; font-weight: bold; border-bottom: 1px solid #000; border-left: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: left;">FREIGHT :</p>
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; font-weight: bold; border-bottom: 1px solid #000; border-left: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: left;">INSURANCE :</p>
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; font-weight: bold; border-bottom: 1px solid #000; border-left: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: left;">PPA MNL :</p>
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; font-weight: bold; border-bottom: 1px solid #000; border-left: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: left;">WHARFAGE :</p>
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; font-weight: bold; border-bottom: 1px solid #000; border-left: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: left; background-color: #ffff38ff;">GRAND TOTAL :</p>
                     </div>
-                    <div style="flex: 0 0 25%; box-sizing: border-box; line-height: 1; text-align: center; display: flex; flex-direction: column;">
-                        <p style="margin: 0; font-size: 15.5px; padding: 2px 5px; font-weight: bold; border-bottom: 2px solid #000; border-left: 2px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: right;">{{ number_format($voyageFreight, 2) }}</p>
-                        <p style="margin: 0; font-size: 15.5px; padding: 2px 5px; font-weight: bold; border-bottom: 2px solid #000; border-left: 2px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: right;">{{ number_format($voyageValuation, 2) }}</p>
-                        <p style="margin: 0; font-size: 15.5px; padding: 2px 5px; font-weight: bold; border-bottom: 2px solid #000; border-left: 2px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: right;">{{ number_format($voyagePpaManila, 2) }}</p>
-                        <p style="margin: 0; font-size: 15.5px; padding: 2px 5px; font-weight: bold; border-bottom: 2px solid #000; border-left: 2px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: right;">{{ number_format($voyageWharfage, 2) }}</p>
-                        <p style="margin: 0; font-size: 15.5px; padding: 2px 5px; font-weight: bold; border-bottom: 2px solid #000; border-left: 2px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: right; background-color: #ffff38ff;">
+                    <div style="flex: 0 0 20%; box-sizing: border-box; line-height: 1; text-align: center; min-height: 17px;">
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; border-bottom: 1px solid #000; border-left: 1px solid #000; border-right: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: right;">
+                            {{ number_format($voyageFreight, 2) }}
+                        </p>
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; border-bottom: 1px solid #000; border-left: 1px solid #000; border-right: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: right;">
+                            {{ number_format($voyageValuation, 2) }}
+                        </p>
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; border-bottom: 1px solid #000; border-left: 1px solid #000; border-right: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: right;">
+                            {{ number_format($voyagePpaManila, 2) }}
+                        </p>
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; border-bottom: 1px solid #000; border-left: 1px solid #000; border-right: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: right;">
+                            {{ number_format($voyageWharfage, 2) }}
+                        </p>
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; border-bottom: 1px solid #000; border-left: 1px solid #000; border-right: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: right; background-color: #ffff38ff;">
                             @if($voyageInterest > 0)
                                 <span class="font-bold" style="color: white;">1% Interest: {{ number_format($voyageInterest, 2) }}</span>
                             @else
@@ -315,79 +325,79 @@
                                 </span>
                             @endif
                         </p>
+                        
                     </div>
                 </div>
-                <div style="display: flex; align-items: stretch; gap: 0; margin-bottom: 0; border: 2px solid #000; border-right: 3px solid #000; border-top: none; border-bottom: none; padding: 0;">
-                    <div style="flex: 0 0 50%; box-sizing: border-box; text-align: center; display: flex; flex-direction: column;">
-                        <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: bold; border-bottom: 2px solid #000; min-height: 12px; display: flex; align-items: center; justify-content: left; background-color: #A9D08E;">PAYMENT INSTRUCTIONS:</p>
+                <div style="display: flex; align-items: flex-start; gap: 0; margin-bottom: 0; padding: 0;">
+                    <div style="flex: 0 0 60%; box-sizing: border-box; line-height: 1; text-align: center; min-height: 17px;">
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; background-color: #A9D08E; font-weight: bold; border-bottom: 1px solid #000; border-left: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: left;">PAYMENT INSTRUCTIONS:</p>
                     </div>
-                    <div style="flex: 0 0 50%; box-sizing: border-box; text-align: center; display: flex; flex-direction: column;">
-                        <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: bold; border-bottom: 2px solid #000; border-left: 2px solid #000; min-height: 12px; display: flex; align-items: center; justify-content: left; background-color: #A9D08E; color: #A9D08E;">.</p>
-                    </div>
-                </div>
-                <div style="display: flex; align-items: stretch; gap: 0; margin-bottom: 0; border: 2px solid #000; border-right: 3px solid #000; border-top: none; border-bottom: none; padding: 0;">
-                    <div style="flex: 0 0 50%; box-sizing: border-box; text-align: center; display: flex; flex-direction: column;">
-                        <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: bold; min-height: 12px; display: flex; align-items: center; justify-content: left; color: red; text-decoration: underline; padding-bottom: 2px;">Kindly settle your account at St. Francis office, or by bank</p>
-                        <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: bold; min-height: 12px; display: flex; align-items: center; justify-content: left; color: red; text-decoration: underline; padding-bottom: 2px;">transfer using the details below:</p>
-                    </div>
-                    <div style="flex: 0 0 50%; box-sizing: border-box; text-align: center; display: flex; flex-direction: column;">
-                        <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: bold; border-bottom: 2px solid #000; border-left: 2px solid #000; min-height: 12px; display: flex; align-items: center; justify-content: left; background-color: #A9D08E;">PREPARED BY:</p>
-                        <p style="margin: 0; font-size: 15.5px; padding: 1px 5px 3px 5px; font-weight: bold; border-left: 2px solid #000; min-height: 12px; display: flex; align-items: center; justify-content: left; color: #fff;">.</p>
+                    <div style="flex: 0 0 40%; box-sizing: border-box; line-height: 1; text-align: center; min-height: 17px;">
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; background-color: #A9D08E; border-bottom: 1px solid #000; border-left: 1px solid #000; border-right: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: center;"></p>
                     </div>
                 </div>
-                <div style="display: flex; align-items: stretch; gap: 0; margin-bottom: 0; border: 2px solid #000; border-right: 3px solid #000; border-top: none; border-bottom: none; padding: 0;">
-                    <div style="flex: 0 0 30%; box-sizing: border-box; text-align: center; display: flex; flex-direction: column;">
-                        <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: bold; border-top: 2px solid #000; border-bottom: 2px solid #000; min-height: 12px; display: flex; align-items: center; justify-content: left;">ACCOUNT NAME:</p>
-                        <p style="margin: 0; font-size: 13.5px; padding: 1px 5px; font-weight: light; border-bottom: 2px solid #000; min-height: 12px; display: flex; align-items: center; justify-content: left; padding-bottom: 2px; font-style: italic;">St. Francis Xavier Star Shipping lines, Inc.</p>
-                        <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: bold; border-bottom: 2px solid #000; min-height: 12px; display: flex; align-items: center; justify-content: left;">ACCOUNT NUMBER:</p>
+                <div style="display: flex; align-items: flex-start; gap: 0; margin-bottom: 0; padding: 0;">
+                    <div style="flex: 0 0 60%; box-sizing: border-box; line-height: 1; text-align: center; min-height: 17px;">
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; font-weight: bold; border-bottom: 1px solid #ffffffff; border-left: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: left; color: red; text-decoration: underline;">Kindly settle your account at St. Francis office, or by bank </p>
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; font-weight: bold; border-bottom: 1px solid #ffffffff; border-left: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: left; color: red; text-decoration: underline;">transfer using the details below:</p>
                     </div>
-                    <div style="flex: 0 0 20%; box-sizing: border-box; text-align: center; display: flex; flex-direction: column;">
-                        <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: bold; border-left: 2px solid #000; min-height: 12px; display: flex; align-items: center; justify-content: left; color: #fff; padding-bottom: 2.5px;">.</p>
-                        <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: bold; border-left: 2px solid #000; min-height: 12px; display: flex; align-items: center; justify-content: left; color: #fff; padding-bottom: 3px;">.</p>
-                        <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: bold; border-left: 2px solid #000; min-height: 12px; display: flex; align-items: center; justify-content: left; color: #fff; padding-bottom: 3px;">.</p>
-                    </div>
-                    <div style="flex: 0 0 50%; box-sizing: border-box; text-align: center; display: flex; flex-direction: column;">
-                        <p style="margin: 0; font-size: 15.5px; padding: 1px 5px 3px 5px; font-weight: bold; border-left: 2px solid #000; min-height: 12px; display: flex; align-items: center; justify-content: center; text-decoration: underline;">CHERRY MAE E. CAMAYA</p>
-                        <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: light; border-bottom: 2px solid #000; border-left: 2px solid #000; min-height: 12px; display: flex; align-items: center; justify-content: center; font-style: italic;">Billing Officer</p>
-                        <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: bold; border-bottom: 2px solid #000; border-left: 2px solid #000; min-height: 12px; display: flex; align-items: center; justify-content: left; background-color: #A9D08E;">RECEIVED BY:</p>
+                    <div style="flex: 0 0 40%; box-sizing: border-box; line-height: 1; text-align: center; min-height: 17px;">
+                        <p style="margin: 0; font-size: 12px; font-weight: bold; padding: 2px 5px; background-color: #A9D08E; border-bottom: 1px solid #000; border-left: 1px solid #000; border-right: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: left;">PREPARED BY:</p>
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; border-left: 1px solid #000; border-right: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: center;"></p>
                     </div>
                 </div>
-                <div style="display: flex; align-items: stretch; gap: 0; margin-bottom: 0; border: 2px solid #000; border-right: 3px solid #000; border-top: none; border-bottom: none; padding: 0;">
-                    <div style="flex: 0 0 10%; box-sizing: border-box; text-align: center; display: flex; flex-direction: column;">
-                        <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: bold; border-bottom: 2px solid #000; min-height: 12px; display: flex; align-items: center; justify-content: left; padding-bottom: 3.5px;">PNB:</p>
-                        <p style="margin: 0; font-size: 13.5px; padding: 1px 5px; font-weight: light; border-bottom: 2px solid #000; min-height: 12px; display: flex; align-items: center; justify-content: left;">LBP:</p>
+                <div style="display: flex; align-items: flex-start; gap: 0; margin-bottom: 0; padding: 0;">
+                    <div style="flex: 0 0 30%; box-sizing: border-box; line-height: 1; text-align: center; min-height: 17px;">
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; font-weight: bold; border-bottom: 1px solid #000; border-left: 1px solid #000; border-top: 1px solid #000;  min-height: 17px; display: flex; align-items: center; justify-content: left;">ACCOUNT NAME:</p>
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; font-weight: bold; border: none; border-bottom: 1px solid #000; border-left: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: left; font-style: italic;">St. Francis Xavier Star Shipping lines, Inc.</p>
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; font-weight: bold; border: none; border-bottom: 1px solid #000; border-left: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: left;">ACCOUNT NUMBER:</p>
                     </div>
-                    <div style="flex: 0 0 20%; box-sizing: border-box; text-align: center; display: flex; flex-direction: column;">
-                        <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: bold; border-bottom: 2px solid #000; border-left: 2px solid #000; min-height: 12px; display: flex; align-items: center; justify-content: center; padding-bottom: 3.5px;">2277-7000-1147</p>
-                        <p style="margin: 0; font-size: 13.5px; padding: 1px 5px; font-weight: light; border-bottom: 2px solid #000; border-left: 2px solid #000; min-height: 12px; display: flex; align-items: center; justify-content: center;">1082-1039-76</p>
+                    <div style="flex: 0 0 30%; box-sizing: border-box; line-height: 1; text-align: center; min-height: 17px;">
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; font-weight: bold; border-bottom: 1px solid #ffffffff; border-left: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: center;"></p>
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; border: none; border-bottom: 1px solid #ffffffff; border-left: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: center;"></p>
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; border: none; border-bottom: 1px solid #ffffffff; border-left: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: center;"></p>
                     </div>
-                    <div style="flex: 0 0 20%; box-sizing: border-box; text-align: center; display: flex; flex-direction: column;">
-                        <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: bold; border-left: 2px solid #000; min-height: 12px; display: flex; align-items: center; justify-content: left; color: #fff; padding-bottom: 2.5px;">.</p>
-                        <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: bold; border-left: 2px solid #000; min-height: 12px; display: flex; align-items: center; justify-content: left; color: #fff; padding-bottom: 2.5px;">.</p>
-                    </div>
-                    <div style="flex: 0 0 50%; box-sizing: border-box; text-align: center; display: flex; flex-direction: column;">
-                        <p style="margin: 0; font-size: 15.5px; padding: 1px 5px 3px 5px; font-weight: bold; border-left: 2px solid #000; min-height: 12px; display: flex; align-items: center; justify-content: center; color: #fff; padding-bottom: 3px;">.</p>
-                        <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: light; border-bottom: 2px solid #000; border-left: 2px solid #000; min-height: 12px; display: flex; align-items: center; justify-content: center; color: #fff;">.</p>
-                    </div>
-                </div>
-                
-                <div style="display: flex; align-items: stretch; gap: 0; margin-bottom: 0; border: 2px solid #000; border-right: 3px solid #000; border-top: none; border-bottom: none; padding: 0;">
-                    <div style="flex: 0 0 50%; box-sizing: border-box; text-align: center; display: flex; flex-direction: column;">
-                        <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: light; min-height: 12px; display: flex; align-items: center; justify-content: left; padding-bottom: 3px; color: #fff;">.</p>
-                        <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: light; min-height: 12px; display: flex; align-items: center; justify-content: left; padding-bottom: 3px; color: #fff;">.</p>
-                        <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: light; min-height: 12px; display: flex; align-items: center; justify-content: left; padding-bottom: 2.5px; font-style: italic; ">Attached is photocopy of BL for your reference….</p>
-                        <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: light; min-height: 12px; display: flex; align-items: center; justify-content: left; padding-bottom: 3px; color: #fff;">.</p>
-                        <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: light; border-bottom: 2px solid #000; min-height: 12px; display: flex; align-items: center; justify-content: left color: #fff;">.</p>
-                    </div>
-                    <div style="flex: 0 0 50%; box-sizing: border-box; text-align: center; display: flex; flex-direction: column;">
-                        <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: light; border-bottom: 2px solid #000; border-left: 2px solid #000; min-height: 12px; display: flex; align-items: center; justify-content: center; background-color: #A9D08E; font-style: italic;">Signature Over Printed Name</p>
-                        <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: bold; border-bottom: 2px solid #000; border-left: 2px solid #000; min-height: 12px; display: flex; align-items: center; justify-content: left; background-color: #A9D08E;">DATE:</p>
-                        <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: bold; border-left: 2px solid #000; min-height: 12px; display: flex; align-items: center; justify-content: center; padding-bottom: 3px;">{{ date('F d, Y') }}</p>
-                        <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: light; border-bottom: 2px solid #000; border-left: 2px solid #000; min-height: 12px; display: flex; align-items: center; justify-content: left; color: #fff;">.</p>
-                        <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: light; border-bottom: 2px solid #000; border-left: 2px solid #000; min-height: 12px; display: flex; align-items: center; justify-content: center; font-style: italic; background-color: #A9D08E;">MM / DD / YR</p>
+                    <div style="flex: 0 0 40%; box-sizing: border-box; line-height: 1; text-align: center; min-height: 17px;">
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; font-weight: bold; border-left: 1px solid #000; border-right: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: center; text-decoration: underline;">CHERRY MAE E. CAMAYA</p>
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; border: none; border-bottom: 1px solid #000; border-left: 1px solid #000; border-right: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: center; font-style: italic;">Billing Officer</p>
+                        <p style="margin: 0; font-size: 12px; font-weight: bold; background-color: #A9D08E; padding: 2px 5px; border: none; border-bottom: 1px solid #000; border-left: 1px solid #000; border-right: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: left;">RECEIVED BY:</p>
                     </div>
                 </div>
-            </div>
+                <div style="display: flex; align-items: flex-start; gap: 0; margin-bottom: 0; padding: 0;">
+                    <div style="flex: 0 0 7.5%; box-sizing: border-box; line-height: 1; text-align: center; min-height: 17px;">
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; font-weight: bold; border-bottom: 1px solid #000; border-left: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: left;">PNB:</p>
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; font-weight: bold; border: none; border-bottom: 1px solid #000; border-left: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: left;">LBP:</p>
+                    </div>
+                    <div style="flex: 0 0 22.5%; box-sizing: border-box; line-height: 1; text-align: center; min-height: 17px;">
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; font-weight: bold; border-bottom: 1px solid #000; border-left: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: center;">2277-7000-1147</p>
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; font-weight: bold; border: none; border-bottom: 1px solid #000; border-left: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: center;">1082-1039-76</p>
+                    </div>
+                    <div style="flex: 0 0 30%; box-sizing: border-box; line-height: 1; text-align: center; min-height: 17px;">
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; font-weight: bold; border-bottom: 1px solid #ffffffff; border-left: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: center;"></p>
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; border: none; border-bottom: 1px solid #ffffffff; border-left: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: center;"></p>
+                    </div>
+                    <div style="flex: 0 0 40%; box-sizing: border-box; line-height: 1; text-align: center; min-height: 17px;">
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; font-weight: bold; border-bottom: 1px solid #ffffffff; border-left: 1px solid #000; border-right: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: center;"></p>
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; border: none; border-bottom: 1px solid #000; border-left: 1px solid #000; border-right: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: center;"></p>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: flex-start; gap: 0; margin-bottom: 0; padding: 0;">
+                    <div style="flex: 0 0 60%; box-sizing: border-box; line-height: 1; text-align: center; min-height: 17px;">
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; font-weight: bold; border-bottom: 1px solid #ffffffff; border-left: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: left;"></p>
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; font-weight: bold; border-bottom: 1px solid #ffffffff; border-left: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: left;"></p>
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; border-bottom: 1px solid #ffffffff; border-left: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: left; font-style: italic;">Attached is photocopy of BL for your reference….</p>
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; font-weight: bold; border-bottom: 1px solid #ffffffff; border-left: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: left;"></p>
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; font-weight: bold; border-bottom: 1px solid #000; border-left: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: left;"></p>
+                    </div>
+                    <div style="flex: 0 0 40%; box-sizing: border-box; line-height: 1; text-align: center; min-height: 17px;">
+                        <p style="margin: 0; font-size: 12px; background-color: #A9D08E; padding: 2px 5px; border-bottom: 1px solid #000; border-left: 1px solid #000; border-right: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: center; font-style: italic;">Signature Over Printed Name</p>
+                        <p style="margin: 0; font-size: 12px; background-color: #A9D08E; padding: 2px 5px; font-weight: bold; border-bottom: 1px solid #000; border-left: 1px solid #000; border-right: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: left;">DATE:</p>
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; font-weight: bold; border-bottom: 1px solid #ffffffff; border-left: 1px solid #000; border-right: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: center;">{{ date('F d, Y') }}</p>
+                        <p style="margin: 0; font-size: 12px; padding: 2px 5px; font-weight: bold; border-bottom: 1px solid #000; border-left: 1px solid #000; border-right: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: left;"></p>
+                        <p style="margin: 0; font-size: 12px; background-color: #A9D08E; padding: 2px 5px; border-bottom: 1px solid #000; border-left: 1px solid #000; border-right: 1px solid #000; min-height: 17px; display: flex; align-items: center; justify-content: center; font-style: italic;">MM / DD / YR</p>
+                    </div>
+                </div>
+            </div><br><br>
         </div>
     </div><br>
 
@@ -524,28 +534,16 @@
                         padding: 0; 
                         -webkit-print-color-adjust: exact; 
                         print-color-adjust: exact; 
-                        font-family: Arial, sans-serif;
-                        height: auto !important;
-                        overflow: hidden !important;
+                        font-family: Arial, sans-serif; 
                     }
                     .print-container {
                         position: relative;
                         width: 100%;
-                        page-break-after: avoid !important;
-                        overflow: hidden !important;
+                        ${needsPageBreak ? '' : 'min-height: calc(100vh - 1in);'}
                     }
                     .main-content {
                         position: relative;
                         width: 100%;
-                        page-break-after: avoid !important;
-                    }
-                    /* Prevent blank pages */
-                    br {
-                        display: none !important;
-                    }
-                    /* Remove trailing spaces and breaks */
-                    .main-content::after {
-                        content: none !important;
                     }
                     .signature-section {
                         display: none !important;
@@ -553,7 +551,7 @@
                     .print-signature {
                         display: block !important;
                         position: relative; 
-                        margin-top: 10px; 
+                        margin-top: 20px; 
                         width: 100%;
                         page-break-inside: avoid;
                     }
