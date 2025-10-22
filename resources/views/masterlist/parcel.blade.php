@@ -28,7 +28,7 @@
                     <p class="text-sm text-gray-500 dark:text-gray-400">Management of all shipped items and parcels</p>
                 </div>
                 <div class="flex justify-end">
-                    @if(request('ship') || request('voyage') || request('search') || request('container') || (request('per_page') && request('per_page') != 10))
+                    @if(request('ship') || request('voyage') || request('search') || request('container') || request('category') || (request('per_page') && request('per_page') != 10))
                         <a href="{{ route('masterlist.parcel') }}" class="px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition duration-150 flex items-center">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -101,10 +101,30 @@
                     </div>
 
                     <div class="relative">
+                        <label for="category" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Filter by Category</label>
+                        <div class="relative">
+                            <select name="category" id="category" class="w-full pl-4 pr-10 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                <option value="">All Categories</option>
+                                @foreach($categories as $category)
+                                    <option value="{{ $category }}" {{ request('category') == $category ? 'selected' : '' }}>
+                                        {{ $category }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="relative">
                         <label for="container" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Filter by Container</label>
                         <input type="text" name="container" id="container" value="{{ request('container') }}" placeholder="Enter container number" class="w-full pl-4 pr-10 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                     </div>
-
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
                     <div class="relative">
                         <label for="per_page_select" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Items per page</label>
                         <div class="relative">
@@ -128,7 +148,7 @@
         </div>
 
         <!-- Active Filters Display -->
-        @if(request('ship') || request('voyage') || request('search') || request('container') || (request('per_page') && request('per_page') != 10))
+        @if(request('ship') || request('voyage') || request('search') || request('container') || request('category') || (request('per_page') && request('per_page') != 10))
             <div class="mb-6 flex flex-wrap gap-2">
                 <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Active Filters:</span>
                 @if(request('ship'))
@@ -139,6 +159,11 @@
                 @if(request('voyage'))
                     <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200">
                         Voyage: {{ request('voyage') }}
+                    </span>
+                @endif
+                @if(request('category'))
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                        Category: {{ request('category') }}
                     </span>
                 @endif
                 @if(request('container'))
@@ -231,6 +256,7 @@
                         <th scope="col" class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase dark:text-gray-300 border-b dark:border-gray-700">CONSIGNEE</th>
                         <th scope="col" class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase dark:text-gray-300 border-b dark:border-gray-700">CONTAINER#</th>
                         <th scope="col" class="px-6 py-4 text-xs font-medium tracking-wider text-center text-gray-500 uppercase dark:text-gray-300 border-b dark:border-gray-700">CARGO STATUS</th>
+                        <!--th scope="col" class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase dark:text-gray-300 border-b dark:border-gray-700">CATEGORY</th-->
                         <th scope="col" class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase dark:text-gray-300 border-b dark:border-gray-700">ITEM CODE</th>
                         <th scope="col" class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase dark:text-gray-300 border-b dark:border-gray-700">QUANTITY</th>
                         <th scope="col" class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase dark:text-gray-300 border-b dark:border-gray-700">UNIT</th>
@@ -279,6 +305,7 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{{ $parcel->recName }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{{ $parcel->containerNum }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300 text-center">{{ $parcel->cargoType ?? '' }}</td>
+                            <!--td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{{ $parcel->category ?? 'N/A' }}</td-->
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{{ $parcel->itemId }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{{ $parcel->quantity }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{{ $parcel->unit }}</td>
@@ -302,7 +329,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="10" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                            <td colspan="20" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
                                 <div class="flex flex-col items-center justify-center py-8">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
@@ -403,6 +430,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             const shipSelect = document.getElementById('ship');
             const voyageSelect = document.getElementById('voyage');
+            const categorySelect = document.getElementById('category');
             
             // Filter voyages based on selected ship
             function filterVoyagesByShip() {
@@ -457,6 +485,13 @@
             
             // Auto-submit when voyage is selected
             voyageSelect.addEventListener('change', function() {
+                if (!document.querySelector('form').getAttribute('data-submitting')) {
+                    this.form.submit();
+                }
+            });
+            
+            // Auto-submit when category is selected
+            categorySelect.addEventListener('change', function() {
                 if (!document.querySelector('form').getAttribute('data-submitting')) {
                     this.form.submit();
                 }
@@ -965,16 +1000,17 @@
                 { name: 'Consignee', index: 6, essential: true },
                 { name: 'Container#', index: 7, essential: false },
                 { name: 'Cargo Status', index: 8, essential: false },
-                { name: 'Item Code', index: 9, essential: false },
-                { name: 'Quantity', index: 10, essential: false },
-                { name: 'Unit', index: 11, essential: false },
-                { name: 'Item Name', index: 12, essential: true },
-                { name: 'Description', index: 13, essential: false },
-                { name: 'Rate', index: 14, essential: false },
-                { name: 'Freight', index: 15, essential: false },
-                { name: 'Documents', index: 16, essential: false },
-                { name: 'Key', index: 17, essential: false },
-                { name: 'Checker', index: 18, essential: false }
+                { name: 'Category', index: 9, essential: false },
+                { name: 'Item Code', index: 10, essential: false },
+                { name: 'Quantity', index: 11, essential: false },
+                { name: 'Unit', index: 12, essential: false },
+                { name: 'Item Name', index: 13, essential: true },
+                { name: 'Description', index: 14, essential: false },
+                { name: 'Rate', index: 15, essential: false },
+                { name: 'Freight', index: 16, essential: false },
+                { name: 'Documents', index: 17, essential: false },
+                { name: 'Key', index: 18, essential: false },
+                { name: 'Checker', index: 19, essential: false }
             ];
 
             // Load saved column preferences from localStorage
