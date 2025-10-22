@@ -27,13 +27,15 @@
                 {{ __('Crew Management') }}
             </h2>
             <div class="flex space-x-2">
+                @if(auth()->user()->hasPermission('crew', 'delete') || auth()->user()->hasSubpagePermission('crew', 'crew-management', 'delete'))
                 <a href="{{ route('crew.deleted') }}" 
-                   class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded inline-flex items-center">
+                   class="bg-red-500 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700 text-white font-bold py-2 px-4 rounded inline-flex items-center">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                     </svg>
                     Deleted Crew
                 </a>
+                @endif
                 <div class="relative">
                     <button type="button" onclick="toggleExportDropdown()" 
                             class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded inline-flex items-center">
@@ -163,7 +165,7 @@
                 
                 @if(Auth::user()->hasPagePermission('leave-applications'))
                 <a href="{{ route('leave-credits.index') }}" 
-                   class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded">
+                   class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded">
                     Manage Leave Credits
                 </a>
                 @endif
@@ -323,8 +325,10 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                             <div class="flex space-x-2">
+                                                @if(auth()->user()->hasPermission('crew', 'access') || auth()->user()->hasSubpagePermission('crew', 'crew-management', 'access'))
                                                 <a href="{{ route('crew.show', $crew) }}" 
                                                    class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300">View</a>
+                                                @endif
                                                 @if(auth()->user()->hasPermission('crew', 'edit') || auth()->user()->hasSubpagePermission('crew', 'crew-management', 'edit'))
                                                 <a href="{{ route('crew.edit', $crew) }}" 
                                                    class="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300">Edit</a>
@@ -334,7 +338,7 @@
                                                         class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300">Transfer</button>
                                                 @endif
                                                 @if(auth()->user()->hasPermission('crew', 'delete') || auth()->user()->hasSubpagePermission('crew', 'crew-management', 'delete'))
-                                                <button onclick="showDeleteModal({{ $crew->id }}, '{{ $crew->full_name }}', '{{ $crew->employee_id }}')" 
+                                                <button onclick="showDeleteModal({{ $crew->id }}, '{{ $crew->full_name }}', '{{ $crew->employee_id ?: 'No ID' }}')" 
                                                         class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">Delete</button>
                                                 @endif
                                             </div>

@@ -22,9 +22,9 @@
             <!-- Personal & Employment Information -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                 <!-- Personal Information -->
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6 bg-white border-b border-gray-200">
-                        <h3 class="text-lg font-medium text-gray-900 mb-4">Personal Information</h3>
+                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="p-6 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-600">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Personal Information</h3>
                         
                         <!-- ID Picture -->
                         @php
@@ -78,91 +78,91 @@
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Employee ID</label>
-                                <p class="mt-1 text-sm text-gray-900">{{ $crew->employee_id }}</p>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Employee ID</label>
+                                <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ $crew->employee_id }}</p>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Full Name</label>
-                                <p class="mt-1 text-sm text-gray-900">{{ $crew->full_name }}</p>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Full Name</label>
+                                <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ $crew->full_name }}</p>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Phone</label>
-                                <p class="mt-1 text-sm text-gray-900">{{ $crew->phone ?: 'Not provided' }}</p>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Phone</label>
+                                <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ $crew->phone ?: 'Not provided' }}</p>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Email</label>
-                                <p class="mt-1 text-sm text-gray-900">{{ $crew->email ?: 'Not provided' }}</p>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
+                                <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ $crew->email ?: 'Not provided' }}</p>
                             </div>
                             <div class="md:col-span-2">
-                                <label class="block text-sm font-medium text-gray-700">Address</label>
-                                <p class="mt-1 text-sm text-gray-900">{{ $crew->address ?: 'Not provided' }}</p>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Address</label>
+                                <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ $crew->address ?: 'Not provided' }}</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Employment Information -->
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6 bg-white border-b border-gray-200">
-                        <h3 class="text-lg font-medium text-gray-900 mb-4">Employment Information</h3>
+                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="p-6 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-600">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Employment Information</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Position</label>
-                                <p class="mt-1 text-sm text-gray-900">{{ $crew->position }}</p>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Position</label>
+                                <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ $crew->position }}</p>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Division</label>
-                                <p class="mt-1 text-sm text-gray-900">{{ ucfirst(str_replace('_', ' ', $crew->division)) }}</p>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Division</label>
+                                <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ ucfirst(str_replace('_', ' ', $crew->division)) }}</p>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Department</label>
-                                <p class="mt-1 text-sm text-gray-900">{{ ucfirst(str_replace('_', ' ', $crew->department)) }}</p>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Department</label>
+                                <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ ucfirst(str_replace('_', ' ', $crew->department)) }}</p>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Ship Assignment</label>
-                                <p class="mt-1 text-sm text-gray-900">
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Ship Assignment</label>
+                                <p class="mt-1 text-sm text-gray-900 dark:text-white">
                                     {{ $crew->ship ? 'MV EVERWIN STAR ' . $crew->ship->ship_number : 'Office/Shore' }}
                                 </p>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Employment Status</label>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Employment Status</label>
                                 <span class="mt-1 px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                    {{ $crew->employment_status == 'active' ? 'bg-green-100 text-green-800' : 
-                                       ($crew->employment_status == 'inactive' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800') }}">
+                                    {{ $crew->employment_status == 'active' ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100' : 
+                                       ($crew->employment_status == 'inactive' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100' : 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100') }}">
                                     {{ ucfirst($crew->employment_status) }}
                                 </span>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Hire Date</label>
-                                <p class="mt-1 text-sm text-gray-900">{{ $crew->hire_date->format('M d, Y') }}</p>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Hire Date</label>
+                                <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ $crew->hire_date ? $crew->hire_date->format('M d, Y') : 'Not set' }}</p>
                             </div>
                             @if($crew->contract_expiry)
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Contract Expiry</label>
-                                <p class="mt-1 text-sm text-gray-900">{{ $crew->contract_expiry->format('M d, Y') }}</p>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Contract Expiry</label>
+                                <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ $crew->contract_expiry->format('M d, Y') }}</p>
                             </div>
                             @endif
                         </div>
 
                         <!-- Government ID Numbers -->
                         <div class="mt-6">
-                            <h4 class="text-md font-medium text-gray-900 mb-3">Government ID Numbers</h4>
+                            <h4 class="text-md font-medium text-gray-900 dark:text-white mb-3">Government ID Numbers</h4>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700">SSS Number</label>
-                                    <p class="mt-1 text-sm text-gray-900">{{ $crew->sss_number ?: 'Not provided' }}</p>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">SSS Number</label>
+                                    <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ $crew->sss_number ?: 'Not provided' }}</p>
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700">Pag-IBIG Number</label>
-                                    <p class="mt-1 text-sm text-gray-900">{{ $crew->pagibig_number ?: 'Not provided' }}</p>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Pag-IBIG Number</label>
+                                    <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ $crew->pagibig_number ?: 'Not provided' }}</p>
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700">PhilHealth Number</label>
-                                    <p class="mt-1 text-sm text-gray-900">{{ $crew->philhealth_number ?: 'Not provided' }}</p>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">PhilHealth Number</label>
+                                    <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ $crew->philhealth_number ?: 'Not provided' }}</p>
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700">TIN Number</label>
-                                    <p class="mt-1 text-sm text-gray-900">{{ $crew->tin_number ?: 'Not provided' }}</p>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">TIN Number</label>
+                                    <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ $crew->tin_number ?: 'Not provided' }}</p>
                                 </div>
                             </div>
                         </div>
@@ -173,52 +173,56 @@
             <!-- Emergency Contact & Certificates -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                 <!-- Emergency Contact -->
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6 bg-white border-b border-gray-200">
-                        <h3 class="text-lg font-medium text-gray-900 mb-4">Emergency Contact</h3>
+                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="p-6 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-600">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Emergency Contact</h3>
                         <div class="space-y-4">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Contact Name</label>
-                                <p class="mt-1 text-sm text-gray-900">{{ $crew->emergency_contact_name ?: 'Not provided' }}</p>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Contact Name</label>
+                                <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ $crew->emergency_contact_name ?: 'Not provided' }}</p>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Contact Phone</label>
-                                <p class="mt-1 text-sm text-gray-900">{{ $crew->emergency_contact_phone ?: 'Not provided' }}</p>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Contact Phone</label>
+                                <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ $crew->emergency_contact_phone ?: 'Not provided' }}</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Certificates -->
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6 bg-white border-b border-gray-200">
-                        <h3 class="text-lg font-medium text-gray-900 mb-4">Certificates & Documents</h3>
+                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="p-6 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-600">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Certificates & Documents</h3>
                         <div class="space-y-4">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Seaman Book Number</label>
-                                <p class="mt-1 text-sm text-gray-900">{{ $crew->seaman_book_number ?: 'Not provided' }}</p>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">SRN (Seafarer's Registration Number)</label>
+                                <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ $crew->srn ?: 'Not provided' }}</p>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Basic Safety Training Expiry</label>
-                                <p class="mt-1 text-sm text-gray-900">
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Seaman Book Number</label>
+                                <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ $crew->seaman_book_number ?: 'Not provided' }}</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Basic Safety Training Expiry</label>
+                                <p class="mt-1 text-sm text-gray-900 dark:text-white">
                                     {{ $crew->basic_safety_training ? $crew->basic_safety_training->format('M d, Y') : 'Not set' }}
                                 </p>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Medical Certificate Expiry</label>
-                                <p class="mt-1 text-sm text-gray-900">
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Medical Certificate Expiry</label>
+                                <p class="mt-1 text-sm text-gray-900 dark:text-white">
                                     {{ $crew->medical_certificate ? $crew->medical_certificate->format('M d, Y') : 'Not set' }}
                                 </p>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">DCOC Expiry</label>
-                                <p class="mt-1 text-sm text-gray-900">
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">DCOC Expiry</label>
+                                <p class="mt-1 text-sm text-gray-900 dark:text-white">
                                     {{ $crew->dcoc_expiry ? $crew->dcoc_expiry->format('M d, Y') : 'Not set' }}
                                 </p>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">MARINA License Expiry</label>
-                                <p class="mt-1 text-sm text-gray-900">
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">MARINA License Expiry</label>
+                                <p class="mt-1 text-sm text-gray-900 dark:text-white">
                                     {{ $crew->marina_license_expiry ? $crew->marina_license_expiry->format('M d, Y') : 'Not set' }}
                                 </p>
                             </div>
@@ -228,9 +232,9 @@
             </div>
 
             <!-- Leave Credits Summary -->
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                <div class="p-6 bg-white border-b border-gray-200">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Leave Credits Summary</h3>
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
+                <div class="p-6 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-600">
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Leave Credits Summary</h3>
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div class="text-center">
                             <p class="text-2xl font-bold text-green-600">{{ $crew->total_leave_credits }}</p>
@@ -255,58 +259,58 @@
             </div>
 
             <!-- Documents -->
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                <div class="p-6 bg-white border-b border-gray-200">
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
+                <div class="p-6 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-600">
                     <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-medium text-gray-900">Documents</h3>
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-white">Documents</h3>
                         <a href="{{ route('crew-documents.create', ['crew_id' => $crew->id]) }}" 
                            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                             Upload Document
                         </a>
                     </div>
                     <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
+                            <thead class="bg-gray-50 dark:bg-gray-700">
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Document Type</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Document Name</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Expiry Date</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Document Type</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Document Name</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Expiry Date</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
+                            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-600">
                                 @forelse($crew->documents as $document)
-                                    <tr class="{{ $document->is_expired ? 'bg-red-50' : ($document->is_expiring_soon ? 'bg-yellow-50' : '') }}">
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $document->document_type_name }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $document->document_name }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    <tr class="{{ $document->is_expired ? 'bg-red-50 dark:bg-red-900' : ($document->is_expiring_soon ? 'bg-yellow-50 dark:bg-yellow-900' : '') }}">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ $document->document_type_name }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ $document->document_name }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                                             @if($document->expiry_date)
                                                 {{ $document->expiry_date->format('M d, Y') }}
                                                 @if($document->is_expired)
-                                                    <span class="text-red-600 text-xs">(Expired)</span>
+                                                    <span class="text-red-600 dark:text-red-400 text-xs">(Expired)</span>
                                                 @elseif($document->is_expiring_soon)
-                                                    <span class="text-yellow-600 text-xs">(Expiring Soon)</span>
+                                                    <span class="text-yellow-600 dark:text-yellow-400 text-xs">(Expiring Soon)</span>
                                                 @endif
                                             @else
-                                                <span class="text-gray-400">No expiry</span>
+                                                <span class="text-gray-400 dark:text-gray-500">No expiry</span>
                                             @endif
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                                {{ $document->status == 'verified' ? 'bg-green-100 text-green-800' : 
-                                                   ($document->status == 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800') }}">
+                                                {{ $document->status == 'verified' ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100' : 
+                                                   ($document->status == 'pending' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100' : 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100') }}">
                                                 {{ $document->status_name }}
                                             </span>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                            <a href="{{ route('crew-documents.show', $document) }}" class="text-indigo-600 hover:text-indigo-900 mr-2">View</a>
-                                            <a href="{{ route('crew-documents.download', $document) }}" class="text-blue-600 hover:text-blue-900">Download</a>
+                                            <a href="{{ route('crew-documents.show', $document) }}" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 mr-2">View</a>
+                                            <a href="{{ route('crew-documents.download', $document) }}" class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300">Download</a>
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="5" class="px-6 py-4 text-center text-gray-500">No documents uploaded yet.</td>
+                                        <td colspan="5" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">No documents uploaded yet.</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -316,40 +320,40 @@
             </div>
 
             <!-- Recent Leave Applications -->
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                <div class="p-6 bg-white border-b border-gray-200">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Recent Leave Applications</h3>
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
+                <div class="p-6 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-600">
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Recent Leave Applications</h3>
                     <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
+                            <thead class="bg-gray-50 dark:bg-gray-700">
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Leave Type</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Range</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Days</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Applied Date</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Leave Type</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Date Range</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Days</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Applied Date</th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
+                            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-600">
                                 @forelse($crew->leaveApplications->take(10) as $application)
                                     <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $application->leave_type_name }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ $application->leave_type_name }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                                             {{ $application->start_date->format('M d, Y') }} - {{ $application->end_date->format('M d, Y') }}
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $application->days_requested }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ $application->days_requested }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                                {{ $application->status == 'approved' ? 'bg-green-100 text-green-800' : 
-                                                   ($application->status == 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800') }}">
+                                                {{ $application->status == 'approved' ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100' : 
+                                                   ($application->status == 'pending' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100' : 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100') }}">
                                                 {{ $application->status_name }}
                                             </span>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $application->created_at->format('M d, Y') }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ $application->created_at->format('M d, Y') }}</td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="5" class="px-6 py-4 text-center text-gray-500">No leave applications found.</td>
+                                        <td colspan="5" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">No leave applications found.</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -358,12 +362,12 @@
                 </div>
             </div>
 
-            <!-- Embarkation History -->
-            @if($crew->division === 'ship_crew')
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                <div class="p-6 bg-white border-b border-gray-200">
+            {{-- Embarkation History - Temporarily commented out until table structure is fixed --}}
+            {{-- @if($crew->division === 'ship_crew')
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
+                <div class="p-6 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-600">
                     <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-medium text-gray-900">Embarkation History</h3>
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-white">Embarkation History</h3>
                         <a href="{{ route('crew-embarkations.create', ['crew_id' => $crew->id]) }}" 
                            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                             Add Embarkation
@@ -397,19 +401,19 @@
 
                     <!-- Embarkation History Table -->
                     <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
+                            <thead class="bg-gray-50 dark:bg-gray-700">
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ship</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Embark Date</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Disembark Date</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duration</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ports</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Ship</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Embark Date</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Disembark Date</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Duration</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Ports</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
+                            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-600">
                                 @forelse($crew->embarkations as $embarkation)
                                     <tr class="{{ $embarkation->is_active ? 'bg-green-50' : '' }}">
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -455,14 +459,14 @@
                     </div>
                 </div>
             </div>
-            @endif
+            @endif --}}
 
             @if($crew->notes)
             <!-- Notes -->
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 bg-white border-b border-gray-200">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Notes</h3>
-                    <div class="whitespace-pre-line text-sm text-gray-900">{{ $crew->notes }}</div>
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-600">
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Notes</h3>
+                    <div class="whitespace-pre-line text-sm text-gray-900 dark:text-white">{{ $crew->notes }}</div>
                 </div>
             </div>
             <br>
@@ -470,8 +474,8 @@
         </div>
     </div>
 
-    <!-- Disembark Modal -->
-    <div id="disembarkModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-4 z-50" style="display: none;">
+    {{-- Disembark Modal - Temporarily commented out until embarkation table is fixed --}}
+    {{-- <div id="disembarkModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-4 z-50" style="display: none;">
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 max-w-lg relative w-full">
             <div class="mt-3">
                 <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Disembark Crew Member</h3>
@@ -512,9 +516,9 @@
                 </form>
             </div>
         </div>
-    </div>
+    </div> --}}
 
-    <script>
+    {{-- <script>
         function openDisembarkModal(embarkationId) {
             const modal = document.getElementById('disembarkModal');
             const form = document.getElementById('disembarkForm');
@@ -534,5 +538,5 @@
                 closeDisembarkModal();
             }
         }
-    </script>
+    </script> --}}
 </x-app-layout>

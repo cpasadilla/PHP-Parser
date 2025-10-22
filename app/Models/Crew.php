@@ -43,7 +43,8 @@ class Crew extends Model
         'marina_license_issue_date',
         'marina_license_expiry',
         'contract_expiry',
-        'notes'
+        'notes',
+        'srn'
     ];
 
     protected $casts = [
@@ -80,14 +81,15 @@ class Crew extends Model
         return $this->hasMany(LeaveApplication::class);
     }
 
+    // Temporarily disabled until crew_embarkations table structure is fixed
     public function embarkations()
     {
-        return $this->hasMany(CrewEmbarkation::class)->orderBy('embark_date', 'desc');
+        throw new \Exception('Embarkations relationship is temporarily disabled due to table structure issues');
     }
 
     public function currentEmbarkation()
     {
-        return $this->hasOne(CrewEmbarkation::class)->where('status', 'active')->whereNull('disembark_date');
+        throw new \Exception('CurrentEmbarkation relationship is temporarily disabled due to table structure issues');
     }
 
     public function getFullNameAttribute()

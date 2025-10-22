@@ -58,7 +58,7 @@ class CrewController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'employee_id' => 'required|unique:crews',
+            'employee_id' => 'nullable|string',
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
             'middle_name' => 'nullable|string|max:255',
@@ -85,7 +85,7 @@ class CrewController extends Controller
                 }
             ],
             'ship_id' => 'nullable|exists:ships,id',
-            'hire_date' => 'required|date',
+            'hire_date' => 'nullable|date',
             'employment_status' => 'required|in:active,inactive,terminated,resigned',
             'phone' => 'nullable|string|max:255',
             'email' => 'nullable|email|max:255',
@@ -105,6 +105,7 @@ class CrewController extends Controller
             'marina_license_expiry' => 'nullable|date',
             'contract_expiry' => 'nullable|date',
             'notes' => 'nullable|string',
+            'srn' => 'nullable|string|max:255',
         ]);
 
         $crew = Crew::create($validated);
@@ -130,10 +131,29 @@ class CrewController extends Controller
         return redirect()->route('crew.index')->with('success', 'Crew member created successfully');
     }
 
-    public function show(Crew $crew)
+    public function show($id)
     {
-        $crew->load(['ship', 'documents', 'leaves', 'leaveApplications', 'embarkations.ship', 'currentEmbarkation.ship']);
-        return view('crew.show', compact('crew'));
+        try {
+            $crew = Crew::findOrFail($id);
+            // Load relationships that exist, skip embarkations until table is properly set up
+            $crew->load(['ship', 'documents', 'leaves', 'leaveApplications']);
+            
+            // TODO: Add back embarkations when table structure is fixed
+            // 'embarkations.ship', 'currentEmbarkation.ship'
+            
+            return view('crew.show', compact('crew'));
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            Log::warning('Crew member not found:', ['crew_id' => $id]);
+            return redirect()->route('crew.index')->with('error', 'Crew member not found. The record may have been deleted or does not exist.');
+        } catch (\Exception $e) {
+            Log::error('Error loading crew details:', [
+                'crew_id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return redirect()->route('crew.index')->with('error', 'Error loading crew member details: ' . $e->getMessage());
+        }
     }
 
     public function edit(Crew $crew)
@@ -145,7 +165,7 @@ class CrewController extends Controller
     public function update(Request $request, Crew $crew)
     {
         $validated = $request->validate([
-            'employee_id' => 'required|unique:crews,employee_id,' . $crew->id,
+            'employee_id' => 'nullable|string|unique:crews,employee_id,' . $crew->id,
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
             'middle_name' => 'nullable|string|max:255',
@@ -172,7 +192,7 @@ class CrewController extends Controller
                 }
             ],
             'ship_id' => 'nullable|exists:ships,id',
-            'hire_date' => 'required|date',
+            'hire_date' => 'nullable|date',
             'employment_status' => 'required|in:active,inactive,terminated,resigned',
             'phone' => 'nullable|string|max:255',
             'email' => 'nullable|email|max:255',
@@ -202,6 +222,17 @@ class CrewController extends Controller
     public function destroy(Crew $crew)
     {
         try {
+            Log::info('Delete crew request received', [
+                'crew_id' => $crew->id,
+                'employee_id' => $crew->employee_id,
+                'full_name' => $crew->full_name
+            ]);
+
+            // Check if crew is already deleted
+            if ($crew->trashed()) {
+                return redirect()->route('crew.index')->with('error', 'Crew member is already deleted.');
+            }
+
             // Get authenticated user for logging
             $user = Auth::user();
             $deletedBy = $user ? $user->fName . ' ' . $user->lName : 'Unknown User';
@@ -213,9 +244,12 @@ class CrewController extends Controller
             $crew->load(['documents', 'leaves', 'leaveApplications']);
             
             // Create delete log before actual deletion
-            CrewDeleteLog::create([
+            // Handle null employee_id by using a generated placeholder
+            $employeeIdForLog = $crew->employee_id ?? 'NO-ID-' . $crew->id;
+            
+            $deleteLog = CrewDeleteLog::create([
                 'crew_id' => $crew->id,
-                'employee_id' => $crew->employee_id,
+                'employee_id' => $employeeIdForLog,
                 'full_name' => $crew->full_name,
                 'position' => $crew->position,
                 'department' => $crew->department,
@@ -227,15 +261,20 @@ class CrewController extends Controller
                 'leaves_data' => $crew->leaves->toArray(), // Store leave credits data for restore
             ]);
             
+            Log::info('Delete log created', ['log_id' => $deleteLog->id]);
+            
             // Soft delete the crew record
             $crew->delete();
+            
+            Log::info('Crew soft deleted successfully', ['crew_id' => $crew->id]);
             
             return redirect()->route('crew.index')->with('success', 'Crew member deleted successfully. Record can be restored if needed.');
             
         } catch (\Exception $e) {
             Log::error('Error deleting crew member:', [
-                'crew_id' => $crew->id,
+                'crew_id' => $crew->id ?? 'unknown',
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
             
             return redirect()->route('crew.index')->with('error', 'Error deleting crew member: ' . $e->getMessage());
@@ -310,7 +349,7 @@ class CrewController extends Controller
             
             // Check if already restored
             if ($deleteLog->restored_at) {
-                return redirect()->back()->with('error', 'This crew member has already been restored!');
+                return redirect()->back()->with('error', 'This crew member has already been restored on ' . $deleteLog->restored_at->format('M d, Y H:i') . ' by ' . $deleteLog->restored_by);
             }
             
             // Check if we have crew data to restore
@@ -320,6 +359,9 @@ class CrewController extends Controller
             
             $user = Auth::user();
             $restoredBy = $user ? $user->fName . ' ' . $user->lName : 'Unknown User';
+            
+            // Start database transaction
+            DB::beginTransaction();
             
             // Restore the crew member
             $crewData = $deleteLog->crew_data;
@@ -375,12 +417,19 @@ class CrewController extends Controller
                 'restored_crew_id' => $restoredCrew->id,
             ]);
             
-            return redirect()->back()->with('success', 'Crew member restored successfully! New ID: ' . $restoredCrew->id);
+            // Commit the transaction
+            DB::commit();
+            
+            return redirect()->back()->with('success', 'Crew member "' . $deleteLog->full_name . '" restored successfully! New crew ID: ' . $restoredCrew->id . '. Employee ID: ' . ($restoredCrew->employee_id ?: 'Not set'));
             
         } catch (\Exception $e) {
+            // Rollback the transaction
+            DB::rollback();
+            
             Log::error('Error restoring crew member:', [
                 'delete_log_id' => $deleteLogId,
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
                 'crew_data' => $deleteLog->crew_data ?? null,
                 'documents_data' => $deleteLog->documents_data ?? null,
                 'leaves_data' => $deleteLog->leaves_data ?? null,
