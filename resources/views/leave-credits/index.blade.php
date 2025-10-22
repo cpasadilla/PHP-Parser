@@ -215,10 +215,12 @@
                                                class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-3">
                                                 Edit Credits
                                             </a>
+                                            @if(auth()->user()->hasPermission('crew', 'access') || auth()->user()->hasSubpagePermission('crew', 'crew-management', 'access'))
                                             <a href="{{ route('crew.show', $crew) }}" 
                                                class="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300">
                                                 View Details
                                             </a>
+                                            @endif
                                         </td>
                                     </tr>
                                 @empty
