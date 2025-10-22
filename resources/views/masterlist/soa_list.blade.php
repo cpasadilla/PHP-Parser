@@ -45,36 +45,46 @@
                                     </button>
                                     <div id="voyage-{{ $ship }}-{{ $voyage }}" class="accordion-content hidden">
                                         <div class="flex justify-between items-center py-2">
-                                            <div class="flex space-x-2">
-                                                <a href="{{ route('masterlist.soa_temp', [
-                                                    'ship' => $ship, 
-                                                    'voyage' => urlencode($voyage),
-                                                    'customerId' => request('customer_id')
-                                                    ]) }}" 
-                                                    class="px-3 py-1 text-white bg-green-500 rounded hover:bg-green-700"
-                                                    onclick="event.preventDefault(); openSOATemp('{{ $ship }}', '{{ urlencode($voyage) }}', '{{ request('customer_id') }}')">
-                                                    Print Statement of Account
-                                                </a>
+                                            <div class="flex flex-col space-y-2 w-full">
+                                                <div class="flex space-x-2">
+                                                    <a href="{{ route('masterlist.soa_temp', [
+                                                        'ship' => $ship, 
+                                                        'voyage' => urlencode($voyage),
+                                                        'customerId' => request('customer_id')
+                                                        ]) }}" 
+                                                        class="px-3 py-1 text-white bg-green-500 rounded hover:bg-green-700"
+                                                        onclick="event.preventDefault(); openSOATemp('{{ $ship }}', '{{ urlencode($voyage) }}', '{{ request('customer_id') }}')">
+                                                        Print Statement of Account
+                                                    </a>
+                                                    
+                                                    <!-- Interest Calculation Button -->
+                                                    <button id="interest-btn-{{ $ship }}-{{ Str::slug($voyage) }}"
+                                                        class="px-3 py-1 text-white bg-red-500 rounded hover:bg-red-700"
+                                                        onclick="activateInterest('{{ $ship }}', '{{ urlencode($voyage) }}', '{{ request('customer_id') }}', '{{ $ship }}-{{ Str::slug($voyage) }}')">
+                                                        Activate 1% Interest
+                                                    </button>
+                                                    <div class="text-xs text-gray-600 italic mt-1">
+                                                        Note: When the "Activate 1% Interest" button is clicked, the interest is NOT applied immediately. 1% interest only begins to apply after a 30-day grace period, and then it accrues at 1% per month.
+                                                    </div>
+                                                </div>
                                                 
-                                                <!-- Custom SOA Button -->
-                                                <a href="{{ route('masterlist.soa_custom', [
-                                                    'ship' => $ship, 
-                                                    'voyage' => urlencode($voyage),
-                                                    'customerId' => request('customer_id')
-                                                    ]) }}" 
-                                                    class="px-3 py-1 text-white bg-blue-500 rounded hover:bg-blue-700"
-                                                    onclick="event.preventDefault(); openSOACustom('{{ $ship }}', '{{ urlencode($voyage) }}', '{{ request('customer_id') }}')">
-                                                    Print SOA for Government
-                                                </a>
-                                                
-                                                <!-- Interest Calculation Button -->
-                                                <button id="interest-btn-{{ $ship }}-{{ Str::slug($voyage) }}"
-                                                    class="px-3 py-1 text-white bg-red-500 rounded hover:bg-red-700"
-                                                    onclick="activateInterest('{{ $ship }}', '{{ urlencode($voyage) }}', '{{ request('customer_id') }}', '{{ $ship }}-{{ Str::slug($voyage) }}')">
-                                                    Activate 1% Interest
-                                                </button>
-                                                <div class="text-xs text-gray-600 italic mt-1">
-                                                    Note: When the "Activate 1% Interest" button is clicked, the interest is NOT applied immediately. 1% interest only begins to apply after a 30-day grace period, and then it accrues at 1% per month.
+                                                <!-- Print SOA for Government - Per BL -->
+                                                <div class="border-t pt-2">
+                                                    <p class="text-sm font-semibold mb-2 dark:text-gray-200">Print SOA for Government (Per BL):</p>
+                                                    <div class="flex flex-wrap gap-2">
+                                                        @foreach($orders as $order)
+                                                            <a href="{{ route('masterlist.soa_custom_per_bl', [
+                                                                'ship' => $ship, 
+                                                                'voyage' => urlencode($voyage),
+                                                                'customerId' => request('customer_id'),
+                                                                'orderId' => $order->id
+                                                                ]) }}" 
+                                                                class="px-3 py-1 text-white bg-blue-500 rounded hover:bg-blue-700 text-sm"
+                                                                onclick="event.preventDefault(); openSOACustomPerBL('{{ $ship }}', '{{ urlencode($voyage) }}', '{{ request('customer_id') }}', '{{ $order->id }}')">
+                                                                BL# {{ $order->orderId }}
+                                                            </a>
+                                                        @endforeach
+                                                    </div>
                                                 </div>
                                             </div>
                                             
@@ -223,6 +233,16 @@
             // Create the URL with properly encoded parameters
             const baseUrl = "{{ url('/masterlist/soa_custom') }}";
             const url = `${baseUrl}/${ship}/${voyage}/${customerId}`;
+            
+            // Open in a new tab/window
+            window.open(url, '_blank');
+        }
+
+        // Function to open Custom SOA per BL
+        function openSOACustomPerBL(ship, voyage, customerId, orderId) {
+            // Create the URL with properly encoded parameters
+            const baseUrl = "{{ url('/masterlist/soa_custom_per_bl') }}";
+            const url = `${baseUrl}/${ship}/${voyage}/${customerId}/${orderId}`;
             
             // Open in a new tab/window
             window.open(url, '_blank');

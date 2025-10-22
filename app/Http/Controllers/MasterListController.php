@@ -3139,6 +3139,87 @@ class MasterListController extends Controller
         ]);
     }
 
+    /**
+     * Generate SOA for Government - Per BL
+     */
+    public function soa_custom_per_bl(Request $request, $ship, $voyage, $customerId, $orderId)
+    {
+        // Get the customer
+        $customer = Customer::with('subAccounts')->find($customerId);
+        
+        if (!$customer) {
+            return redirect()->route('masterlist.soa')->with('error', 'Customer not found.');
+        }
+        
+        // Decode the voyage number to handle 'IN' and 'OUT' properly
+        $decodedVoyageNum = urldecode($voyage);
+        
+        // Log for debugging purposes
+        \Log::info('SOA Custom Per BL Request', [
+            'Original Voyage Num' => $voyage,
+            'Decoded Voyage Num' => $decodedVoyageNum,
+            'Ship' => $ship,
+            'Customer ID' => $customerId,
+            'Order ID' => $orderId
+        ]);
+        
+        try {
+            // Get the specific order
+            $order = Order::where('id', $orderId)
+                ->where('shipNum', $ship)
+                ->whereRaw('voyageNum = ?', [$decodedVoyageNum])
+                ->with('parcels') // Include parcels relationship
+                ->first();
+            
+            if (!$order) {
+                return redirect()->back()->with('error', 'Order not found.');
+            }
+            
+            // Wrap single order in collection to maintain compatibility with view
+            $orders = collect([$order]);
+            
+            \Log::info('SOA Custom Per BL Order Found', [
+                'Order ID' => $order->id,
+                'BL Number' => $order->orderId
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('SOA Custom Per BL Error', [
+                'Error' => $e->getMessage(),
+                'Trace' => $e->getTraceAsString()
+            ]);
+            
+            return redirect()->back()->with('error', 'Error loading Custom Statement of Account: ' . $e->getMessage());
+        }
+        
+        // Get the origin and destination from the order
+        $origin = $order->origin ?? '';
+        $destination = $order->destination ?? '';
+        
+        // Get existing SOA number for this customer, ship, voyage, and order combination
+        $soaNumber = '';
+        $soaRecord = SoaNumber::where('customer_id', $customerId)
+            ->where('ship', $ship)
+            ->where('voyage', $decodedVoyageNum)
+            ->where('order_id', $orderId)
+            ->first();
+        
+        if ($soaRecord) {
+            $soaNumber = $soaRecord->soa_number;
+        }
+        
+        return view('masterlist.soa_custom_per_bl', [
+            'orders' => $orders,
+            'customer' => $customer,
+            'ship' => $ship,
+            'voyage' => $voyage,
+            'origin' => $origin,
+            'destination' => $destination,
+            'soaNumber' => $soaNumber,
+            'orderId' => $orderId
+        ]);
+    }
+
     public function soa_voy_temp(Request $request, $ship, $voyage)
     {
         // Decode the voyage number to handle 'IN' and 'OUT' properly

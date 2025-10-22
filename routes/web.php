@@ -305,6 +305,11 @@ Route::middleware('auth')->group(function () {
                 ->where('voyage', '.*') // Allow any character in voyage parameter
                 ->name('masterlist.soa_custom');
                 
+            // Custom SOA per BL route - for Government SOA per individual BL
+            Route::get('/masterlist/soa_custom_per_bl/{ship}/{voyage}/{customerId}/{orderId}', [MasterListController::class, 'soa_custom_per_bl'])
+                ->where('voyage', '.*') // Allow any character in voyage parameter
+                ->name('masterlist.soa_custom_per_bl');
+                
             // New route for voyage-based SOA report
             Route::get('/masterlist/soa_voy_temp/{ship}/{voyage}', [MasterListController::class, 'soa_voy_temp'])
                 ->where('voyage', '.*') // Allow any character in voyage parameter
