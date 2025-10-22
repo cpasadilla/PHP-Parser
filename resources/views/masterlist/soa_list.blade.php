@@ -103,6 +103,7 @@
                                                 <thead class="bg-gray-100 dark:bg-gray-800">
                                                     <tr>
                                                         <th class="px-4 py-2">BL #</th>
+                                                        <th class="px-4 py-2">Status</th>
                                                         <th class="px-4 py-2">Consignee</th>
                                                         <th class="px-4 py-2">Shipper</th>
                                                         <th class="px-4 py-2">Description</th>
@@ -126,6 +127,13 @@
                                                     @foreach($orders as $order)
                                                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
                                                             <td class="px-4 py-2 text-center">{{ $order->orderId }}</td>
+                                                            <td class="px-4 py-2 text-center">
+                                                                @if(strtoupper($order->blStatus ?? 'UNPAID') === 'PAID')
+                                                                    <span class="px-2 py-1 text-xs font-semibold text-white bg-green-600 rounded">PAID</span>
+                                                                @else
+                                                                    <span class="px-2 py-1 text-xs font-semibold text-white bg-red-600 rounded">UNPAID</span>
+                                                                @endif
+                                                            </td>
                                                             <td class="px-4 py-2 text-center">{{ $order->recName }}</td>
                                                             <td class="px-4 py-2 text-center">{{ $order->shipperName }}</td>
                                                             <td class="px-4 py-2 text-center">
@@ -167,7 +175,7 @@
                                                         @endphp
                                                     @endforeach
                                                     <tr class="bg-gray-50 dark:bg-gray-900 font-semibold">
-                                                        <td colspan="4" class="px-4 py-2 text-right">Grand Total:</td>
+                                                        <td colspan="5" class="px-4 py-2 text-right">Grand Total:</td>
                                                         <td class="px-4 py-2 text-right">{{ number_format($voyageFreight, 2) }}</td>
                                                         <td class="px-4 py-2 text-right">{{ number_format($voyageValuation, 2) }}</td>
                                                         <td class="px-4 py-2 text-right">{{ number_format($voyageWharfage, 2) }}</td>
@@ -575,14 +583,14 @@
 
             function updateRowTotal(orderId) {
                 const row = document.querySelector(`[data-order-id="${orderId}"]`).closest('tr');
-                const freight = parseFloat(row.cells[4].textContent.replace(/,/g, '')) || 0;
-                const valuation = parseFloat(row.cells[5].textContent.replace(/,/g, '')) || 0;
-                const wharfage = parseFloat(row.cells[6].textContent.replace(/,/g, '')) || 0;
+                const freight = parseFloat(row.cells[5].textContent.replace(/,/g, '')) || 0;
+                const valuation = parseFloat(row.cells[6].textContent.replace(/,/g, '')) || 0;
+                const wharfage = parseFloat(row.cells[7].textContent.replace(/,/g, '')) || 0;
                 const padlockFee = parseFloat(row.querySelector('.padlock-fee-input').value) || 0;
                 const ppaManila = parseFloat(row.querySelector('.ppa-manila-input').value) || 0;
                 
                 const newTotal = freight + valuation + wharfage + padlockFee + ppaManila;
-                const totalCell = row.cells[9]; // Updated to the new position
+                const totalCell = row.cells[10]; // Updated to the new position with Status column
                 totalCell.textContent = new Intl.NumberFormat('en-US', { 
                     minimumFractionDigits: 2, 
                     maximumFractionDigits: 2 

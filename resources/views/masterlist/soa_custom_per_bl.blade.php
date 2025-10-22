@@ -209,7 +209,7 @@
                     </div>
                 @endforeach
             </div>
-            <div class="main-content">
+            <div class="main-content" style="position: relative;">
                 <div style="display: flex; align-items: flex-start; gap: 0; margin-bottom: 0; border: 2px solid #000; border-right: 3px solid #000; padding: 10px;">
                     <div style="flex: 0 0 auto; display: flex; align-items: flex-start; margin-left: 40px;">
                         <img style="height: 90px; width: auto;" src="{{ asset('images/logo.png') }}" alt="Logo">
@@ -388,12 +388,39 @@
                         <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: light; border-bottom: 2px solid #000; border-left: 2px solid #000; min-height: 12px; display: flex; align-items: center; justify-content: center; font-style: italic; background-color: #A9D08E;">MM / DD / YR</p>
                     </div>
                 </div>
+                @php
+                    $order = $orders->first();
+                @endphp
+                @if($order && $order->blStatus === 'PAID')
+                    <div class="paid-stamp" style="position: absolute; bottom: 210px; right: 10px; color: red; border: 3px solid rgb(128, 0, 0); color: rgb(128, 0, 0); font-size: 16px; font-weight: bold; font-family: 'Bebas Neue', sans-serif; padding: 5px; text-align: center; background-color: none; z-index: 1000; width: 220px; height: auto; min-height: 50px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                        <span>PAID IN {{ strtoupper($order->display_updated_location ?? $order->updated_location ?? '') }}</span>
+                        @if(!empty($order->AR) && !empty($order->OR))
+                            <span style="font-size: 14px;">OR#: {{ $order->OR }} | AR#: {{ $order->AR }}</span>
+                        @elseif(!empty($order->AR))
+                            <span style="font-size: 14px;">AR#: {{ $order->AR }}</span>
+                        @elseif(!empty($order->OR))
+                            <span style="font-size: 14px;">OR#: {{ $order->OR }}</span>
+                        @endif
+                    </div>
+                @endif
             </div>
         </div>
     </div><br>
 
     <!-- For printing and SOA save functionality -->    
     <script>
+        // Remove padding from paid-stamp for print
+        function removePaddingForPrint() {
+            const paidStamp = document.querySelector('.paid-stamp');
+            if (paidStamp) {
+                paidStamp.style.padding = '0';
+            }
+        }
+
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('click', removePaddingForPrint);
+        });
+
         function printContent(divId) {
             console.log("printContent function called");
             var printContainer = document.getElementById(divId);
@@ -475,6 +502,13 @@
                     button { display: none; }
                     input { font-family: Arial, sans-serif; font-size: 13px; border: none !important; background: transparent !important; }
                     span[data-soa-number] { color: red !important; font-size: 16px !important; font-weight: bold !important; }
+                    /* Paid stamp print styles */
+                    .paid-stamp {
+                        -webkit-print-color-adjust: exact !important;
+                        print-color-adjust: exact !important;
+                        color: rgb(128, 0, 0) !important;
+                        border-color: rgb(128, 0, 0) !important;
+                    }
                 }
             `);
             printWindow.document.write("</style></head><body>");

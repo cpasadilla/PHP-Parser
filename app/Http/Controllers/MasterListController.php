@@ -3175,6 +3175,15 @@ class MasterListController extends Controller
                 return redirect()->back()->with('error', 'Order not found.');
             }
             
+            // Enhance order with display information for AR/OR
+            $displayInfo = $this->getArOrDisplayInfo($order);
+            $order->display_updated_by = $displayInfo['updated_by'];
+            $order->display_updated_location = $displayInfo['updated_location'];
+            $order->display_or_ar_date = $displayInfo['or_ar_date'];
+            $order->last_updated_field = $displayInfo['last_updated_field'];
+            $order->ar_display_info = $displayInfo['ar_display_info'];
+            $order->or_display_info = $displayInfo['or_display_info'];
+            
             // Wrap single order in collection to maintain compatibility with view
             $orders = collect([$order]);
             
