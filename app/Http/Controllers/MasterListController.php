@@ -2606,6 +2606,14 @@ class MasterListController extends Controller
                 return $voyage;
             });
 
+        // Get all available categories from price list for filtering dropdown
+        $categories = PriceList::select('category')
+            ->whereNotNull('category')
+            ->where('category', '!=', '')
+            ->distinct()
+            ->orderBy('category')
+            ->pluck('category');
+
         // Get sort field and direction
         $sortField = $request->get('sort', 'parcels.itemId'); // Default sort by itemId
         $sortDirection = $request->get('direction', 'asc'); // Default direction is ascending
@@ -2632,9 +2640,11 @@ class MasterListController extends Controller
                 'orders.recName',
                 'orders.checkName',
                 'orders.cargoType',
-                'orders.created_at as order_date'
+                'orders.created_at as order_date',
+                'pricelists.category'
             )
-            ->join('orders', 'parcels.orderId', '=', 'orders.id');
+            ->join('orders', 'parcels.orderId', '=', 'orders.id')
+            ->leftJoin('pricelists', 'parcels.itemId', '=', 'pricelists.item_code');
 
         // Apply ship filter if provided
         if ($request->filled('ship')) {
@@ -2649,6 +2659,11 @@ class MasterListController extends Controller
         // Apply container filter if provided
         if ($request->filled('container')) {
             $query->where('orders.containerNum', 'LIKE', '%' . $request->container . '%');
+        }
+
+        // Apply category filter if provided
+        if ($request->filled('category')) {
+            $query->where('pricelists.category', $request->category);
         }
 
         // Apply search filter if provided
@@ -2725,7 +2740,7 @@ class MasterListController extends Controller
             $parcels = $query->paginate((int)$perPage)->withQueryString();
         }
 
-        return view('masterlist.parcel', compact('parcels', 'ships', 'voyages', 'sortField', 'sortDirection', 'perPage'));
+        return view('masterlist.parcel', compact('parcels', 'ships', 'voyages', 'categories', 'sortField', 'sortDirection', 'perPage'));
     }
 
     public function soa(Request $request)

@@ -48,6 +48,16 @@
             </div>
         </div>
         
+        <!-- Pagination/Filter Status -->
+        <div class="mb-4 flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <div class="text-sm text-gray-600 dark:text-gray-300">
+                <span id="filterStatus">Showing <span id="visibleCount">{{ count($orders) }}</span> of <span id="totalCount">{{ count($orders) }}</span> orders</span>
+            </div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">
+                <span id="activeFilters"></span>
+            </div>
+        </div>
+        
         <!-- Orders Table -->
         <div class="table-container">
             <table id="ordersTable" class="table-auto border-collapse border border-gray-300">
@@ -1479,11 +1489,61 @@
             
             // Re-initialize auto-resize for visible textareas after filtering
             reinitializeAutoResize();
+            
+            // Update filter status display
+            updateFilterStatus(rows, activeFilters);
+        }
+        
+        // Function to update the filter status display
+        function updateFilterStatus(rows, activeFilters) {
+            const totalCount = rows.length;
+            const visibleCount = Array.from(rows).filter(row => row.style.display !== 'none').length;
+            
+            // Update the counts
+            document.getElementById('visibleCount').textContent = visibleCount;
+            document.getElementById('totalCount').textContent = totalCount;
+            
+            // Update active filters display
+            const activeFiltersElement = document.getElementById('activeFilters');
+            if (Object.keys(activeFilters).length > 0) {
+                const filterTexts = Object.entries(activeFilters).map(([column, value]) => {
+                    const columnName = getColumnDisplayName(column);
+                    return `${columnName}: "${value}"`;
+                });
+                activeFiltersElement.textContent = `Active filters: ${filterTexts.join(', ')}`;
+                activeFiltersElement.style.display = 'block';
+            } else {
+                activeFiltersElement.textContent = '';
+                activeFiltersElement.style.display = 'none';
+            }
+        }
+        
+        // Function to get display name for columns
+        function getColumnDisplayName(column) {
+            const columnNames = {
+                'bl': 'BL',
+                'container': 'Container',
+                'cargo_status': 'Cargo Status',
+                'shipper': 'Shipper',
+                'consignee': 'Consignee',
+                'checker': 'Checker',
+                'description': 'Description',
+                'or': 'OR#',
+                'ar': 'AR#',
+                'dp': 'Date Paid',
+                'updated_by': 'Updated By',
+                'updated_location': 'Paid In',
+                'bl_status': 'BL Status',
+                'bl_remark': 'Remark',
+                'note': 'Note'
+            };
+            return columnNames[column] || column.toUpperCase();
         }
         
         // Function to reinitialize auto-resize for visible textareas
         function reinitializeAutoResize() {
-            const visibleTextareas = document.querySelectorAll('.container-textarea:not([style*="display: none"]), .checker-textarea:not([style*="display: none"]), .cargo-status-textarea:not([style*="display: none"]), .remark-textarea:not([style*="display: none"]), .or-textarea:not([style*="display: none"]), .ar-textarea:not([style*="display: none"])');
+            // Exclude cargo-status-textarea from auto-resize to prevent unwanted save triggers
+            const visibleTextareas = document.querySelectorAll('.container-textarea:not([style*="display: none"]), .checker-textarea:not([style*="display: none"]), .remark-textarea:not([style*="display: none"]), .or-textarea:not([style*="display: none"]), .ar-textarea:not([style*="display: none"])');
             visibleTextareas.forEach(textarea => {
                 // Only trigger auto-resize if textarea has content that might need resizing
                 if (textarea.value && textarea.value.length > 0) {
@@ -1505,6 +1565,9 @@
 
         // Initial application of filters
         applyFilters();
+        
+        // Initialize filter status display
+        updateFilterStatus();
     });
 </script>
 <script>
