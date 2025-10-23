@@ -170,7 +170,7 @@
                 <button onclick="window.history.back();" class="px-4 py-2 text-blue-600 rounded-md hover:text-blue-700 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
                     ←
                 </button>
-                {{ __('Statement of Account (Government) - BL# ') . $orders->first()->orderId }}
+                {{ __('Statement of Account (Government) - BL# ') . $orders->first()->orderId . ' for: ' . (!empty($customer->first_name) || !empty($customer->last_name) ? $customer->first_name . ' ' . $customer->last_name : $customer->company_name) }}
             </h2>
         </div>
     </x-slot>
@@ -378,7 +378,7 @@
                         <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: light; min-height: 12px; display: flex; align-items: center; justify-content: left; padding-bottom: 3px; color: #fff;">.</p>
                         <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: light; min-height: 12px; display: flex; align-items: center; justify-content: left; padding-bottom: 2.5px; font-style: italic; ">Attached is photocopy of BL for your reference….</p>
                         <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: light; min-height: 12px; display: flex; align-items: center; justify-content: left; padding-bottom: 3px; color: #fff;">.</p>
-                        <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: light; border-bottom: 2px solid #000; min-height: 12px; display: flex; align-items: center; justify-content: left color: #fff;">.</p>
+                        <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: light; border-bottom: 2px solid #000; min-height: 12px; display: flex; align-items: center; justify-content: left; color: #fff;">.</p>
                     </div>
                     <div style="flex: 0 0 50%; box-sizing: border-box; text-align: center; display: flex; flex-direction: column;">
                         <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: light; border-bottom: 2px solid #000; border-left: 2px solid #000; min-height: 12px; display: flex; align-items: center; justify-content: center; background-color: #A9D08E; font-style: italic;">Signature Over Printed Name</p>
@@ -392,14 +392,14 @@
                     $order = $orders->first();
                 @endphp
                 @if($order && $order->blStatus === 'PAID')
-                    <div class="paid-stamp" style="position: absolute; bottom: 210px; right: 10px; color: red; border: 3px solid rgb(128, 0, 0); color: rgb(128, 0, 0); font-size: 16px; font-weight: bold; font-family: 'Bebas Neue', sans-serif; padding: 5px; text-align: center; background-color: none; z-index: 1000; width: 220px; height: auto; min-height: 50px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-                        <span>PAID IN {{ strtoupper($order->display_updated_location ?? $order->updated_location ?? '') }}</span>
+                    <div class="paid-stamp" style="position: absolute; bottom: 150px; right: 10px; border: 4px double rgb(180, 0, 0); color: rgb(180, 0, 0); font-size: 18px; font-weight: bold; font-family: 'Impact', 'Arial Black', sans-serif; padding: 8px 12px; text-align: center; background: linear-gradient(135deg, rgba(255, 240, 240, 0.95) 0%, rgba(255, 230, 230, 0.95) 100%); z-index: 1000; width: 240px; height: auto; min-height: 60px; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 4px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); border-radius: 4px; transform: rotate(-2deg); letter-spacing: 1px;">
+                        <span style="font-size: 20px; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1); line-height: 1.2;">PAID IN {{ strtoupper($order->display_updated_location ?? $order->updated_location ?? '') }}</span>
                         @if(!empty($order->AR) && !empty($order->OR))
-                            <span style="font-size: 14px;">OR#: {{ $order->OR }} | AR#: {{ $order->AR }}</span>
+                            <span style="font-size: 20px; font-weight: bold; letter-spacing: 1px; margin-top: 2px; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1); line-height: 1.2;">OR#: {{ $order->OR }} | AR#: {{ $order->AR }}</span>
                         @elseif(!empty($order->AR))
-                            <span style="font-size: 14px;">AR#: {{ $order->AR }}</span>
+                            <span style="font-size: 20px; font-weight: bold; letter-spacing: 1px; margin-top: 2px; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1); line-height: 1.2;">AR#: {{ $order->AR }}</span>
                         @elseif(!empty($order->OR))
-                            <span style="font-size: 14px;">OR#: {{ $order->OR }}</span>
+                            <span style="font-size: 20px; font-weight: bold; letter-spacing: 1px; margin-top: 2px; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1); line-height: 1.2;">OR#: {{ $order->OR }}</span>
                         @endif
                     </div>
                 @endif
@@ -494,21 +494,150 @@
             printWindow.document.write("<html><head><title>Statement of Account - BL# " + "{{ $orders->first()->orderId }}" + "</title>");
             printWindow.document.write("<style>");
             printWindow.document.write(`
-                @page { size: A4 landscape; margin: 0.5in; }
+                @page {
+                    size: A4 landscape;
+                    margin: 0.5in;
+                }
                 @media print {
-                    html, body { margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-family: Arial, sans-serif; }
-                    .print-container { width: 100%; }
-                    img { display: block !important; margin: 0 auto; max-width: 300px; }
+                    html, body { 
+                        margin: 0; 
+                        padding: 0; 
+                        -webkit-print-color-adjust: exact; 
+                        print-color-adjust: exact; 
+                        font-family: Arial, sans-serif;
+                        height: auto !important;
+                        overflow: hidden !important;
+                    }
+                    .print-container {
+                        position: relative;
+                        width: 100%;
+                        page-break-after: avoid !important;
+                        overflow: hidden !important;
+                    }
+                    .main-content {
+                        position: relative;
+                        width: 100%;
+                        page-break-after: avoid !important;
+                    }
+                    /* Prevent blank pages */
+                    br {
+                        display: none !important;
+                    }
+                    /* Remove trailing spaces and breaks */
+                    .main-content::after {
+                        content: none !important;
+                    }
+                    .signature-section {
+                        display: none !important;
+                    }
+                    .print-signature {
+                        display: block !important;
+                        position: relative; 
+                        margin-top: 10px; 
+                        width: 100%;
+                        page-break-inside: avoid;
+                    }
+                    img { 
+                        display: block !important; 
+                        margin: 0 auto; 
+                        max-width: 300px;
+                    }
+                    table { 
+                        border-collapse: collapse; 
+                        width: 100%; 
+                        font-family: Arial, sans-serif; 
+                        table-layout: auto;
+                        page-break-inside: auto;
+                    }
+                    thead {
+                        display: table-header-group;
+                        background-color: #f2f2f2 !important;
+                    }
+                    tbody {
+                        display: table-row-group;
+                    }
+                    tbody tr {
+                        page-break-inside: avoid;
+                        break-inside: avoid;
+                    }
+                    /* Natural page breaks for long tables */
+                    .accordion-content {
+                        page-break-inside: auto;
+                        margin-bottom: 20px;
+                    }
+                    th, td { 
+                        border: 1px solid #ddd; 
+                        padding: 3px 6px; 
+                        font-family: Arial, sans-serif; 
+                        word-wrap: break-word; 
+                        white-space: normal; 
+                        line-height: 1.2; 
+                        font-size: 10px;
+                    }
+                    th {
+                        font-size: 10px;
+                        font-weight: bold;
+                    }
                     button { display: none; }
-                    input { font-family: Arial, sans-serif; font-size: 13px; border: none !important; background: transparent !important; }
-                    span[data-soa-number] { color: red !important; font-size: 16px !important; font-weight: bold !important; }
+                    .non-printable { display: none; }
+                    input { 
+                        font-family: Arial, sans-serif; 
+                        font-size: 13px; 
+                        border: none !important; 
+                        background: transparent !important; 
+                        outline: none !important;
+                        color: black !important;
+                        -webkit-appearance: none !important;
+                        -moz-appearance: none !important;
+                        appearance: none !important;
+                    }
+                    span {
+                        font-family: Arial, sans-serif;
+                        font-size: 13px;
+                        color: black !important;
+                    }
+                    /* Special styling for SOA number span */
+                    span[data-soa-number] {
+                        color: red !important;
+                        padding-right: 100px;
+                        font-size: 16px !important;
+                        font-weight: bold !important;
+                    }
                     /* Paid stamp print styles */
                     .paid-stamp {
                         -webkit-print-color-adjust: exact !important;
                         print-color-adjust: exact !important;
-                        color: rgb(128, 0, 0) !important;
-                        border-color: rgb(128, 0, 0) !important;
+                        color: rgb(180, 0, 0) !important;
+                        border: 4px double rgb(180, 0, 0) !important;
+                        background: linear-gradient(135deg, rgba(255, 240, 240, 0.95) 0%, rgba(255, 230, 230, 0.95) 100%) !important;
+                        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+                        border-radius: 4px !important;
+                        transform: rotate(-2deg) !important;
+                        padding: 8px 12px !important;
                     }
+                    .paid-stamp span {
+                        color: rgb(180, 0, 0) !important;
+                        font-family: 'Impact', 'Arial Black', sans-serif !important;
+                        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1) !important;
+                    }
+                    /* Compact SOA section for print */
+                    .print-container div[style*="background-color: #A9D08E"] {
+                        line-height: 0.8 !important;
+                        min-height: 13px !important;
+                    }
+                    .print-container div[style*="background-color: #A9D08E"] p {
+                        line-height: 0.8 !important;
+                        margin: 0 !important;
+                        padding: 1px 5px !important;
+                        font-size: 14px !important;
+                    }
+                    #soaNumberStatus { display: none !important; }
+                    button[title="Test Save"] { display: none !important; }
+                    .description-cell { word-wrap: break-word; white-space: normal; }
+                }
+                @media screen {
+                    .print-signature { display: none !important; }
+                    .signature-section { display: block !important; }
                 }
             `);
             printWindow.document.write("</style></head><body>");
