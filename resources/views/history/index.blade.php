@@ -305,10 +305,14 @@
                                                 🔄 Restore
                                             </button>
                                         </form>
-                                    @else
+                                    @elseif($log->restoredOrder)
                                         <a href="{{ route('masterlist.view-bl', ['shipNum' => $log->restoredOrder->shipNum, 'voyageNum' => $log->restoredOrder->voyageNum, 'orderId' => $log->restored_order_id]) }}" class="px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 inline-block">
                                             👁️ View Restored
                                         </a>
+                                    @else
+                                        <span class="px-3 py-1 bg-gray-400 text-white text-sm rounded dark:bg-gray-600 inline-block cursor-not-allowed" title="Restored order no longer exists">
+                                            ⚠️ Order Deleted
+                                        </span>
                                     @endif
                                 </td>
                             </tr>
