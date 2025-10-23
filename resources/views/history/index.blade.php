@@ -229,6 +229,18 @@
                         <option value="{{ $user->name }}" {{ request('deleted_by') == $user->name ? 'selected' : '' }}>{{ $user->name }}</option>
                     @endforeach
                 </select>
+                <select name="ship" class="border rounded px-4 py-2 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300">
+                    <option value="">All Ships</option>
+                    @foreach ($allShips as $ship)
+                        <option value="{{ $ship }}" {{ request('ship') == $ship ? 'selected' : '' }}>{{ $ship }}</option>
+                    @endforeach
+                </select>
+                <select name="voyage" class="border rounded px-4 py-2 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300">
+                    <option value="">All Voyages</option>
+                    @foreach ($allVoyages as $voyage)
+                        <option value="{{ $voyage }}" {{ request('voyage') == $voyage ? 'selected' : '' }}>{{ $voyage }}</option>
+                    @endforeach
+                </select>
                 <select name="restore_status" class="border rounded px-4 py-2 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300">
                     <option value="">All Status</option>
                     <option value="deleted" {{ request('restore_status') == 'deleted' ? 'selected' : '' }}>Deleted Only</option>
@@ -327,7 +339,7 @@
                 </table>
             </div>
             <div class="mt-4">
-                {{ $orderDeleteLogs->appends(['tab' => 'order-delete-logs', 'deleted_by' => request('deleted_by'), 'restore_status' => request('restore_status'), 'per_page' => request('per_page'), 'sort' => request('sort')])->links() }}
+                {{ $orderDeleteLogs->appends(['tab' => 'order-delete-logs', 'deleted_by' => request('deleted_by'), 'ship' => request('ship'), 'voyage' => request('voyage'), 'restore_status' => request('restore_status'), 'per_page' => request('per_page'), 'sort' => request('sort')])->links() }}
             </div>
         </div>
     </div>

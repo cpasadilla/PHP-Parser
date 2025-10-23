@@ -78,6 +78,12 @@ class HistoryController extends Controller
             ->when($deletedByFilter, function ($query, $deletedByFilter) {
                 return $query->where('deleted_by', 'like', "%$deletedByFilter%");
             })
+            ->when($shipFilter, function ($query, $shipFilter) {
+                return $query->where('ship_name', $shipFilter);
+            })
+            ->when($voyageFilter, function ($query, $voyageFilter) {
+                return $query->where('voyage_number', $voyageFilter);
+            })
             ->when($restoreStatusFilter, function ($query, $restoreStatusFilter) {
                 if ($restoreStatusFilter === 'deleted') {
                     return $query->whereNull('restored_at');
