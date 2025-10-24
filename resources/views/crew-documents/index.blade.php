@@ -53,7 +53,7 @@
                     <strong class="font-bold">{{ $expiredDocuments->count() }} documents have expired!</strong>
                     <ul class="mt-2">
                         @foreach($expiredDocuments->take(5) as $doc)
-                        <li>{{ $doc->crew->full_name }} - {{ $doc->document_type_name }} (expired {{ $doc->expiry_date->diffForHumans() }})</li>
+                        <li>{{ $doc->crew ? $doc->crew->full_name : 'N/A' }} - {{ $doc->document_type_name }} (expired {{ $doc->expiry_date->diffForHumans() }})</li>
                         @endforeach
                         @if($expiredDocuments->count() > 5)
                         <li class="text-sm">...and {{ $expiredDocuments->count() - 5 }} more</li>
@@ -67,7 +67,7 @@
                     <strong class="font-bold">{{ $expiringDocuments->count() }} documents expiring soon!</strong>
                     <ul class="mt-2">
                         @foreach($expiringDocuments->take(5) as $doc)
-                        <li>{{ $doc->crew->full_name }} - {{ $doc->document_type_name }} (expires {{ $doc->expiry_date->diffForHumans() }})</li>
+                        <li>{{ $doc->crew ? $doc->crew->full_name : 'N/A' }} - {{ $doc->document_type_name }} (expires {{ $doc->expiry_date->diffForHumans() }})</li>
                         @endforeach
                         @if($expiringDocuments->count() > 5)
                         <li class="text-sm">...and {{ $expiringDocuments->count() - 5 }} more</li>
@@ -160,8 +160,8 @@
                                 @forelse($documents as $document)
                                     <tr class="{{ $document->is_expired ? 'bg-red-50 dark:bg-red-900' : ($document->is_expiring_soon ? 'bg-yellow-50 dark:bg-yellow-900' : '') }}">
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                                            {{ $document->crew->full_name }}
-                                            <div class="text-xs text-gray-500 dark:text-gray-400">{{ $document->crew->employee_id }}</div>
+                                            {{ $document->crew ? $document->crew->full_name : 'N/A' }}
+                                            <div class="text-xs text-gray-500 dark:text-gray-400">{{ $document->crew ? $document->crew->employee_id : 'N/A' }}</div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                                             {{ $document->document_type_name }}
@@ -190,7 +190,7 @@
                                             </span>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                                            {{ $document->uploadedBy->name }}
+                                            {{ $document->uploadedBy ? $document->uploadedBy->name : 'Unknown' }}
                                             <div class="text-xs text-gray-500 dark:text-gray-400">{{ $document->created_at->format('M d, Y') }}</div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -208,7 +208,7 @@
                                                    class="text-yellow-600 dark:text-yellow-400 hover:text-yellow-900 dark:hover:text-yellow-300">Edit</a>
                                                 @endif
                                                 @if(auth()->user()->hasPermission('crew', 'delete') || auth()->user()->hasSubpagePermission('crew', 'document-management', 'delete'))
-                                                <button onclick="showDeleteModal({{ $document->id }}, '{{ $document->document_name }}', '{{ $document->crew->full_name }}')" 
+                                                <button onclick="showDeleteModal({{ $document->id }}, '{{ addslashes($document->document_name) }}', '{{ $document->crew ? addslashes($document->crew->full_name) : 'N/A' }}')" 
                                                         class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">Delete</button>
                                                 @endif
                                             </div>

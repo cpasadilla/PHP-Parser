@@ -40,7 +40,15 @@ class CrewDocumentController extends Controller
         $expiringDocuments = CrewDocument::expiringSoon()->with('crew')->get();
         $expiredDocuments = CrewDocument::expired()->with('crew')->get();
 
-        return view('crew-documents.index', compact('documents', 'expiringDocuments', 'expiredDocuments', 'search', 'status', 'documentType'));
+        // Get crews for filter dropdown
+        $crews = Crew::select('id', 'first_name', 'last_name', 'employee_id')
+            ->orderBy('first_name')
+            ->get();
+
+        // Get document types
+        $documentTypes = CrewDocument::DOCUMENT_TYPES;
+
+        return view('crew-documents.index', compact('documents', 'expiringDocuments', 'expiredDocuments', 'search', 'status', 'documentType', 'crews', 'documentTypes'));
     }
 
     public function create(Request $request)
@@ -92,7 +100,7 @@ class CrewDocumentController extends Controller
             ]);
         }
 
-        return redirect()->route('crew-documents.index')->with('success', 'Document uploaded successfully');
+        return redirect()->route('crew.show', $validated['crew_id'])->with('success', 'Document uploaded successfully');
     }
 
     public function show(CrewDocument $crewDocument)
@@ -136,7 +144,7 @@ class CrewDocumentController extends Controller
 
         $crewDocument->update($validated);
 
-        return redirect()->route('crew-documents.index')->with('success', 'Document updated successfully');
+        return redirect()->route('crew.show', $crewDocument->crew_id)->with('success', 'Document updated successfully');
     }
 
     public function destroy(CrewDocument $crewDocument)
