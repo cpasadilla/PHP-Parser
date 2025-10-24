@@ -16,7 +16,7 @@ class DatabaseSeeder extends Seeder
         // User::factory(10)->create();
 
         $this->call([
-            CustomerSeeder::class,
+            // CustomerSeeder::class,  // Commented out to avoid conflicts with test seeder
             test::class
         ]);
     }
