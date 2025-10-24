@@ -212,6 +212,7 @@ class CrewController extends Controller
             'marina_license_expiry' => 'nullable|date',
             'contract_expiry' => 'nullable|date',
             'notes' => 'nullable|string',
+            'srn' => 'nullable|string|max:255',
         ]);
 
         $crew->update($validated);
