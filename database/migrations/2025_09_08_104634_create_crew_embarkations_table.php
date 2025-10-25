@@ -11,10 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('crew_embarkations', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
-        });
+        // This migration is redundant - the complete table is created in 2025_09_08_104713_create_crew_embarkations_table.php
     }
 
     /**
@@ -22,6 +19,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('crew_embarkations');
+        // No table to drop as this migration has been disabled
     }
 };

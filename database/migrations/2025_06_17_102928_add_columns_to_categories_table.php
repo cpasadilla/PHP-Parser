@@ -11,11 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('categories', function (Blueprint $table) {
-            $table->string('name')->unique()->after('id');
-            $table->string('prefix', 10)->after('name');
-            $table->boolean('is_default')->default(false)->after('prefix');
-        });
+        // Columns already exist in the original create_categories_table migration
+        // This migration is redundant and has been disabled to prevent duplicate column errors
     }
 
     /**
@@ -23,8 +20,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('categories', function (Blueprint $table) {
-            $table->dropColumn(['name', 'prefix', 'is_default']);
-        });
+        // No columns to drop as this migration has been disabled
     }
 };

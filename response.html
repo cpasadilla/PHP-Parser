@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="rg7W9BkyzHcH6kcorvv8kwgJHgXn7bei2qw2WqJP">
+
+    <title>Laravel</title>
+    <link rel="icon" type="image/x-icon" href="/logo1.png">
+
+    <!-- Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,200;0,300;0,400;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,600;1,700;1,800;1,900&display=swap"
+        rel="stylesheet" />
+
+    <!-- Styles -->
+    <style>
+        [x-cloak] {
+            display: none;
+        }
+    </style>
+
+    <!-- Scripts -->
+    <link rel="preload" as="style" href="http://127.0.0.1:8000/build/assets/app-B8rR8Q2x.css" /><link rel="modulepreload" href="http://127.0.0.1:8000/build/assets/app-BSJPEE8d.js" /><link rel="stylesheet" href="http://127.0.0.1:8000/build/assets/app-B8rR8Q2x.css" /><script type="module" src="http://127.0.0.1:8000/build/assets/app-BSJPEE8d.js"></script></head>
+
+<body>
+    <div
+        x-data="mainState"
+        class="font-sans antialiased"
+        :class="{dark: isDarkMode}"
+        x-cloak
+    >
+        <div class="flex flex-col min-h-screen text-gray-900 bg-gray-100 dark:bg-dark-eval-0 dark:text-gray-200">
+            <main class="flex flex-col items-center flex-1 px-4 pt-6 sm:justify-center">
+    <div>
+            <img src="/logo.png" style="width: 100%">
+
+
+    </div>
+
+    <div class="w-full px-6 py-4 my-6 overflow-hidden bg-white rounded-md shadow-md sm:max-w-md dark:bg-dark-eval-1">
+        <!-- Session Status -->
+        
+        <!-- Validation Errors -->
+        
+        <form method="POST" action="http://127.0.0.1:8000/login">
+            <input type="hidden" name="_token" value="rg7W9BkyzHcH6kcorvv8kwgJHgXn7bei2qw2WqJP" autocomplete="off">
+            <div class="grid gap-6">
+                <!-- Email Address -->
+                <div class="space-y-2">
+                    <label class="block font-medium text-sm text-gray-700 dark:text-gray-300" for="email">
+    Email
+</label>
+                    <div class="relative text-gray-500 focus-within:text-gray-900 dark:focus-within:text-gray-400">
+    <div
+        aria-hidden="true"
+        class="absolute inset-y-0 flex items-center px-4 pointer-events-none"
+    >
+        <svg aria-hidden="true" class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+</svg>
+    </div>
+
+    <input
+    
+    class="pl-11 pr-4 py-2 border-gray-400 rounded-md focus:border-gray-400 focus:ring
+            focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-white dark:border-gray-600 dark:bg-dark-eval-1
+            dark:text-gray-300 dark:focus:ring-offset-dark-eval-1 block w-full" id="email" type="email" name="email" placeholder="Email" required="required" autofocus="autofocus"
+>
+</div>
+                </div>
+
+                <!-- Password -->
+                <div class="space-y-2">
+                    <label class="block font-medium text-sm text-gray-700 dark:text-gray-300" for="password">
+    Password
+</label>
+                    <div class="relative text-gray-500 focus-within:text-gray-900 dark:focus-within:text-gray-400">
+    <div
+        aria-hidden="true"
+        class="absolute inset-y-0 flex items-center px-4 pointer-events-none"
+    >
+        <svg aria-hidden="true" class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+</svg>
+    </div>
+
+    <input
+    
+    class="pl-11 pr-4 py-2 border-gray-400 rounded-md focus:border-gray-400 focus:ring
+            focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-white dark:border-gray-600 dark:bg-dark-eval-1
+            dark:text-gray-300 dark:focus:ring-offset-dark-eval-1 block w-full" id="password" type="password" name="password" required="required" autocomplete="current-password" placeholder="Password"
+>
+</div>
+                    
+                    <!-- Password Toggle -->
+                    <div class="flex items-center mt-1">
+                        <label for="toggle_password" class="inline-flex items-center cursor-pointer">
+                            <input
+                                id="toggle_password"
+                                type="checkbox"
+                                class="text-emerald-500 border-gray-300 rounded focus:border-emerald-300 focus:ring focus:ring-emerald-500 dark:border-gray-600 dark:bg-dark-eval-1 dark:focus:ring-offset-dark-eval-1"
+                            >
+                            <span class="ml-2 text-sm text-gray-600 dark:text-gray-400 flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" id="passwordToggleIcon">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                                Show Password
+                            </span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Remember Me -->
+                <div class="flex items-center justify-between">
+                    <label for="remember_me" class="inline-flex items-center">
+                        <input
+                            id="remember_me"
+                            type="checkbox"
+                            class="text-emerald-500 border-gray-300 rounded focus:border-emerald-300 focus:ring focus:ring-emerald-500 dark:border-gray-600 dark:bg-dark-eval-1 dark:focus:ring-offset-dark-eval-1"
+                            name="remember"
+                        >
+
+                        <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">
+                            Remember me
+                        </span>
+                    </label>
+                </div>
+
+                <div>
+                    <button type="submit" class="inline-flex items-center transition-colors font-medium select-none disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-dark-eval-2 px-4 py-2 text-base bg-emerald-500 text-white hover:bg-emerald-600 focus:ring-emerald-500 rounded-md justify-center w-full gap-2">
+        <svg aria-hidden="true" class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+</svg>
+                        <span>Log in</span>
+            </button>
+                </div>
+
+                <!--                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                        Don’t have an account?
+                        <a href="http://127.0.0.1:8000/register" class="text-blue-500 hover:underline">
+                            Register
+                        </a>
+                    </p>
+                
+                -->
+            </div>
+        </form>
+    </div>
+</main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggleCheckbox = document.getElementById('toggle_password');
+            const passwordInput = document.getElementById('password');
+            const passwordToggleIcon = document.getElementById('passwordToggleIcon');
+
+            toggleCheckbox.addEventListener('change', function() {
+                // Toggle password visibility
+                if (this.checked) {
+                    passwordInput.type = 'text';
+                    // Change icon to eye-off icon
+                    passwordToggleIcon.innerHTML = `
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                    `;
+                } else {
+                    passwordInput.type = 'password';
+                    // Change back to eye icon
+                    passwordToggleIcon.innerHTML = `
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    `;
+                }
+            });
+        });
+    </script>
+
+            <!--<footer class="flex-shrink-0 px-6 py-4">
+    <p class="flex items-center justify-center gap-1 text-sm text-gray-600 dark:text-gray-400">
+        <span>Made with</span>
+
+        <span>
+            <svg class="w-6 h-6 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+  <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/>
+</svg>        </span>
+
+        <span>by</span>
+
+        <a
+            href="https://github.com/Kamona-WD"
+            target="_blank"
+            class="text-blue-600 hover:underline"
+        >
+            Ahmed Kamel
+        </a>
+    </p>
+</footer>
+-->
+        </div>
+
+        <div class="fixed top-10 right-10">
+            <button type="button" class="inline-flex items-center transition-colors font-medium select-none disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-dark-eval-2 p-2 bg-white text-gray-500 hover:bg-gray-100 focus:ring-emerald-500 dark:text-gray-400 dark:bg-dark-eval-1 dark:hover:bg-dark-eval-2 dark:hover:text-gray-200 rounded-md" x-on:click="toggleTheme">
+        <svg x-show="!isDarkMode" aria-hidden="true" class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+</svg>
+                <svg x-show="isDarkMode" aria-hidden="true" class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+</svg>
+                    <span class="sr-only">Toggle dark mode</span>
+            </button>
+        </div>
+    </div>
+</body>
+</html>
