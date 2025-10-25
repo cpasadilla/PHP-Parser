@@ -62,6 +62,7 @@ class CrewController extends Controller
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
             'middle_name' => 'nullable|string|max:255',
+            'birthday' => 'nullable|date',
             'position' => 'required|string|max:255',
             'division' => 'required|in:ship_crew,office_staff,operations,apprentice',
             'department' => [
@@ -169,6 +170,7 @@ class CrewController extends Controller
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
             'middle_name' => 'nullable|string|max:255',
+            'birthday' => 'nullable|date',
             'position' => 'required|string|max:255',
             'division' => 'required|in:ship_crew,office_staff,operations,apprentice',
             'department' => [

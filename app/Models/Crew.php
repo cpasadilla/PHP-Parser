@@ -15,6 +15,7 @@ class Crew extends Model
         'first_name',
         'last_name',
         'middle_name',
+        'birthday',
         'position',
         'division',
         'department',
@@ -49,6 +50,7 @@ class Crew extends Model
 
     protected $casts = [
         'hire_date' => 'date',
+        'birthday' => 'date',
         'contract_expiry' => 'date',
         'basic_safety_training' => 'date',
         'medical_certificate' => 'date',

@@ -66,6 +66,18 @@
                                 </div>
 
                                 <div>
+                                    <label for="birthday" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Birthday</label>
+                                    <input type="text" name="birthday_display" id="birthday" value="{{ old('birthday', $crew->birthday ? $crew->birthday->format('m/d/Y') : '') }}" 
+                                           placeholder="MM/DD/YYYY"
+                                           pattern="\d{2}/\d{2}/\d{4}"
+                                           class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-indigo-500 dark:focus:ring-indigo-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white date-input">
+                                    <input type="hidden" name="birthday" id="birthday_hidden">
+                                    @error('birthday')
+                                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div>
                                     <label for="phone" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Phone</label>
                                     <input type="text" name="phone" id="phone" value="{{ old('phone', $crew->phone) }}" 
                                            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-indigo-500 dark:focus:ring-indigo-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
