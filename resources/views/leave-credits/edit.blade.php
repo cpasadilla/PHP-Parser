@@ -22,37 +22,64 @@
             <!-- Crew Information -->
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
                 <div class="p-6 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div>
-                            <h3 class="text-lg font-semibold text-gray-800 dark:text-white">Employee Information</h3>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">Employee ID: {{ $crew->employee_id }}</p>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">Name: {{ $crew->full_name }}</p>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">Position: {{ $crew->position }}</p>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">Department: {{ ucfirst(str_replace('_', ' ', $crew->department)) }}</p>
+                    <div class="flex flex-col md:flex-row gap-8">
+                        <!-- Employee Information Grid -->
+                        <div class="flex-1 pr-4">
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-800 dark:text-white">Employee Information</h3>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Employee ID: {{ $crew->employee_id }}</p>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Name: {{ $crew->full_name }}</p>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Position: {{ $crew->position }}</p>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Department: {{ ucfirst(str_replace('_', ' ', $crew->department)) }}</p>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-800 dark:text-white">Current Status</h3>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Employment Status: 
+                                        <span class="px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded-full">
+                                            {{ ucfirst($crew->employment_status) }}
+                                        </span>
+                                    </p>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Hire Date: {{ $crew->hire_date?->format('M d, Y') ?? 'N/A' }}</p>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-800 dark:text-white">Current Year Credits</h3>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Total Credits ({{ $currentYear }}): 
+                                        <span class="font-bold text-blue-600 dark:text-blue-400">{{ $crew->total_leave_credits }} days</span>
+                                    </p>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Available Credits: 
+                                        <span class="font-bold text-green-600 dark:text-green-400">{{ $crew->available_leave_credits }} days</span>
+                                    </p>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-800 dark:text-white">Ship Assignment</h3>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                                        {{ $crew->ship ? 'MV EVERWIN STAR ' . $crew->ship->ship_number : 'Office/Shore' }}
+                                    </p>
+                                </div>
+                            </div>
                         </div>
-                        <div>
-                            <h3 class="text-lg font-semibold text-gray-800 dark:text-white">Current Status</h3>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">Employment Status: 
-                                <span class="px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded-full">
-                                    {{ ucfirst($crew->employment_status) }}
-                                </span>
-                            </p>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">Hire Date: {{ $crew->hire_date?->format('M d, Y') ?? 'N/A' }}</p>
-                        </div>
-                        <div>
-                            <h3 class="text-lg font-semibold text-gray-800 dark:text-white">Current Year Credits</h3>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">Total Credits ({{ $currentYear }}): 
-                                <span class="font-bold text-blue-600 dark:text-blue-400">{{ $crew->total_leave_credits }} days</span>
-                            </p>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">Available Credits: 
-                                <span class="font-bold text-green-600 dark:text-green-400">{{ $crew->available_leave_credits }} days</span>
-                            </p>
-                        </div>
-                        <div>
-                            <h3 class="text-lg font-semibold text-gray-800 dark:text-white">Ship Assignment</h3>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">
-                                {{ $crew->ship ? 'MV EVERWIN STAR ' . $crew->ship->ship_number : 'Office/Shore' }}
-                            </p>
+                        
+                        <!-- Crew ID Picture -->
+                        <div class="flex-shrink-0 ml-16 mr-8">
+                            @php
+                                $idPicture = $crew->documents->where('document_type', 'id_picture')->first();
+                            @endphp
+                            @if($idPicture)
+                                <div class="relative">
+                                    <img src="{{ route('crew-documents.download', $idPicture) }}" 
+                                         alt="Crew ID Picture" 
+                                         class="w-48 h-48 object-cover rounded-lg shadow-md border-2 border-gray-200 dark:border-gray-600">
+                                </div>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center max-w-[192px]">{{ $idPicture->document_name }}</p>
+                            @else
+                                <div class="w-48 h-48 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 rounded-lg flex items-center justify-center border-2 border-gray-200 dark:border-gray-600 shadow-md">
+                                    <svg class="w-20 h-20 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                    </svg>
+                                </div>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center max-w-[192px]">No ID Picture</p>
+                            @endif
                         </div>
                     </div>
                 </div>
