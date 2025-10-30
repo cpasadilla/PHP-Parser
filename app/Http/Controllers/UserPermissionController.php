@@ -70,6 +70,13 @@ class UserPermissionController extends Controller
                         'upload-sick-leave' => ['access', 'create', 'edit', 'delete'],
                         'leave-credits' => ['access', 'create', 'edit', 'delete']
                     ]
+                ],
+                'saverstar' => [
+                    'operations' => ['access', 'create', 'edit', 'delete'],
+                    'pages' => [
+                        'ships' => ['access', 'create', 'edit', 'delete'],
+                        'bl' => ['access', 'create', 'edit', 'delete']
+                    ]
                 ]
             ];
             

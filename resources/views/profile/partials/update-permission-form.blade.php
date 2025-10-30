@@ -144,6 +144,20 @@
                         'operations' => ['access', 'create', 'edit', 'delete']
                     ]
                 ]
+            ],
+            'saverstar' => [
+                'name' => 'M/V Saver Star',
+                'operations' => ['access', 'create', 'edit', 'delete'],
+                'pages' => [
+                    'ships' => [
+                        'name' => 'Ship Status Management',
+                        'operations' => ['access', 'create', 'edit', 'delete']
+                    ],
+                    'bl' => [
+                        'name' => 'Bill of Lading Management',
+                        'operations' => ['access', 'create', 'edit', 'delete']
+                    ]
+                ]
             ]
         ];
         
