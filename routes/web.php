@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PriceListController;
 use App\Http\Controllers\MasterListController;
+use App\Http\Controllers\SaverStarController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EarlyPaymentController;
 use Illuminate\Http\Request;
@@ -221,6 +222,26 @@ Route::middleware('auth')->group(function () {
         Route::post('/users/create/', [UsersController::class, 'store'])->name('users.store');
         Route::delete('/users/{id}', [UsersController::class, 'destroy'])->name('users.destroy');
         Route::put('/users/{id}', [UsersController::class, 'update'])->name('users.update');
+    });
+
+    // Saver Star routes
+    Route::middleware('page.permission:saverstar')->group(function () {
+        // Saver Star Ships subpage
+        Route::middleware('subpage.permission:saverstar,ships')->group(function () {
+            Route::get('/saverstar', [SaverStarController::class, 'index'])->name('saverstar.index');
+            Route::post('/saverstar/ships', [SaverStarController::class, 'store'])->name('saverstar.store');
+            Route::put('/saverstar/ships/{id}', [SaverStarController::class, 'update'])->name('saverstar.update');
+            Route::delete('/saverstar/ships/{id}', [SaverStarController::class, 'destroy'])->name('saverstar.destroy');
+            Route::delete('/saverstar/voyage/{voyageNum}', [SaverStarController::class, 'deleteVoyage'])->name('saverstar.voyage.delete');
+            Route::get('/saverstar/voyage/{voyageNum}', [SaverStarController::class, 'voyageList'])->name('saverstar.voyage.list');
+        });
+        
+        // Saver Star BL subpage
+        Route::middleware('subpage.permission:saverstar,bl')->group(function () {
+            Route::get('/saverstar/bl/{id}', [SaverStarController::class, 'showBlForm'])->name('saverstar.bl');
+            Route::get('/saverstar/create-bl', [SaverStarController::class, 'createBl'])->name('saverstar.create-bl');
+            Route::post('/saverstar/bl', [SaverStarController::class, 'storeBl'])->name('saverstar.bl.store');
+        });
     });
 
     // Master List routes

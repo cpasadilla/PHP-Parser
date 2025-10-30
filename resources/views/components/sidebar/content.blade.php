@@ -124,6 +124,31 @@
     </x-sidebar.dropdown>
     @endif
 
+    @if(Auth::user()->hasPagePermission('saverstar'))
+    <x-sidebar.dropdown
+        title="M/V Saver Star"
+        :active="Str::startsWith(request()->route()->uri(), 'saverstar')"
+        >
+            <x-slot name="icon">
+                <x-heroicon-o-view-list class="flex-shrink-0 w-6 h-6" aria-hidden="true" />
+            </x-slot>
+            @if (Auth::user()->hasSubpagePermission('saverstar', 'ships'))
+            <x-sidebar.sublink
+                title="Ship Status"
+                href="{{ route('saverstar.index') }}"
+                :active="request()->routeIs('saverstar.index')"
+            />
+            @endif
+            @if (Auth::user()->hasSubpagePermission('saverstar', 'bl'))
+            <x-sidebar.sublink
+                title="Create BL"
+                href="{{ route('saverstar.create-bl') }}"
+                :active="request()->routeIs('saverstar.create-bl') || request()->routeIs('saverstar.bl')"
+            />
+            @endif
+    </x-sidebar.dropdown>
+    @endif
+
     @if(Auth::user()->hasPagePermission('accounting'))
     <x-sidebar.dropdown
         title="Accounting"

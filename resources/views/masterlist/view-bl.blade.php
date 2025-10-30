@@ -1,3 +1,9 @@
+@php
+    $isSaverStar = $order->shipNum === 'SAVER';
+    $logoPath = $isSaverStar ? 'images/logo-saver.jpg' : 'images/logo-sfx.png';
+    $headerColor = $isSaverStar ? '#1c89ba' : '#78BF65';
+    $shipName = $isSaverStar ? 'M/V SAVER STAR' : 'M/V EVERWIN STAR';
+@endphp
 <x-app-layout>
     <x-slot name="header"></x-slot>
     <div class="p-6 bg-white rounded-md shadow-md dark:bg-dark-eval-1">
@@ -19,13 +25,15 @@
             <div style="flex: 1;">
                 <!-- Your existing content here -->
                 <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
-                <img style="width: 500px; height: 70px;" src="{{ asset('images/logo-sfx.png') }}" alt="Logo">
+                <img style="width: 500px; height: 70px;" src="{{ asset($logoPath) }}" alt="Logo">
+                    @if(!$isSaverStar)
                     <div style="font-family: Arial; font-size: 12px; line-height: 1.2; margin-top: 3px;">
                         <p style="margin: 0;">National Road Brgy. Kaychanarianan, Basco Batanes</p>
                         <p style="margin: 0;">Cellphone Nos.: 0908-815-9300 / 0999-889-5848 / 0999-889-5849</p>
                         <p style="margin: 0;">Email Address: fxavier_2015@yahoo.com.ph</p>
                         <p style="margin: 0;">TIN: 009-081-111-000</p>
                     </div>
+                    @endif
                 </div>
                 <!-- Title -->
             <div style="display: flex; justify-content: center; margin-top: 5px;">
@@ -37,8 +45,8 @@
             </div>
             <table class="w-full text-sm text-center" style="border-collapse: collapse; border-spacing: 0; width: 100%;">
                     <tr>
-                      <td style="font-family: Arial; font-size: 11px; text-align: left; width: 78px; padding: 1px;"><strong>M/V EVERWIN STAR</strong></td>
-                      <td style="font-family: Arial; font-size: 12px; width: 20px; border-bottom: 1px solid black; text-align: center;">{{ $displayShip ?? $order->shipNum }}</td>
+                      <td style="font-family: Arial; font-size: 11px; text-align: left; width: 78px; padding: 1px;"><strong>{{ $shipName }}</strong></td>
+                      <td style="font-family: Arial; font-size: 12px; width: 20px; border-bottom: 1px solid black; text-align: center;">{{ $isSaverStar ? '-' : ($displayShip ?? $order->shipNum) }}</td>
                         <td style="font-family: Arial; font-size: 11px; text-align: right; width: 50px; padding: 1px;"><strong>VOYAGE NO.</strong></td>
                         <td style="font-family: Arial; font-size: 12px; width: 50px; border-bottom: 1px solid black; text-align: center;">{{ $displayVoyage ?? $order->voyageNum }}</td>
                         <td style="font-family: Arial; font-size: 11px; text-align: right; width: 30px; padding: 1px;"><strong>CONTAINER NO.</strong></td>
@@ -85,7 +93,7 @@
 
                 <!-- Main Table -->
                 <table class="w-full border-collapse text-sm main-table" style="padding: 0 5px; margin-top: 20px;">
-                    <thead class="text-white border border-gray" style="background-color: #78BF65;">
+                    <thead class="text-white border border-gray" style="background-color: {{ $headerColor }};">
                         <tr class="border border-gray">
                             <th class="p-2" style="font-family: Arial; font-size: 13px;">QTY</th>
                             <th class="p-2" style="font-family: Arial; font-size: 13px; width: 70px;">UNIT</th>
