@@ -26,8 +26,9 @@
 
                     <!-- Cargo Type -->
                     <div style="display: flex; font-weight: bold; justify-content: flex-end; align-items: center; text-align: right; font-size: 11px;">
-                        <select id="cargoType" name="cargoType" required
+                        <select id="cargoType" name="cargoType"
                             style="width: 90px; height: 21px; border: 1px solid #ccc; background: white; text-transform: uppercase; font-family: Arial; font-size: 11px; text-align: right; padding: 1px;">
+                            <option value="" {{ $order->cargoType == '' ? 'selected' : '' }}></option>
                             <option value="CHARTERED" {{ $order->cargoType == 'CHARTERED' ? 'selected' : '' }}>CHARTERED</option>
                             <option value="LOOSE CARGO" {{ $order->cargoType == 'LOOSE CARGO' ? 'selected' : '' }}>LOOSE CARGO</option>
                             <option value="STUFFING" {{ $order->cargoType == 'STUFFING' ? 'selected' : '' }}>STUFFING</option>
