@@ -344,7 +344,7 @@
                 img { display: block !important; margin: 0 auto; }
                 footer { position: absolute; bottom: 0; left: 0; width: 100%; }
                 table { border-collapse: collapse; width: 100%; }
-                thead { background-color: #78BF65 !important; color: white !important; }
+                thead { background-color: {{ $headerColor }} !important; color: white !important; }
                 button { display: none; }
                 
                 /* Paid stamp print styles */
