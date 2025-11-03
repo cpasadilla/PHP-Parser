@@ -45,7 +45,7 @@
             <div class="main-content">
                 <div style="display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 20px;">
                 <img style="width: 250px; height: 45px;" src="{{ asset('images/logo-sfx.png') }}" alt="Logo">
-                <div style="font-size: 12px; line-height: 1; margin-top: 3px;">
+                <div style="font-size: 13px; line-height: 1; margin-top: 3px;">
                     <p style="margin: 0;">National Road Brgy. Kaychanarianan, Basco Batanes</p>
                     <p style="margin: 0;">Cellphone No.: 0999-889-5851</p>
                     <p style="margin: 0;">Email Address: fxavier_2015@yahoo.com.ph</p>
@@ -55,7 +55,7 @@
               <div style="display: flex; justify-content: center; margin: 5px 0; line-height: 0;">
                 <span style="font-weight: bold; font-size: 17px;">STATEMENT OF ACCOUNT</span>
             </div>
-            <div style="margin-bottom: 20px; display: flex; justify-content: space-between; font-size: 12px; line-height: 0;">
+            <div style="margin-bottom: 20px; display: flex; justify-content: space-between; font-size: 14px; line-height: 0;">
                 <div style="width: 60%;">
                     <p style="margin-bottom: 0; line-height: 1;"><strong>BILLED TO:</strong> <span style="padding: 2px 5px;"> {{ !empty($customer->first_name) || !empty($customer->last_name) ? $customer->first_name . ' ' . $customer->last_name : $customer->company_name }}</span></p>
                     <p style="margin-bottom: 0; line-height: 1;"><strong>VESSEL:</strong> M/V EVERWIN STAR {{ $ship }}</p>
@@ -73,20 +73,20 @@
             </div>
             <div id="voyage-{{ $ship }}-{{ Str::slug($voyage) }}" class="accordion-content">
                 <div class="overflow-x-auto mt-4">
-                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700" style="font-family: Arial, sans-serif; font-size: 11px; table-layout: fixed; width: 100%;">
-                        <thead class="bg-gray-100 dark:bg-gray-800">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700" style="font-family: Arial, sans-serif; font-size: 11px; table-layout: fixed; width: 100%; border: 2px solid #000;">
+                        <thead class="bg-gray-100 dark:bg-gray-800" style="font-size: 13px;">
                             <tr>
-                                <th style="width: 5%;" class="px-4 py-2">BL #</th>
-                                <th style="width: 12%;" class="px-4 py-2">CONSIGNEE</th>
-                                <th style="width: 12%;" class="px-4 py-2">SHIPPER</th>
-                                <th style="width: 33%;" class="px-4 py-2">DESCRIPTION</th>
-                                <th style="width: 8%;" class="px-4 py-2">FREIGHT</th>
-                                <th style="width: 8%;" class="px-4 py-2">VALUATION</th>
-                                <th style="width: 8%;" class="px-4 py-2">WHARFAGE</th>
-                                <th style="width: 8%;" class="px-4 py-2">OTHERS FEE</th>
-                                <th style="width: 8%;" class="px-4 py-2">PPA MANILA</th>
-                                <th style="width: 8%;" class="px-4 py-2">TOTAL</th>
-                                <th style="width: 4%;" class="px-2 py-2">&nbsp;</th>
+                                <th style="width: 5%; border: 2px solid #000; font-size: 13px;" class="px-4 py-2">BL #</th>
+                                <th style="width: 12%; border: 2px solid #000; font-size: 13px;" class="px-4 py-2">CONSIGNEE</th>
+                                <th style="width: 12%; border: 2px solid #000; font-size: 13px;" class="px-4 py-2">SHIPPER</th>
+                                <th style="width: 33%; border: 2px solid #000; font-size: 13px;" class="px-4 py-2">DESCRIPTION</th>
+                                <th style="width: 8%; border: 2px solid #000; font-size: 13px;" class="px-4 py-2">FREIGHT</th>
+                                <th style="width: 8%; border: 2px solid #000; font-size: 13px;" class="px-4 py-2">VALUATION</th>
+                                <th style="width: 8%; border: 2px solid #000; font-size: 13px;" class="px-4 py-2">WHARFAGE</th>
+                                <th style="width: 8%; border: 2px solid #000; font-size: 13px;" class="px-4 py-2">OTHERS FEE</th>
+                                <th style="width: 8%; border: 2px solid #000; font-size: 13px;" class="px-4 py-2">PPA MANILA</th>
+                                <th style="width: 8%; border: 2px solid #000; font-size: 13px;" class="px-4 py-2">TOTAL</th>
+                                <th style="width: 4%; border: 2px solid #000; font-size: 13px;" class="px-2 py-2">&nbsp;</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -123,11 +123,11 @@
                                     $totalWithInterest = $order->totalAmount + $interestAmount;
                                     $voyageInterest += $interestAmount;
                                 @endphp
-                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 soa-order-row" style="font-family: Arial, sans-serif; font-size: 10px; line-height: 1.2;" data-freight="{{ $order->freight }}" data-valuation="{{ $order->valuation }}" data-wharfage="{{ $order->wharfage ?? 0 }}" data-padlock="{{ $order->padlock_fee ?? 0 }}" data-ppa="{{ $order->ppa_manila ?? 0 }}" data-interest="{{ $interestAmount }}">
-                                    <td class="px-4 py-2 text-center" style="word-wrap: break-word; text-align: center;">{{ $order->orderId }}</td>
-                                    <td class="px-4 py-2 text-center" style="word-wrap: break-word;">{{ $order->recName }}</td>
-                                    <td class="px-4 py-2 text-center" style="word-wrap: break-word;">{{ $order->shipperName }}</td>
-                                    <td class="px-4 py-2 text-center" style="word-wrap: break-word; white-space: normal;">
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 soa-order-row" style="font-family: Arial, sans-serif; font-size: 13px; line-height: 1.2;" data-freight="{{ $order->freight }}" data-valuation="{{ $order->valuation }}" data-wharfage="{{ $order->wharfage ?? 0 }}" data-padlock="{{ $order->padlock_fee ?? 0 }}" data-ppa="{{ $order->ppa_manila ?? 0 }}" data-interest="{{ $interestAmount }}">
+                                    <td class="px-4 py-2 text-center" style="word-wrap: break-word; text-align: center; border: 2px solid #000; font-size: 13px;">{{ $order->orderId }}</td>
+                                    <td class="px-4 py-2 text-center" style="word-wrap: break-word; border: 2px solid #000; font-size: 13px;">{{ $order->recName }}</td>
+                                    <td class="px-4 py-2 text-center" style="word-wrap: break-word; border: 2px solid #000; font-size: 13px;">{{ $order->shipperName }}</td>
+                                    <td class="px-4 py-2 text-center" style="word-wrap: break-word; white-space: normal; border: 2px solid #000; font-size: 13px;">
                                         @php 
                                             $parcelItems = [];
                                             foreach($order->parcels as $parcel) {
@@ -136,23 +136,23 @@
                                             echo implode(', ', $parcelItems);
                                         @endphp
                                     </td>
-                                    <td class="px-4 py-2 text-right" style="word-wrap: break-word;">{{ number_format($order->freight, 2) }}</td>
-                                    <td class="px-4 py-2 text-right" style="word-wrap: break-word;">{{ number_format($order->valuation, 2) }}</td>
-                                    <td class="px-4 py-2 text-right" style="word-wrap: break-word;">{{ number_format($order->wharfage ?? 0, 2) }}</td>
-                                    <td class="px-4 py-2 text-right" style="word-wrap: break-word;">{{ number_format($order->padlock_fee ?? 0, 2) }}</td>
-                                    <td class="px-4 py-2 text-right" style="word-wrap: break-word;">{{ number_format($order->ppa_manila ?? 0, 2) }}</td>
-                                    <td class="px-4 py-2 text-right" style="word-wrap: break-word;">
+                                    <td class="px-4 py-2 text-right" style="word-wrap: break-word; border: 2px solid #000; font-size: 13px;">{{ number_format($order->freight, 2) }}</td>
+                                    <td class="px-4 py-2 text-right" style="word-wrap: break-word; border: 2px solid #000; font-size: 13px;">{{ number_format($order->valuation, 2) }}</td>
+                                    <td class="px-4 py-2 text-right" style="word-wrap: break-word; border: 2px solid #000; font-size: 13px;">{{ number_format($order->wharfage ?? 0, 2) }}</td>
+                                    <td class="px-4 py-2 text-right" style="word-wrap: break-word; border: 2px solid #000; font-size: 13px;">{{ number_format($order->padlock_fee ?? 0, 2) }}</td>
+                                    <td class="px-4 py-2 text-right" style="word-wrap: break-word; border: 2px solid #000; font-size: 13px;">{{ number_format($order->ppa_manila ?? 0, 2) }}</td>
+                                    <td class="px-4 py-2 text-right" style="word-wrap: break-word; border: 2px solid #000; font-size: 13px;">
                                         {{ number_format(($order->freight + $order->valuation + ($order->wharfage ?? 0) + ($order->padlock_fee ?? 0) + ($order->ppa_manila ?? 0)), 2) }}
                                         @if($interestAmount > 0)
-                                            <div class="text-red-600 text-xs font-semibold">
+                                            <div class="text-red-600 text-xs font-semibold" style="font-size: 13px;">
                                                 +{{ number_format($interestAmount, 2) }} (interest)
                                             </div>
-                                            <div class="font-bold">
+                                            <div class="font-bold" style="font-size: 13px;">
                                                 {{ number_format(($order->freight + $order->valuation + ($order->wharfage ?? 0) + ($order->padlock_fee ?? 0) + ($order->ppa_manila ?? 0)) + $interestAmount, 2) }}
                                             </div>
                                         @endif
                                     </td>
-                                    <td class="px-2 py-2 text-center">
+                                    <td class="px-2 py-2 text-center" style="border: 2px solid #000;">
                                         <button type="button" class="text-xs bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded delete-row-btn" title="Remove from SOA" onclick="removeSoaRow(this)">X</button>
                                     </td>
                                 </tr>
@@ -181,52 +181,49 @@
                                 }
                                 // The padlock fee is already included in $voyageTotal and $discountedTotal
                             @endphp
-                            <tr class="bg-gray-50 dark:bg-gray-900 font-semibold" style="line-height: 0.8;">
-                                <td colspan="11" class="px-4 py-1 text-right"></td>
-                            </tr>
-                            <tr id="grandTotalRow" class="font-semibold" style="line-height: 0.8; background-color:rgb(97, 175, 91); color: black;">
-                                <td colspan="4" class="px-4 py-1" style="text-align: center; font-weight: bold;">GRAND TOTAL:</td>
-                                <td id="totalFreight" class="px-4 py-1 text-right">{{ number_format($voyageFreight, 2) }}</td>
-                                <td id="totalValuation" class="px-4 py-1 text-right">{{ number_format($voyageValuation, 2) }}</td>
-                                <td id="totalWharfage" class="px-4 py-1 text-right">{{ number_format($voyageWharfage, 2) }}</td>
-                                <td id="totalPadlock" class="px-4 py-1 text-right">{{ number_format($voyagePadlockFee, 2) }}</td>
-                                <td id="totalPpa" class="px-4 py-1 text-right">{{ number_format($voyagePpaManila, 2) }}</td>
-                                <td id="totalOverall" class="px-4 py-1 text-right">{{ number_format($voyageTotal, 2) }}</td>
+                            <tr id="grandTotalRow" class="font-semibold" style="line-height: 0.8; background-color:rgb(97, 175, 91); color: black; font-size: 13px;">
+                                <td colspan="4" class="px-4 py-1" style="text-align: center; font-weight: bold; font-size: 13px;">GRAND TOTAL:</td>
+                                <td id="totalFreight" class="px-4 py-1 text-right" style="font-size: 13px;">{{ number_format($voyageFreight, 2) }}</td>
+                                <td id="totalValuation" class="px-4 py-1 text-right" style="font-size: 13px;">{{ number_format($voyageValuation, 2) }}</td>
+                                <td id="totalWharfage" class="px-4 py-1 text-right" style="font-size: 13px;">{{ number_format($voyageWharfage, 2) }}</td>
+                                <td id="totalPadlock" class="px-4 py-1 text-right" style="font-size: 13px;">{{ number_format($voyagePadlockFee, 2) }}</td>
+                                <td id="totalPpa" class="px-4 py-1 text-right" style="font-size: 13px;">{{ number_format($voyagePpaManila, 2) }}</td>
+                                <td id="totalOverall" class="px-4 py-1 text-right" style="font-size: 13px;">{{ number_format($voyageTotal, 2) }}</td>
                                 <td class="px-2 py-1"></td>
                             </tr>
                             @if($voyageInterest > 0)
-                                <tr id="interestRow" class="bg-gray-50 dark:bg-gray-900 font-semibold text-red-600" style="line-height: 0.8;">
-                                    <td colspan="9" class="px-4 py-1 text-right" style="word-wrap: break-word; white-space: normal;">Interest (1% per month after 30 days):</td>
-                                    <td id="interestAmountCell" class="px-4 py-1 text-right">{{ number_format($voyageInterest, 2) }}</td>
+                                <tr id="interestRow" class="bg-gray-50 dark:bg-gray-900 font-semibold text-red-600" style="line-height: 0.8; font-size: 13px;">
+                                    <td colspan="9" class="px-4 py-1 text-right" style="word-wrap: break-word; white-space: normal; font-size: 13px;">Interest (1% per month after 30 days):</td>
+                                    <td id="interestAmountCell" class="px-4 py-1 text-right" style="font-size: 13px;">{{ number_format($voyageInterest, 2) }}</td>
                                     <td></td>
                                 </tr>
-                                <tr id="totalAmountDueRow" class="bg-gray-50 dark:bg-gray-900 font-semibold font-bold" style="line-height: 0.8; color: green;">
-                                    <td colspan="9" class="px-4 py-1 text-right" style="word-wrap: break-word; white-space: normal;">Total Amount Due:</td>
-                                    <td id="totalAmountDueValue" class="px-4 py-1 text-right ">{{ number_format($voyageTotal, 2) }}</td>
+                                <tr id="totalAmountDueRow" class="bg-gray-50 dark:bg-gray-900 font-semibold font-bold" style="line-height: 0.8; color: green; font-size: 13px;">
+                                    <td colspan="9" class="px-4 py-1 text-right" style="word-wrap: break-word; white-space: normal; font-size: 13px;">Total Amount Due:</td>
+                                    <td id="totalAmountDueValue" class="px-4 py-1 text-right" style="font-size: 13px;">{{ number_format($voyageTotal, 2) }}</td>
                                     <td></td>
                                 </tr>
                             @endif
                             @if($isEligible)
-                                <tr id="discountRow" class="font-semibold" style="line-height: 0; background-color:rgb(240, 240, 5); color: black;">\
-                                    <td colspan="4" class="px-4 py-2" style="text-align: left;">5% Discount on total freight if paid within <span style="font-weight: bold;">15 days</span> upon receipt of SOA</td>
-                                    <td id="discountedFreightCell" style="width: 100px; font-weight: bold;" class="px-4 py-2 text-right">{{ number_format($discountedFreight, 2) }}</td>
-                                    <td id="discountedValuationCell" style="width: 100px;" class="px-4 py-2 text-right">{{ number_format($voyageValuation, 2) }}</td>
-                                    <td id="discountedWharfageCell" style="width: 100px;" class="px-4 py-2 text-right">{{ number_format($voyageWharfage, 2) }}</td>
-                                    <td id="discountedPadlockCell" style="width: 100px;" class="px-4 py-2 text-right">{{ number_format($voyagePadlockFee, 2) }}</td>
-                                    <td id="discountedPpaCell" style="width: 100px;" class="px-4 py-2 text-right">{{ number_format($voyagePpaManila, 2) }}</td>
-                                    <td id="discountedTotalCell" style="width: 100px; font-weight: bold;" class="px-4 py-2 text-right">{{ number_format($discountedTotal, 2) }}</td>
+                                <tr id="discountRow" class="font-semibold" style="line-height: 0; background-color:rgb(240, 240, 5); color: black; font-size: 13px;">
+                                    <td colspan="4" class="px-4 py-2" style="text-align: left; font-size: 13px;">5% Discount on total freight if paid within <span style="font-weight: bold;">15 days</span> upon receipt of SOA</td>
+                                    <td id="discountedFreightCell" style="width: 100px; font-weight: bold; font-size: 13px;" class="px-4 py-2 text-right">{{ number_format($discountedFreight, 2) }}</td>
+                                    <td id="discountedValuationCell" style="width: 100px; font-size: 13px;" class="px-4 py-2 text-right">{{ number_format($voyageValuation, 2) }}</td>
+                                    <td id="discountedWharfageCell" style="width: 100px; font-size: 13px;" class="px-4 py-2 text-right">{{ number_format($voyageWharfage, 2) }}</td>
+                                    <td id="discountedPadlockCell" style="width: 100px; font-size: 13px;" class="px-4 py-2 text-right">{{ number_format($voyagePadlockFee, 2) }}</td>
+                                    <td id="discountedPpaCell" style="width: 100px; font-size: 13px;" class="px-4 py-2 text-right">{{ number_format($voyagePpaManila, 2) }}</td>
+                                    <td id="discountedTotalCell" style="width: 100px; font-weight: bold; font-size: 13px;" class="px-4 py-2 text-right">{{ number_format($discountedTotal, 2) }}</td>
                                     <td></td>
                                 </tr>
                             @endif
-                                <tr id="penaltyInfoRow" class="font-semibold" style="line-height: 0.8; background-color:rgb(231, 15, 22); color: white;">
-                                    <td colspan="4" class="px-4 py-1" style="text-align: left; word-wrap: break-word; white-space: normal; color: white;">a PENALTY rate of 1% PER MONTH will be applied to total bills if not paid every after 30days</td>
-                                    <td class="px-4 py-1 text-right"></td>
-                                    <td class="px-4 py-1 text-right"></td>
-                                    <td class="px-4 py-1 text-right"></td>
-                                    <td class="px-4 py-1 text-right"></td>
-                                    <td class="px-4 py-1 text-right"></td>
-                                    <td class="px-4 py-1 text-right" style="color: white;">
-                                        <span id="finalAmount" class="font-bold" style="color: white;">
+                                <tr id="penaltyInfoRow" class="font-semibold" style="line-height: 0.8; background-color:rgb(231, 15, 22); color: white; font-size: 13px;">
+                                    <td colspan="4" class="px-4 py-1" style="text-align: left; word-wrap: break-word; white-space: normal; color: white; font-size: 13px;">a PENALTY rate of 1% PER MONTH will be applied to total bills if not paid every after 30days</td>
+                                    <td class="px-4 py-1 text-right" style="font-size: 13px;"></td>
+                                    <td class="px-4 py-1 text-right" style="font-size: 13px;"></td>
+                                    <td class="px-4 py-1 text-right" style="font-size: 13px;"></td>
+                                    <td class="px-4 py-1 text-right" style="font-size: 13px;"></td>
+                                    <td class="px-4 py-1 text-right" style="font-size: 13px;"></td>
+                                    <td class="px-4 py-1 text-right" style="color: white; font-size: 13px;">
+                                        <span id="finalAmount" class="font-bold" style="color: white; font-size: 13px;">
                                             @if($voyageInterest > 0)
                                                 {{ number_format($voyageTotal, 2) }}
                                             @else
@@ -248,70 +245,70 @@
 
         <!-- Signature section for screen display -->
         <div class="signature-section">
-            <div style="margin: -1px 0 0 0; padding: 0; display: flex; justify-content: space-between; font-size: 12px; line-height: 1;">
+            <div style="margin: -1px 0 0 0; padding: 0; display: flex; justify-content: space-between; font-size: 16px; line-height: 1;">
                 <div style="width: 60%;">
-                    <p style="margin: 0; line-height: 2;"><strong>PREPARED BY:</strong></p>
-                    <p style="margin-bottom: 0; line-height: 1;"><strong style="margin-left: 100px; font-size: 12px; text-decoration: underline; font-size: 14px;">CHERRY MAE E. CAMAYA</strong></p>
-                    <p style="margin-top: 0; margin-left: 145px; font-size: 13px; line-height: 1;">Billing Officer</p>
-                    <p style="margin-bottom: 0; line-height: 1;"><strong style="font-size: 12px; text-decoration: underline; font-size: 14px; color: red;">Kindly settle your account at St. Francis office, or by bank</strong></p>
-                    <p style="margin-top: 0; line-height: 1;"><strong style="font-size: 12px; text-decoration: underline; font-size: 14px; color: red;">transfer using the details below:</strong></p>
+                    <p style="margin: 0; line-height: 2; font-size: 16px;"><strong>PREPARED BY:</strong></p>
+                    <p style="margin-bottom: 0; line-height: 1; font-size: 16px;"><strong style="margin-left: 100px; font-size: 16px; text-decoration: underline;">CHERRY MAE E. CAMAYA</strong></p>
+                    <p style="margin-top: 0; margin-left: 145px; font-size: 16px; line-height: 1;">Billing Officer</p>
+                    <p style="margin-bottom: 0; line-height: 1; font-size: 16px;"><strong style="font-size: 16px; text-decoration: underline; color: red;">Kindly settle your account at St. Francis office, or by bank</strong></p>
+                    <p style="margin-top: 0; line-height: 1; font-size: 16px;"><strong style="font-size: 16px; text-decoration: underline; color: red;">transfer using the details below:</strong></p>
                 </div>
                 <div style="width: 35%; text-align: left; line-height: 1;">
-                    <p style="margin-bottom: 0; line-height: 2;"><strong>RECEIVED BY:</strong></p>
-                    <p style="margin-bottom: 0; line-height: 1;"><strong style="margin-left: 100px; font-size: 12px; text-decoration: underline; font-size: 14px;">_________________________</strong></p>
-                    <p style="margin-top: 0; margin-left: 100px; font-size: 13px; line-height: 1;">Signature over Printed Name</p>
-                    <p style="margin-bottom: 0; line-height: 0;"><strong>DATE:</strong></p>
-                    <p style="margin-bottom: 0; line-height: 1;"><strong style="margin-left: 100px; font-size: 12px; text-decoration: underline; font-size: 14px;">_________________________</strong></p>
-                    <p style="margin-top: 0; margin-left: 150px; font-size: 13px; line-height: 1;">MM/DD/YR</p>
+                    <p style="margin-bottom: 0; line-height: 2; font-size: 16px;"><strong>RECEIVED BY:</strong></p>
+                    <p style="margin-bottom: 0; line-height: 1; font-size: 16px;"><strong style="margin-left: 100px; font-size: 16px; text-decoration: underline;">_________________________</strong></p>
+                    <p style="margin-top: 0; margin-left: 100px; font-size: 16px; line-height: 1;">Signature over Printed Name</p>
+                    <p style="margin-bottom: 0; line-height: 0; font-size: 16px;"><strong>DATE:</strong></p>
+                    <p style="margin-bottom: 0; line-height: 1; font-size: 16px;"><strong style="margin-left: 100px; font-size: 16px; text-decoration: underline;">_________________________</strong></p>
+                    <p style="margin-top: 0; margin-left: 150px; font-size: 16px; line-height: 1;">MM/DD/YR</p>
                 </div>
             </div>
-            <div style="margin: 0; padding: 0; display: flex; justify-content: space-between; font-size: 12px; line-height: 1;">
+            <div style="margin: 0; padding: 0; display: flex; justify-content: space-between; font-size: 16px; line-height: 1;">
                 <div style="width: 35%;">
-                    <table style="border-collapse: collapse; width: 100%; font-size: 12px; line-height: 1;">
-                        <tr><td style="border: 1px solid black; padding: 5px; line-height: 1;"><strong>ACCOUNT NAME:</strong></td></tr>
-                        <tr><td style="border: 1px solid black; padding: 5px; line-height: 1;">St. Francis Xavier Star Shipping Lines, Inc.</td></tr>
-                        <tr><td style="border: 1px solid black; padding: 5px; line-height: 1;"><strong>ACCOUNT NUMBER:</strong></td></tr>
-                        <tr><td style="border: 1px solid black; padding: 5px; line-height: 1;"><strong>PNB:</strong> 2277-7000-1147</td></tr>
-                        <tr><td style="border: 1px solid black; padding: 5px; line-height: 1;"><strong>LBP:</strong> 1082-1039-76</td></tr>
+                    <table style="border-collapse: collapse; width: 100%; font-size: 16px; line-height: 1;">
+                        <tr><td style="border: 2px solid #000; padding: 5px; line-height: 1; font-size: 16px;"><strong>ACCOUNT NAME:</strong></td></tr>
+                        <tr><td style="border: 2px solid #000; padding: 5px; line-height: 1; font-size: 16px;">St. Francis Xavier Star Shipping Lines, Inc.</td></tr>
+                        <tr><td style="border: 2px solid #000; padding: 5px; line-height: 1; font-size: 16px;"><strong>ACCOUNT NUMBER:</strong></td></tr>
+                        <tr><td style="border: 2px solid #000; padding: 5px; line-height: 1; font-size: 16px;"><strong>PNB:</strong> 2277-7000-1147</td></tr>
+                        <tr><td style="border: 2px solid #000; padding: 5px; line-height: 1; font-size: 16px;"><strong>LBP:</strong> 1082-1039-76</td></tr>
                     </table>
                 </div>
                 <div style="width: 35%; text-align: left; line-height: 1;">
-                    <p style="margin-bottom: 0; line-height: 1;"><strong></strong></p>
+                    <p style="margin-bottom: 0; line-height: 1; font-size: 16px;"><strong></strong></p>
                 </div>
             </div>
         </div>
         
         <!-- Print-only signature section that will stick to bottom -->
         <div class="print-signature" style="display: none;">
-            <div style="margin: -1px 0 0 0; padding: 0; display: flex; justify-content: space-between; font-size: 12px; line-height: 1;">
+            <div style="margin: -1px 0 0 0; padding: 0; display: flex; justify-content: space-between; font-size: 16px; line-height: 1.1;">
                 <div style="width: 60%;">
-                    <p style="margin: 0; line-height: 2;"><strong>PREPARED BY:</strong></p>
-                    <p style="margin-bottom: 0; line-height: 1;"><strong style="margin-left: 100px; font-size: 12px; text-decoration: underline; font-size: 14px;">CHERRY MAE E. CAMAYA</strong></p>
-                    <p style="margin-top: 0; margin-left: 145px; font-size: 13px; line-height: 1;">Billing Officer</p>
-                    <p style="margin-bottom: 0; line-height: 1;"><strong style="font-size: 12px; text-decoration: underline; font-size: 14px; color: red;">Kindly settle your account at St. Francis office, or by bank</strong></p>
-                    <p style="margin-top: 0; line-height: 1;"><strong style="font-size: 12px; text-decoration: underline; font-size: 14px; color: red;">transfer using the details below:</strong></p>
+                    <p style="margin: 0; line-height: 1.2; font-size: 16px;"><strong>PREPARED BY:</strong></p>
+                    <p style="margin-bottom: 0; line-height: 1; font-size: 16px;"><strong style="margin-left: 100px; font-size: 16px; text-decoration: underline;">CHERRY MAE E. CAMAYA</strong></p>
+                    <p style="margin-top: 0; margin-left: 145px; font-size: 16px; line-height: 1;">Billing Officer</p>
+                    <p style="margin-bottom: 0; line-height: 1; font-size: 16px;"><strong style="font-size: 16px; text-decoration: underline; color: red;">Kindly settle your account at St. Francis office, or by bank</strong></p>
+                    <p style="margin-top: 0; line-height: 1; font-size: 16px;"><strong style="font-size: 16px; text-decoration: underline; color: red;">transfer using the details below:</strong></p>
                 </div>
-                <div style="width: 35%; text-align: left; line-height: 1;">
-                    <p style="margin-bottom: 0; line-height: 2;"><strong>RECEIVED BY:</strong></p>
-                    <p style="margin-bottom: 0; line-height: 1;"><strong style="margin-left: 100px; font-size: 12px; text-decoration: underline; font-size: 14px;">_________________________</strong></p>
-                    <p style="margin-top: 0; margin-left: 100px; font-size: 13px; line-height: 1;">Signature over Printed Name</p>
-                    <p style="margin-bottom: 0; line-height: 0;"><strong>DATE:</strong></p>
-                    <p style="margin-bottom: 0; line-height: 1;"><strong style="margin-left: 100px; font-size: 12px; text-decoration: underline; font-size: 14px;">_________________________</strong></p>
-                    <p style="margin-top: 0; margin-left: 150px; font-size: 13px; line-height: 1;">MM/DD/YR</p>
+                <div style="width: 35%; text-align: left; line-height: 1.1;">
+                    <p style="margin-bottom: 0; line-height: 1.2; font-size: 16px;"><strong>RECEIVED BY:</strong></p>
+                    <p style="margin-bottom: 0; line-height: 1; font-size: 16px;"><strong style="margin-left: 100px; font-size: 16px; text-decoration: underline;">_________________________</strong></p>
+                    <p style="margin-top: 0; margin-left: 100px; font-size: 16px; line-height: 1;">Signature over Printed Name</p>
+                    <p style="margin: 0; line-height: 0.8; font-size: 16px;"><strong>DATE:</strong></p>
+                    <p style="margin: 0; line-height: 0.8; font-size: 16px;"><strong style="margin-left: 100px; font-size: 16px; text-decoration: underline;">_________________________</strong></p>
+                    <p style="margin: 0; margin-left: 150px; font-size: 16px; line-height: 1.1;">MM/DD/YR</p>
                 </div>
             </div>
-            <div style="margin: 0; padding: 0; display: flex; justify-content: space-between; font-size: 12px; line-height: 1;">
+            <div style="margin: 0; padding: 0; display: flex; justify-content: space-between; font-size: 16px; line-height: 1;">
                 <div style="width: 35%;">
-                    <table style="border-collapse: collapse; width: 100%; font-size: 12px; line-height: 1;">
-                        <tr><td style="border: 1px solid black; padding: 5px; line-height: 1;"><strong>ACCOUNT NAME:</strong></td></tr>
-                        <tr><td style="border: 1px solid black; padding: 5px; line-height: 1;">St. Francis Xavier Star Shipping Lines, Inc.</td></tr>
-                        <tr><td style="border: 1px solid black; padding: 5px; line-height: 1;"><strong>ACCOUNT NUMBER:</strong></td></tr>
-                        <tr><td style="border: 1px solid black; padding: 5px; line-height: 1;"><strong>PNB:</strong> 2277-7000-1147</td></tr>
-                        <tr><td style="border: 1px solid black; padding: 5px; line-height: 1;"><strong>LBP:</strong> 1082-1039-76</td></tr>
+                    <table style="border-collapse: collapse; width: 100%; font-size: 16px; line-height: 0.9;">
+                        <tr><td style="border: 2px solid #000; padding: 5px; line-height: 0.9; font-size: 16px;"><strong>ACCOUNT NAME:</strong></td></tr>
+                        <tr><td style="border: 2px solid #000; padding: 5px; line-height: 0.9; font-size: 16px;">St. Francis Xavier Star Shipping Lines, Inc.</td></tr>
+                        <tr><td style="border: 2px solid #000; padding: 5px; line-height: 0.9; font-size: 16px;"><strong>ACCOUNT NUMBER:</strong></td></tr>
+                        <tr><td style="border: 2px solid #000; padding: 5px; line-height: 0.9; font-size: 16px;"><strong>PNB:</strong> 2277-7000-1147</td></tr>
+                        <tr><td style="border: 2px solid #000; padding: 5px; line-height: 0.9; font-size: 16px;"><strong>LBP:</strong> 1082-1039-76</td></tr>
                     </table>
                 </div>
                 <div style="width: 35%; text-align: left; line-height: 1;">
-                    <p style="margin-bottom: 0; line-height: 1;"><strong></strong></p>
+                    <p style="margin-bottom: 0; line-height: 1; font-size: 16px;"><strong></strong></p>
                 </div>
             </div>
         </div>
@@ -494,7 +491,7 @@
                         margin-bottom: 20px;
                     }
                     th, td { 
-                        border: 1px solid #ddd; 
+                        border: 2px solid #000; 
                         padding: 3px 6px; 
                         font-family: Arial, sans-serif; 
                         word-wrap: break-word; 
@@ -505,6 +502,11 @@
                     th {
                         font-size: 10px;
                         font-weight: bold;
+                    }
+                    /* Hide delete button column in print - only in main SOA table */
+                    table.min-w-full th:last-child, 
+                    table.min-w-full td:last-child {
+                        display: none !important;
                     }
                     button { display: none; }
                     .non-printable { display: none; }
@@ -527,6 +529,12 @@
                     #soaNumberStatus { display: none !important; }
                     button[title="Test Save"] { display: none !important; }
                     .description-cell { word-wrap: break-word; white-space: normal; }
+                    /* Reduce line spacing in header section for print */
+                    div[style*="margin-bottom: 20px"] p {
+                        margin: 0 !important;
+                        line-height: 1 !important;
+                        padding: 0 !important;
+                    }
                 }
                 @media screen {
                     .print-signature { display: none !important; }
