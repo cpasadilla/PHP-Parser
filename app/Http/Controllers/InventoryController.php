@@ -621,12 +621,15 @@ class InventoryController extends Controller
 
         if ($entries->isEmpty()) return;
 
+        // Define the balance field name for this size
+        $balanceField = 'hollowblock_' . $size . '_balance';
+
         // Always start from the first entry and propagate balances forward
         $lastBalance = null;
         foreach ($entries as $idx => $entry) {
             if ($idx === 0) {
-                // Preserve the first entry's balance
-                $lastBalance = $entry->balance;
+                // Preserve the first entry's size-specific balance
+                $lastBalance = $entry->$balanceField;
                 continue;
             }
 
@@ -634,9 +637,9 @@ class InventoryController extends Controller
             $inValue = floatval($entry->in ?? 0);
             $newBalance = floatval($lastBalance) - $outValue + $inValue;
 
-            // Always update balance to match the formula
-            if ($entry->balance != $newBalance) {
-                $entry->balance = $newBalance;
+            // Always update the size-specific balance to match the formula
+            if ($entry->$balanceField != $newBalance) {
+                $entry->$balanceField = $newBalance;
                 $entry->save();
             }
             $lastBalance = $newBalance;
