@@ -69,11 +69,11 @@
                         
                         <div class="flex items-end">
                             <button type="submit" 
-                                    class="bg-gray-500 hover:bg-gray-700 dark:bg-gray-600 dark:hover:bg-gray-700 text-white font-bold py-2 px-4 rounded mr-2">
+                                    class="bg-gray-500 hover:bg-gray-700 dark:bg-gray-600 dark:hover:bg-gray-700 text-white font-bold py-2 px-4 rounded mr-2 flex items-center justify-center">
                                 Filter
                             </button>
                             <a href="{{ route('leave-applications.index') }}" 
-                               class="bg-gray-300 hover:bg-gray-400 dark:bg-gray-700 dark:hover:bg-gray-800 text-gray-800 dark:text-gray-200 font-bold py-2 px-4 rounded">
+                               class="bg-gray-300 hover:bg-gray-400 dark:bg-gray-700 dark:hover:bg-gray-800 text-gray-800 dark:text-gray-200 font-bold py-2 px-4 rounded flex items-center justify-center">
                                 Reset
                             </a>
                         </div>
