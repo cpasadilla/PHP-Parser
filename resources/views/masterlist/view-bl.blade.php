@@ -36,8 +36,26 @@
                     @endif
                 </div>
                 <!-- Title -->
-            <div style="display: flex; justify-content: center; margin-top: 5px;">
+            <div style="display: flex; justify-content: center; margin-top: 5px; position: relative;">
                 <span style="font-family: Arial; font-weight: bold; font-size: 17px;">BILL OF LADING</span>
+                
+                @if($order->gatePasses->count() > 0)
+                    @php
+                        $firstGatePass = $order->gatePasses->sortBy('release_date')->first();
+                        $releaseDate = \Carbon\Carbon::parse($firstGatePass->release_date)->format('M d, Y');
+                    @endphp
+                    <div style="position: absolute; right: 10px; top: -10px; transform: rotate(15deg); 
+                                border: 3px solid #d32f2f; padding: 10px 20px; border-radius: 5px;
+                                background-color: rgba(255, 255, 255, 0.9);">
+                        <div style="font-family: Arial; font-weight: bold; font-size: 18px; color: #d32f2f; 
+                                    text-align: center; letter-spacing: 3px;">
+                            RELEASED
+                        </div>
+                        <div style="font-family: Arial; font-size: 10px; color: #d32f2f; text-align: center; margin-top: 2px;">
+                            {{ $releaseDate }}
+                        </div>
+                    </div>
+                @endif
             </div>
 
             <div style="display: flex; justify-content: right;">

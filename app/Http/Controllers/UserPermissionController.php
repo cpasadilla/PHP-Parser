@@ -56,6 +56,17 @@ class UserPermissionController extends Controller
                         'customer' => ['access', 'edit', 'delete']
                     ]
                 ],
+                'gatepass' => [
+                    'operations' => ['access', 'create', 'edit', 'delete'],
+                    'pages' => [
+                        'index' => ['access'],
+                        'create' => ['access', 'create'],
+                        'edit' => ['access', 'edit'],
+                        'view' => ['access'],
+                        'summary' => ['access'],
+                        'unreleased' => ['access']
+                    ]
+                ],
                 'pricelist' => ['access', 'create', 'edit', 'delete'], 
                 'users' => ['access', 'create', 'edit', 'delete'],
                 'history' => ['access'],

@@ -115,6 +115,36 @@
                     ]
                 ]
             ],
+            'gatepass' => [
+                'name' => 'Gate Pass',
+                'operations' => ['access', 'create', 'edit', 'delete'],
+                'pages' => [
+                    'index' => [
+                        'name' => 'Gate Pass List',
+                        'operations' => ['access']
+                    ],
+                    'create' => [
+                        'name' => 'Create Gate Pass',
+                        'operations' => ['access', 'create']
+                    ],
+                    'edit' => [
+                        'name' => 'Edit Gate Pass',
+                        'operations' => ['access', 'edit']
+                    ],
+                    'view' => [
+                        'name' => 'View Gate Pass',
+                        'operations' => ['access']
+                    ],
+                    'summary' => [
+                        'name' => 'Gate Pass Summary',
+                        'operations' => ['access']
+                    ],
+                    'unreleased' => [
+                        'name' => 'Unreleased Items',
+                        'operations' => ['access']
+                    ]
+                ]
+            ],
             'crew' => [
                 'name' => 'Crew Management',
                 'operations' => ['access', 'create', 'edit', 'delete'],

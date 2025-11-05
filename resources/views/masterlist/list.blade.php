@@ -88,6 +88,10 @@
                         <th class="p-2">TOTAL</th>
                         <th class="p-2">OR#</th>
                         <th class="p-2">AR#</th>
+                        <th class="p-2">GATE PASS NO.</th>
+                        <th class="p-2">RELEASE STATUS</th>
+                        <th class="p-2">RELEASED DATE</th>
+                        <th class="p-2">GATE PASS</th>
                         <th class="p-2">DATE PAID</th>
                         <th class="p-2">NOTED BY</th>
                         <th class="p-2">PAID IN</th>
@@ -216,6 +220,21 @@
                                 </select>
                             </div>
                         </th>
+                        <th>
+                            <input type="text" class="filter-input" data-column="gate_pass_no" placeholder="Search Gate Pass...">
+                        </th>
+                        <th>
+                            <select class="filter-dropdown" data-column="release_status">
+                                <option value="">All</option>
+                                <option value="RELEASED">RELEASED</option>
+                                <option value="PARTIAL RELEASED">PARTIAL RELEASED</option>
+                                <option value="NOT RELEASED">NOT RELEASED</option>
+                            </select>
+                        </th>
+                        <th>
+                            <input type="text" class="filter-input" data-column="released_date" placeholder="Released Date">
+                        </th>
+                        <th></th> <!-- GATE PASS actions excluded from filter -->
                         <th><input type="text" class="filter-input" data-column="dp" placeholder="Date Paid"></th>
                         <th>
                             <select class="filter-dropdown" data-column="updated_by">
@@ -278,8 +297,7 @@
                                 @endif
                             </td>
                             <td class="p-2">
-                                <div>{{ \Carbon\Carbon::parse($order->created_at)->format('F d, Y') }}</div>
-                                <div class="text-sm text-gray-600 dark:text-gray-400">{{ \Carbon\Carbon::parse($order->created_at)->format('h:i A') }}</div>
+                                {{ \Carbon\Carbon::parse($order->created_at)->setTimezone('Asia/Manila')->format('F d, Y h:i A') }}
                             </td>
                             <td class="p-2 container-cell" data-column="container">
                                 @if(Auth::user()->hasSubpagePermission('masterlist', 'list', 'edit'))
@@ -444,6 +462,100 @@
                                     {{ $order->AR }}
                                 </div>
                                 @endif
+                            </td>
+                            <td class="p-2 text-center" data-column="gate_pass_no">
+                                @if($order->gatePasses->count() > 0)
+                                    {{ $order->gatePasses->pluck('gate_pass_no')->implode(' / ') }}
+                                @endif
+                            </td>
+                            <td class="p-2 text-center" data-column="release_status">
+                                @php
+                                    if ($order->gatePasses->count() === 0) {
+                                        $releaseStatus = 'NOT RELEASED';
+                                        $statusColor = '#f44336';
+                                        $textColor = 'white';
+                                    } else {
+                                        // Calculate total vs released for this order
+                                        $totalItems = [];
+                                        $releasedItems = [];
+                                        
+                                        // Get total from parcels
+                                        foreach ($order->parcels as $parcel) {
+                                            $key = $parcel->itemName . '_' . $parcel->unit;
+                                            if (!isset($totalItems[$key])) {
+                                                $totalItems[$key] = 0;
+                                            }
+                                            $totalItems[$key] += $parcel->quantity;
+                                        }
+                                        
+                                        // Get released from gate passes
+                                        foreach ($order->gatePasses as $gatePass) {
+                                            foreach ($gatePass->items as $item) {
+                                                $key = $item->item_description . '_' . $item->unit;
+                                                if (!isset($releasedItems[$key])) {
+                                                    $releasedItems[$key] = 0;
+                                                }
+                                                $releasedItems[$key] += $item->released_quantity;
+                                            }
+                                        }
+                                        
+                                        // Determine status
+                                        $allReleased = true;
+                                        foreach ($totalItems as $key => $totalQty) {
+                                            $releasedQty = $releasedItems[$key] ?? 0;
+                                            if ($releasedQty < $totalQty) {
+                                                $allReleased = false;
+                                                break;
+                                            }
+                                        }
+                                        
+                                        if ($allReleased) {
+                                            $releaseStatus = 'RELEASED';
+                                            $statusColor = '#4CAF50';
+                                            $textColor = 'white';
+                                        } else {
+                                            $releaseStatus = 'PARTIAL RELEASED';
+                                            $statusColor = '#FF9800';
+                                            $textColor = 'white';
+                                        }
+                                    }
+                                @endphp
+                                <span style="background-color: {{ $statusColor }}; color: {{ $textColor }}; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; display: inline-block; white-space: nowrap;">
+                                    {{ $releaseStatus }}
+                                </span>
+                            </td>
+                            <td class="p-2" data-column="released_date">
+                                @php
+                                    // Get the most recent gate pass release date
+                                    $latestReleaseDate = $order->gatePasses->sortByDesc('release_date')->first()?->release_date;
+                                @endphp
+                                @if($latestReleaseDate)
+                                    {{ \Carbon\Carbon::parse($latestReleaseDate)->format('F d, Y') }}
+                                @else
+                                    <span class="text-gray-400">-</span>
+                                @endif
+                            </td>
+                            <td class="p-2 gate-pass-cell" data-column="gate_pass">
+                                <div style="text-align: center;">
+                                    @if(Auth::user()->hasPagePermission('gatepass'))
+                                        @if($order->gatePasses->count() > 0)
+                                            <a href="{{ route('gatepass.summary', ['order_id' => $order->id]) }}" 
+                                               class="text-green-600 hover:underline text-xs block"
+                                               target="_blank"
+                                               title="View Summary">
+                                                Summary
+                                            </a>
+                                        @endif
+                                        @if(Auth::user()->hasSubpagePermission('masterlist', 'list', 'edit') && Auth::user()->hasPermission('gatepass', 'create'))
+                                            <a href="{{ route('gatepass.create', ['order_id' => $order->id]) }}" 
+                                               class="inline-block mt-1 px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-xs">
+                                                + New
+                                            </a>
+                                        @endif
+                                    @else
+                                        <span class="text-gray-400 text-xs">-</span>
+                                    @endif
+                                </div>
                             </td>
                             <td class="p-2" data-column="dp">{{ ($order->display_or_ar_date ?? $order->or_ar_date) ? \Carbon\Carbon::parse($order->display_or_ar_date ?? $order->or_ar_date)->setTimezone('Asia/Manila')->format('F d, Y h:i A') : ' ' }}</td>
                             <td class="p-2" data-column="updated_by">{{ $order->display_updated_by ?? $order->updated_by ?? ' ' }}</td>
@@ -713,7 +825,7 @@
     /* Ensure the table layout is fixed with proper width */
     #ordersTable {
         table-layout: fixed;
-        width: 4320px; /* Fixed width to accommodate all columns (reduced by 130px from original 4450px due to removal of ORIGINAL FREIGHT column) */
+        width: 5060px; /* Fixed width to accommodate all columns (reduced 30px from BIR column) */
         border-collapse: collapse;
     }
 
@@ -845,32 +957,37 @@
 
     /* Set fixed pixel widths for columns */
     #ordersTable th:nth-child(1), #ordersTable td:nth-child(1) { width: 75px; }  /* BL */
-    #ordersTable th:nth-child(2), #ordersTable td:nth-child(2) { width: 150px; } /* DATE */
+    #ordersTable th:nth-child(2), #ordersTable td:nth-child(2) { width: 200px; } /* DATE */
     #ordersTable th:nth-child(3), #ordersTable td:nth-child(3) { width: 150px; }  /* CONTAINER */
     #ordersTable th:nth-child(4), #ordersTable td:nth-child(4) { width: 150px; } /* CARGO STATUS */
     #ordersTable th:nth-child(5), #ordersTable td:nth-child(5) { width: 230px; } /* SHIPPER */
     #ordersTable th:nth-child(6), #ordersTable td:nth-child(6) { width: 230px; } /* CONSIGNEE */
     #ordersTable th:nth-child(7), #ordersTable td:nth-child(7) { width: 140px; } /* CHECKER */
-    #ordersTable th:nth-child(8), #ordersTable td:nth-child(8) { width: 300px; } /* DESCRIPTION */
+    #ordersTable th:nth-child(8), #ordersTable td:nth-child(8) { width: 400px; } /* DESCRIPTION */
     #ordersTable th:nth-child(9), #ordersTable td:nth-child(9) { width: 130px; }  /* FREIGHT */
     #ordersTable th:nth-child(10), #ordersTable td:nth-child(10) { width: 180px; } /* VALUATION */ 
-    #ordersTable th:nth-child(11), #ordersTable td:nth-child(11) { width: 130px; } /* VALUE */
+    #ordersTable th:nth-child(11), #ordersTable td:nth-child(11) { width: 180px; } /* VALUE */
     #ordersTable th:nth-child(12), #ordersTable td:nth-child(12) { width: 130px; }  /* WHARFAGE */ 
     #ordersTable th:nth-child(13), #ordersTable td:nth-child(13) { width: 130px; } /* 5% DISCOUNT */ 
-    #ordersTable th:nth-child(14), #ordersTable td:nth-child(14) { width: 130px; } /* BIR */ 
+    #ordersTable th:nth-child(14), #ordersTable td:nth-child(14) { width: 100px; } /* BIR */ 
     #ordersTable th:nth-child(15), #ordersTable td:nth-child(15) { width: 130px; } /* OTHERS */ 
     #ordersTable th:nth-child(16), #ordersTable td:nth-child(16) { width: 130px; } /* TOTAL */ 
     #ordersTable th:nth-child(17), #ordersTable td:nth-child(17) { width: 120px; } /* OR# */
     #ordersTable th:nth-child(18), #ordersTable td:nth-child(18) { width: 110px; } /* AR# */ 
-    #ordersTable th:nth-child(19), #ordersTable td:nth-child(19) { width: 150px; } /* DATE PAID */ 
-    #ordersTable th:nth-child(20), #ordersTable td:nth-child(20) { width: 150px; } /* UPDATED BY */ 
-    #ordersTable th:nth-child(21), #ordersTable td:nth-child(21) { width: 100px; } /* BL STATUS */ 
-    #ordersTable th:nth-child(22), #ordersTable td:nth-child(22) { width: 100px; } /* PAID IN */ 
-    #ordersTable th:nth-child(23), #ordersTable td:nth-child(23) { width: 250px; } /* BL REMARK */
-    #ordersTable th:nth-child(24), #ordersTable td:nth-child(24) { width: 300px; } /* NOTE */ 
-    #ordersTable th:nth-child(25), #ordersTable td:nth-child(25) { width: 170px; } /* IMAGE */ 
-    #ordersTable th:nth-child(26), #ordersTable td:nth-child(26) { width: 100px; } /* VIEW BL */
-    #ordersTable th:nth-child(27), #ordersTable td:nth-child(27) { width: 100px; } /* VIEW NO-PRICE BL */
+    #ordersTable th:nth-child(19), #ordersTable td:nth-child(19) { width: 150px; } /* GATE PASS NO. */ 
+    #ordersTable th:nth-child(20), #ordersTable td:nth-child(20) { width: 150px; } /* RELEASE STATUS */ 
+    #ordersTable th:nth-child(21), #ordersTable td:nth-child(21) { width: 120px; } /* RELEASED DATE */ 
+    #ordersTable th:nth-child(22), #ordersTable td:nth-child(22) { width: 100px; } /* GATE PASS */ 
+    #ordersTable th:nth-child(23), #ordersTable td:nth-child(23) { width: 200px; } /* DATE PAID */ 
+    #ordersTable th:nth-child(24), #ordersTable td:nth-child(24) { width: 150px; } /* NOTED BY (UPDATED BY) */ 
+    #ordersTable th:nth-child(25), #ordersTable td:nth-child(25) { width: 150px; } /* PAID IN (UPDATED LOCATION) */ 
+    #ordersTable th:nth-child(26), #ordersTable td:nth-child(26) { width: 100px; } /* BL STATUS */ 
+    #ordersTable th:nth-child(27), #ordersTable td:nth-child(27) { width: 250px; } /* BL REMARK */
+    #ordersTable th:nth-child(28), #ordersTable td:nth-child(28) { width: 300px; } /* NOTE */ 
+    #ordersTable th:nth-child(29), #ordersTable td:nth-child(29) { width: 170px; } /* IMAGE */ 
+    #ordersTable th:nth-child(30), #ordersTable td:nth-child(30) { width: 100px; } /* VIEW BL */
+    #ordersTable th:nth-child(31), #ordersTable td:nth-child(31) { width: 100px; } /* VIEW NO-PRICE BL */
+    #ordersTable th:nth-child(32), #ordersTable td:nth-child(32) { width: 100px; } /* TRANSFER */
     /* UPDATE and DELETE BL columns are conditionally displayed, so we use classes instead of fixed nth-child selectors */
     .update-bl-column { width: 100px; }
     .delete-bl-column { width: 100px; }
@@ -1178,7 +1295,7 @@
     /* Ensure the table layout is fixed */
     #ordersTable {
         table-layout: fixed;
-        width: 4320px; /* Fixed width to accommodate all columns (reduced by 130px from original 4450px due to removal of ORIGINAL FREIGHT column) */
+        width: 5060px; /* Fixed width to accommodate all columns (reduced 30px from BIR column) */
     }
     /* Dark mode styles for table headers */
     .dark #ordersTable th {
@@ -3316,25 +3433,37 @@
         // Convert the cloned table to a worksheet
         const worksheet = XLSX.utils.table_to_sheet(clonedTable, { raw: true });
 
-        // Remove unwanted columns (BL STATUS, REMARK, NOTE, IMAGE, VIEW BL)
-        const unwantedColumns = [24, 25, 26]; // Column indices to exclude (0-based index)
+        // Remove unwanted columns: GATE PASS (21), IMAGE (28), VIEW BL (29), NO-PRICE BL (30), TRANSFER (31), UPDATE BL (32), DELETE BL (33)
+        // Note: Using 0-based index, so subtract 1 from column numbers
+        const unwantedColumns = [21, 28, 29, 30, 31, 32, 33]; // Column indices to exclude (0-based index)
 
-        // Remove unwanted columns
+        // Remove unwanted columns in reverse order to maintain correct indices
         const range = XLSX.utils.decode_range(worksheet['!ref']);
-        for (let col = range.e.c; col >= range.s.c; col--) {
-            if (unwantedColumns.includes(col)) {
+        const sortedUnwantedColumns = unwantedColumns.sort((a, b) => b - a); // Sort in descending order
+        
+        sortedUnwantedColumns.forEach(colIndex => {
+            if (colIndex <= range.e.c) {
+                // Shift all columns to the left
                 for (let row = range.s.r; row <= range.e.r; row++) {
-                    const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
-                    delete worksheet[cellAddress];
+                    for (let col = colIndex; col < range.e.c; col++) {
+                        const currentCell = XLSX.utils.encode_cell({ r: row, c: col });
+                        const nextCell = XLSX.utils.encode_cell({ r: row, c: col + 1 });
+                        if (worksheet[nextCell]) {
+                            worksheet[currentCell] = worksheet[nextCell];
+                        } else {
+                            delete worksheet[currentCell];
+                        }
+                    }
+                    // Delete the last column
+                    const lastCell = XLSX.utils.encode_cell({ r: row, c: range.e.c });
+                    delete worksheet[lastCell];
                 }
+                range.e.c--;
             }
-        }
+        });
 
         // Update the worksheet range
-        worksheet['!ref'] = XLSX.utils.encode_range({
-            s: { r: range.s.r, c: range.s.c },
-            e: { r: range.e.r, c: range.e.c - unwantedColumns.length }
-        });
+        worksheet['!ref'] = XLSX.utils.encode_range(range);
 
         // Add the worksheet to the workbook
         XLSX.utils.book_append_sheet(workbook, worksheet, 'Orders');
@@ -3532,15 +3661,20 @@
             { name: 'Total', index: 16, essential: true, totalId: 'totalAmount' },
             { name: 'OR#', index: 17, essential: false },
             { name: 'AR#', index: 18, essential: false },
-            { name: 'Date Paid', index: 19, essential: false },
-            { name: 'Noted By', index: 20, essential: false },
-            { name: 'Paid In', index: 21, essential: false },
-            { name: 'BL Status', index: 22, essential: false },
-            { name: 'Remark', index: 23, essential: false },
-            { name: 'Note', index: 24, essential: false },
-            { name: 'Image', index: 25, essential: false },
-            { name: 'View BL', index: 26, essential: false },
-            { name: 'No-Price BL', index: 27, essential: false },
+            { name: 'Gate Pass No.', index: 19, essential: false },
+            { name: 'Release Status', index: 20, essential: false },
+            { name: 'Released Date', index: 21, essential: false },
+            { name: 'Gate Pass', index: 22, essential: false },
+            { name: 'Date Paid', index: 23, essential: false },
+            { name: 'Noted By', index: 24, essential: false },
+            { name: 'Paid In', index: 25, essential: false },
+            { name: 'BL Status', index: 26, essential: false },
+            { name: 'Remark', index: 27, essential: false },
+            { name: 'Note', index: 28, essential: false },
+            { name: 'Image', index: 29, essential: false },
+            { name: 'View BL', index: 30, essential: false },
+            { name: 'No-Price BL', index: 31, essential: false },
+            { name: 'Transfer', index: 32, essential: false },
             { name: 'Update BL', className: 'update-bl-column', essential: false },
             { name: 'Delete BL', className: 'delete-bl-column', essential: false },
             { name: 'Created By', isLastChild: true, essential: false }

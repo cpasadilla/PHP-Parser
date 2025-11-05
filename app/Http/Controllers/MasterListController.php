@@ -238,9 +238,18 @@ class MasterListController extends Controller
     public function list(Request $request) {
         // Get all orders with parcels relationship and all necessary fields
         // Sort transferred orders (those with "TRANSFERRED FROM" in remark) to the top
-        $orders = Order::with(['parcels' => function($query) {
-            $query->select('id', 'orderId', 'itemName', 'quantity', 'unit', 'desc');
-        }])
+        $orders = Order::with([
+            'parcels' => function($query) {
+                $query->select('id', 'orderId', 'itemName', 'quantity', 'unit', 'desc');
+            },
+            'gatePasses' => function($query) {
+                $query->select('id', 'order_id', 'gate_pass_no', 'release_date')
+                    ->orderBy('release_date', 'asc');
+            },
+            'gatePasses.items' => function($query) {
+                $query->select('id', 'gate_pass_id', 'item_description', 'unit', 'released_quantity');
+            }
+        ])
         ->select([
             'id', 'orderId', 'shipNum', 'voyageNum', 'containerNum', 'cargoType',
             'shipperName', 'recName', 'checkName', 'remark', 'note', 'origin', 'destination',
@@ -414,8 +423,10 @@ class MasterListController extends Controller
     }
 
     public function viewBl($shipNum, $voyageNum, $orderId) {
-        // Fetch the order by ID
-        $order = Order::findOrFail($orderId);
+        // Fetch the order by ID with gate passes
+        $order = Order::with(['gatePasses' => function($query) {
+            $query->orderBy('release_date', 'asc');
+        }])->findOrFail($orderId);
 
         // Enhance order with proper AR/OR display information
         $displayInfo = $this->getArOrDisplayInfo($order);

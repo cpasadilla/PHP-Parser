@@ -149,6 +149,18 @@
     </x-sidebar.dropdown>
     @endif
 
+    @if(Auth::user()->hasPagePermission('gatepass'))
+    <x-sidebar.link
+        title="Gate Pass"
+        href="{{ route('gatepass.unreleased.ships') }}"
+        :isActive="request()->routeIs('gatepass.unreleased.*')"
+        >
+            <x-slot name="icon">
+                <x-heroicon-o-clipboard class="flex-shrink-0 w-6 h-6" aria-hidden="true" />
+            </x-slot>
+    </x-sidebar.link>
+    @endif
+
     @if(Auth::user()->hasPagePermission('accounting'))
     <x-sidebar.dropdown
         title="Accounting"

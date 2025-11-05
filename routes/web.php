@@ -6,6 +6,7 @@ use App\Http\Controllers\UsersController;
 use App\Http\Controllers\UserPermissionController;
 use App\Http\Controllers\AccountingController;
 use App\Http\Controllers\InventoryController;
+use App\Http\Controllers\GatePassController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PriceListController;
@@ -66,6 +67,23 @@ Route::middleware('auth')->group(function () {
     // Route for voyage status diagnosis and fix
     Route::get('/fix-voyage', [App\Http\Controllers\FixVoyageController::class, 'checkVoyageStatus'])->name('fix-voyage');
     Route::post('/fix-voyage-status', [App\Http\Controllers\FixVoyageController::class, 'fixVoyageStatus'])->name('fix-voyage-status');
+
+    // Gate Pass routes
+    Route::prefix('gatepass')->name('gatepass.')->group(function () {
+        Route::get('/', [App\Http\Controllers\GatePassController::class, 'index'])->name('index');
+        Route::get('/create', [App\Http\Controllers\GatePassController::class, 'create'])->name('create');
+        Route::post('/', [App\Http\Controllers\GatePassController::class, 'store'])->name('store');
+        Route::get('/{id}', [App\Http\Controllers\GatePassController::class, 'show'])->name('show');
+        Route::get('/{id}/edit', [App\Http\Controllers\GatePassController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [App\Http\Controllers\GatePassController::class, 'update'])->name('update');
+        Route::delete('/{id}', [App\Http\Controllers\GatePassController::class, 'destroy'])->name('destroy');
+        Route::get('/summary/report', [App\Http\Controllers\GatePassController::class, 'summary'])->name('summary');
+        Route::get('/api/release-summary/{orderId}', [App\Http\Controllers\GatePassController::class, 'getReleaseSummary'])->name('api.release-summary');
+        
+        // Unreleased items routes
+        Route::get('/unreleased/ships', [App\Http\Controllers\GatePassController::class, 'unreleasedShips'])->name('unreleased.ships');
+        Route::get('/unreleased/voyage/{shipNum}/{voyageNum}', [App\Http\Controllers\GatePassController::class, 'unreleasedByVoyage'])->name('unreleased.voyage');
+    });
 
     // History routes
     Route::middleware('page.permission:history')->group(function () {

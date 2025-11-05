@@ -131,4 +131,29 @@ class order extends Model
             return $this->shipper();
         }
     }
+    
+    /**
+     * Get the gate passes associated with this order (BL)
+     */
+    public function gatePasses()
+    {
+        return $this->hasMany(GatePass::class, 'order_id', 'id');
+    }
+    
+    /**
+     * Check if this order has any gate passes
+     */
+    public function hasGatePasses()
+    {
+        return $this->gatePasses()->exists();
+    }
+    
+    /**
+     * Get the first gate pass date for this order
+     */
+    public function getFirstGatePassDateAttribute()
+    {
+        $firstGatePass = $this->gatePasses()->orderBy('release_date', 'asc')->first();
+        return $firstGatePass ? $firstGatePass->release_date : null;
+    }
 }
