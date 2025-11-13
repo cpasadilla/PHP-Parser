@@ -350,17 +350,10 @@ class MasterListController extends Controller
             
             \Log::debug("Processing sub-account #{$subAccount->id} ({$accountType}): {$accountName}, Account Number: {$subAccount->sub_account_number}");
 
-            // Get orders for sub-account based on origin rules
+            // Get orders for sub-account - show all BLs where sub-account is either shipper OR consignee
             $subAccountOrders = Order::where(function ($query) use ($subAccount) {
-                $query->where(function ($subQuery) use ($subAccount) {
-                    // Orders where sub-account is consignee and origin is Manila
-                    $subQuery->where('recId', $subAccount->sub_account_number)
-                             ->where('origin', 'Manila');
-                })->orWhere(function ($subQuery) use ($subAccount) {
-                    // Orders where sub-account is shipper and origin is Batanes
-                    $subQuery->where('shipperId', $subAccount->sub_account_number)
-                             ->where('origin', 'Batanes');
-                });
+                $query->where('recId', $subAccount->sub_account_number)
+                      ->orWhere('shipperId', $subAccount->sub_account_number);
             })->get();
             
             // Log how many orders were found
@@ -370,15 +363,8 @@ class MasterListController extends Controller
             if (!empty($subAccount->company_name) && $subAccountOrders->count() === 0) {
                 // Check both recName and shipperName as string matches for company name
                 $potentialOrders = Order::where(function ($query) use ($subAccount) {
-                    $query->where(function ($subQuery) use ($subAccount) {
-                        // Try to match by company name in recName field
-                        $subQuery->where('recName', 'LIKE', "%{$subAccount->company_name}%")
-                             ->where('origin', 'Manila');
-                    })->orWhere(function ($subQuery) use ($subAccount) {
-                        // Try to match by company name in shipperName field
-                        $subQuery->where('shipperName', 'LIKE', "%{$subAccount->company_name}%")
-                             ->where('origin', 'Batanes');
-                    });
+                    $query->where('recName', 'LIKE', "%{$subAccount->company_name}%")
+                          ->orWhere('shipperName', 'LIKE', "%{$subAccount->company_name}%");
                 })->get();
                 
                 if ($potentialOrders->count() > 0) {
@@ -388,15 +374,17 @@ class MasterListController extends Controller
                     
                     // For each order found by name, update its recId or shipperId to use the correct sub_account_number
                     foreach ($potentialOrders as $order) {
-                        // Determine what to update based on origin
-                        if ($order->origin === 'Manila') {
+                        // Determine what to update based on which field matched
+                        if (stripos($order->recName, $subAccount->company_name) !== false) {
                             \Log::debug("Updating order #{$order->id} to set recId={$subAccount->sub_account_number}");
                             $order->recId = $subAccount->sub_account_number;
-                        } else if ($order->origin === 'Batanes') {
+                            $order->save();
+                        }
+                        if (stripos($order->shipperName, $subAccount->company_name) !== false) {
                             \Log::debug("Updating order #{$order->id} to set shipperId={$subAccount->sub_account_number}");
                             $order->shipperId = $subAccount->sub_account_number;
+                            $order->save();
                         }
-                        $order->save();
                     }
                 }
             }
@@ -405,17 +393,10 @@ class MasterListController extends Controller
             $subAccount->setRelation('orders', $subAccountOrders);
         }
 
-        // Fetch orders for the main account (for backwards compatibility)
+        // Fetch orders for the main account - show all BLs where customer is either shipper OR consignee
         $orders = Order::where(function ($query) use ($customer_id) {
-            $query->where(function ($subQuery) use ($customer_id) {
-                // Orders visible in Consignee account when origin is Manila
-                $subQuery->where('recId', $customer_id)
-                         ->where('origin', 'Manila');
-            })->orWhere(function ($subQuery) use ($customer_id) {
-                // Orders visible in Shipper account when origin is Batanes
-                $subQuery->where('shipperId', $customer_id)
-                         ->where('origin', 'Batanes');
-            });
+            $query->where('recId', $customer_id)
+                  ->orWhere('shipperId', $customer_id);
         })->paginate(10);
 
         // Pass data to the view
@@ -2791,22 +2772,17 @@ class MasterListController extends Controller
         // Get sub-account IDs
         $subAccountIds = $customer->subAccounts->pluck('sub_account_number')->toArray();
         
-        // Get all orders for main customer and sub-accounts with origin-based filtering
+        // Get all orders for main customer and sub-accounts - regardless of origin
+        // Show all BLs where customer is either shipper OR consignee
         $orders = Order::where(function($query) use ($customer_id, $subAccountIds) {
             $query->where(function($q) use ($customer_id, $subAccountIds) {
-                // Orders where they are consignee and origin is Manila
-                $q->where('origin', 'Manila')
-                  ->where(function($sq) use ($customer_id, $subAccountIds) {
-                      $sq->where('recId', $customer_id)
-                         ->orWhereIn('recId', $subAccountIds);
-                  });
+                // Orders where they are consignee
+                $q->where('recId', $customer_id)
+                  ->orWhereIn('recId', $subAccountIds);
             })->orWhere(function($q) use ($customer_id, $subAccountIds) {
-                // Orders where they are shipper and origin is Batanes
-                $q->where('origin', 'Batanes')
-                  ->where(function($sq) use ($customer_id, $subAccountIds) {
-                      $sq->where('shipperId', $customer_id)
-                         ->orWhereIn('shipperId', $subAccountIds);
-                  });
+                // Orders where they are shipper
+                $q->where('shipperId', $customer_id)
+                  ->orWhereIn('shipperId', $subAccountIds);
             });
         })
         ->orderBy('shipNum')
@@ -3002,24 +2978,18 @@ class MasterListController extends Controller
         
         try {
             // Get all orders for this ship/voyage that belong to the customer or their sub-accounts
-            // Use a raw where clause to ensure exact matching regardless of special characters
+            // Show all BLs where customer is either shipper OR consignee, regardless of origin
             $orders = Order::where('shipNum', $ship)
                 ->whereRaw('voyageNum = ?', [$decodedVoyageNum])
                 ->where(function($query) use ($customerId, $subAccountIds) {
                 $query->where(function($q) use ($customerId, $subAccountIds) {
-                    // Orders where they are consignee and origin is Manila
-                    $q->where('origin', 'Manila')
-                      ->where(function($sq) use ($customerId, $subAccountIds) {
-                          $sq->where('recId', $customerId)
-                             ->orWhereIn('recId', $subAccountIds);
-                      });
+                    // Orders where they are consignee
+                    $q->where('recId', $customerId)
+                      ->orWhereIn('recId', $subAccountIds);
                 })->orWhere(function($q) use ($customerId, $subAccountIds) {
-                    // Orders where they are shipper and origin is Batanes
-                    $q->where('origin', 'Batanes')
-                      ->where(function($sq) use ($customerId, $subAccountIds) {
-                          $sq->where('shipperId', $customerId)
-                             ->orWhereIn('shipperId', $subAccountIds);
-                      });
+                    // Orders where they are shipper
+                    $q->where('shipperId', $customerId)
+                      ->orWhereIn('shipperId', $subAccountIds);
                 });
             })
             ->with('parcels') // Include parcels relationship
@@ -3087,24 +3057,18 @@ class MasterListController extends Controller
         
         try {
             // Get all orders for this ship/voyage that belong to the customer or their sub-accounts
-            // Use a raw where clause to ensure exact matching regardless of special characters
+            // Show all BLs where customer is either shipper OR consignee, regardless of origin
             $orders = Order::where('shipNum', $ship)
                 ->whereRaw('voyageNum = ?', [$decodedVoyageNum])
                 ->where(function($query) use ($customerId, $subAccountIds) {
                 $query->where(function($q) use ($customerId, $subAccountIds) {
-                    // Orders where they are consignee and origin is Manila
-                    $q->where('origin', 'Manila')
-                      ->where(function($sq) use ($customerId, $subAccountIds) {
-                          $sq->where('recId', $customerId)
-                             ->orWhereIn('recId', $subAccountIds);
-                      });
+                    // Orders where they are consignee
+                    $q->where('recId', $customerId)
+                      ->orWhereIn('recId', $subAccountIds);
                 })->orWhere(function($q) use ($customerId, $subAccountIds) {
-                    // Orders where they are shipper and origin is Batanes
-                    $q->where('origin', 'Batanes')
-                      ->where(function($sq) use ($customerId, $subAccountIds) {
-                          $sq->where('shipperId', $customerId)
-                             ->orWhereIn('shipperId', $subAccountIds);
-                      });
+                    // Orders where they are shipper
+                    $q->where('shipperId', $customerId)
+                      ->orWhereIn('shipperId', $subAccountIds);
                 });
             })
             ->with('parcels') // Include parcels relationship
