@@ -85,14 +85,14 @@ class GatePassController extends Controller
         $this->checkPermission('create');
 
         $validated = $request->validate([
-            'gate_pass_no' => 'required|string|unique:gate_passes,gate_pass_no',
+            'gate_pass_no' => 'required|string',
             'order_id' => 'required|exists:orders,id',
             'container_number' => 'nullable|string',
             'shipper_name' => 'nullable|string',
             'consignee_name' => 'nullable|string',
             'checker_notes' => 'nullable|string',
-            'checker_name' => 'required|string',
-            'receiver_name' => 'required|string',
+            'checker_name' => 'nullable|string',
+            'receiver_name' => 'nullable|string',
             'release_date' => 'required|date',
             'items' => 'required|array|min:1',
             'items.*.item_description' => 'required|string',
@@ -181,10 +181,10 @@ class GatePassController extends Controller
         $gatePass = GatePass::findOrFail($id);
 
         $validated = $request->validate([
-            'gate_pass_no' => 'required|string|unique:gate_passes,gate_pass_no,' . $id,
+            'gate_pass_no' => 'required|string',
             'checker_notes' => 'nullable|string',
-            'checker_name' => 'required|string',
-            'receiver_name' => 'required|string',
+            'checker_name' => 'nullable|string',
+            'receiver_name' => 'nullable|string',
             'release_date' => 'required|date',
             'items' => 'required|array|min:1',
             'items.*.item_description' => 'required|string',
@@ -281,9 +281,16 @@ class GatePassController extends Controller
     {
         $summary = [];
 
+        // Helper to normalize keys so minor text differences won't break matching
+        $normalizeKey = function ($description, $unit) {
+            $desc = strtolower(trim(preg_replace('/\s+/', ' ', (string) $description)));
+            $unt  = strtolower(trim(preg_replace('/\s+/', ' ', (string) $unit)));
+            return $desc . '|' . $unt;
+        };
+
         // Get all parcels from the order
         foreach ($order->parcels as $parcel) {
-            $key = $parcel->itemName . ' ' . $parcel->unit;
+            $key = $normalizeKey($parcel->itemName, $parcel->unit);
             
             if (!isset($summary[$key])) {
                 $summary[$key] = [
@@ -301,8 +308,18 @@ class GatePassController extends Controller
         // Calculate released quantities from all gate passes
         foreach ($order->gatePasses as $gatePass) {
             foreach ($gatePass->items as $item) {
-                $key = $item->item_description . ' ' . $item->unit;
-                
+                $key = $normalizeKey($item->item_description, $item->unit);
+
+                // If the exact key isn't present due to label differences, try a more lenient match
+                if (!isset($summary[$key])) {
+                    // Attempt fallback: find first matching parcel key with same normalized description regardless of unit
+                    $descOnly = strtolower(trim(preg_replace('/\s+/', ' ', (string) $item->item_description)));
+                    foreach ($summary as $sumKey => $sumRow) {
+                        $sumDescNorm = strtolower(trim(preg_replace('/\s+/', ' ', (string) $sumRow['item_description'])));
+                        if ($sumDescNorm === $descOnly) { $key = $sumKey; break; }
+                    }
+                }
+
                 if (isset($summary[$key])) {
                     $summary[$key]['released_quantity'] += $item->released_quantity;
                 }
@@ -407,10 +424,16 @@ class GatePassController extends Controller
         // Calculate total vs released
         $totalItems = [];
         $releasedItems = [];
+
+        $normalizeKey = function ($description, $unit) {
+            $desc = strtolower(trim(preg_replace('/\s+/', ' ', (string) $description)));
+            $unt  = strtolower(trim(preg_replace('/\s+/', ' ', (string) $unit)));
+            return $desc . '|' . $unt;
+        };
         
         // Get total from parcels
         foreach ($order->parcels as $parcel) {
-            $key = $parcel->itemName . '_' . $parcel->unit;
+            $key = $normalizeKey($parcel->itemName, $parcel->unit);
             if (!isset($totalItems[$key])) {
                 $totalItems[$key] = 0;
             }
@@ -420,11 +443,21 @@ class GatePassController extends Controller
         // Get released from gate passes
         foreach ($order->gatePasses as $gatePass) {
             foreach ($gatePass->items as $item) {
-                $key = $item->item_description . '_' . $item->unit;
+                $key = $normalizeKey($item->item_description, $item->unit);
                 if (!isset($releasedItems[$key])) {
                     $releasedItems[$key] = 0;
                 }
-                $releasedItems[$key] += $item->released_quantity;
+
+                // If no perfect key match exists in totals due to minor differences, try to align by description only
+                if (!array_key_exists($key, $totalItems)) {
+                    $descOnly = strtolower(trim(preg_replace('/\s+/', ' ', (string) $item->item_description)));
+                    foreach (array_keys($totalItems) as $tKey) {
+                        [$tDescNorm] = explode('|', $tKey, 2);
+                        if ($tDescNorm === $descOnly) { $key = $tKey; break; }
+                    }
+                }
+
+                $releasedItems[$key] = ($releasedItems[$key] ?? 0) + $item->released_quantity;
             }
         }
         

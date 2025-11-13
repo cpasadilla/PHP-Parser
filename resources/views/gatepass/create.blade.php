@@ -57,6 +57,14 @@
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Destination</label>
                         <p class="text-lg font-semibold">{{ $order->destination }}</p>
                     </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Ship Number</label>
+                        <p class="text-lg font-semibold">M/V EVERWIN STAR {{ $order->shipNum }}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Voyage</label>
+                        <p class="text-lg font-semibold">{{ $order->voyageNum }}</p>
+                    </div>
                 </div>
             </div>
 
@@ -136,7 +144,7 @@
                         <label class="block text-sm font-medium mb-2">Checker Name <span class="text-red-500">*</span></label>
                         <input type="text" name="checker_name" value="{{ old('checker_name') }}" 
                                class="w-full px-3 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600" 
-                               placeholder="Name of checker" required>
+                               placeholder="Name of checker">
                     </div>
 
                     <!-- Receiver Name -->
@@ -144,7 +152,7 @@
                         <label class="block text-sm font-medium mb-2">Receiver Name <span class="text-red-500">*</span></label>
                         <input type="text" name="receiver_name" value="{{ old('receiver_name') }}" 
                                class="w-full px-3 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600" 
-                               placeholder="Name of receiver" required>
+                               placeholder="Name of receiver">
                     </div>
 
                     <!-- Checker Notes -->

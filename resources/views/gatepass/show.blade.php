@@ -58,6 +58,12 @@
                     <td style="width: 25%; padding: 3px; border-bottom: 1px solid black;">{{ $gatePass->container_number }}</td>
                 </tr>
                 <tr>
+                    <td style="width: 15%; padding: 3px;"><strong>Ship Number:</strong></td>
+                    <td style="width: 20%; padding: 3px; border-bottom: 1px solid black;">M/V EVERWIN STAR {{ $gatePass->order->shipNum }}</td>
+                    <td style="width: 20%; padding: 3px; text-align: right;"><strong>Voyage:</strong></td>
+                    <td style="width: 25%; padding: 3px; border-bottom: 1px solid black;">{{ $gatePass->order->voyageNum }}</td>
+                </tr>
+                <tr>
                     <td style="width: 15%; padding: 3px;"><strong>Shipper:</strong></td>
                     <td style="width: 28%; padding: 3px; border-bottom: 1px solid black;">{{ $gatePass->shipper_name }}</td>
                     <td style="width: 25%; padding: 3px; text-align: right;"><strong>Consignee:</strong></td>

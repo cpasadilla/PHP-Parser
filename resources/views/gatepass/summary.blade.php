@@ -63,6 +63,12 @@
                         <td style="padding: 3px;"><strong>Destination:</strong></td>
                         <td style="padding: 3px;">{{ $order->destination }}</td>
                     </tr>
+                    <tr>
+                        <td style="padding: 3px;"><strong>Ship Number:</strong></td>
+                        <td style="padding: 3px;">M/V EVERWIN STAR {{ $order->shipNum }}</td>
+                        <td style="padding: 3px;"><strong>Voyage:</strong></td>
+                        <td style="padding: 3px;">{{ $order->voyageNum }}</td>
+                    </tr>
                 </table>
             </div>
 

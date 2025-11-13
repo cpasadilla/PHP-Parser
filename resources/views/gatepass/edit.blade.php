@@ -41,6 +41,14 @@
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Consignee</label>
                     <p class="text-lg font-semibold">{{ $gatePass->consignee_name }}</p>
                 </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Ship Number</label>
+                    <p class="text-lg font-semibold">M/V EVERWIN STAR {{ $gatePass->order->shipNum }}</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Voyage</label>
+                    <p class="text-lg font-semibold">{{ $gatePass->order->voyageNum }}</p>
+                </div>
             </div>
         </div>
 
@@ -67,18 +75,18 @@
 
                 <!-- Checker Name -->
                 <div>
-                    <label class="block text-sm font-medium mb-2">Checker Name <span class="text-red-500">*</span></label>
+                    <label class="block text-sm font-medium mb-2">Checker Name</label>
                     <input type="text" name="checker_name" value="{{ old('checker_name', $gatePass->checker_name) }}" 
                            class="w-full px-3 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600" 
-                           placeholder="Name of checker" required>
+                           placeholder="Name of checker">
                 </div>
 
                 <!-- Receiver Name -->
                 <div>
-                    <label class="block text-sm font-medium mb-2">Receiver Name <span class="text-red-500">*</span></label>
+                    <label class="block text-sm font-medium mb-2">Receiver Name</label>
                     <input type="text" name="receiver_name" value="{{ old('receiver_name', $gatePass->receiver_name) }}" 
                            class="w-full px-3 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600" 
-                           placeholder="Name of receiver" required>
+                           placeholder="Name of receiver">
                 </div>
 
                 <!-- Checker Notes -->
@@ -166,15 +174,17 @@
                 <a href="{{ route('gatepass.show', $gatePass->id) }}" class="px-6 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
                     Cancel
                 </a>
-                <form method="POST" action="{{ route('gatepass.destroy', $gatePass->id) }}" class="inline" 
-                      onsubmit="return confirm('Are you sure you want to delete this gate pass?');">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="px-6 py-2 bg-red-500 text-white rounded hover:bg-red-600">
-                        Delete Gate Pass
-                    </button>
-                </form>
             </div>
+        </form>
+
+        <!-- Delete Form (separate from update form) -->
+        <form method="POST" action="{{ route('gatepass.destroy', $gatePass->id) }}" class="mt-4" 
+              onsubmit="return confirm('Are you sure you want to delete this gate pass?');">
+            @csrf
+            @method('DELETE')
+            <button type="submit" class="px-6 py-2 bg-red-500 text-white rounded hover:bg-red-600">
+                Delete Gate Pass
+            </button>
         </form>
     </div>
 
