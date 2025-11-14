@@ -224,7 +224,7 @@
                 <div style="display: flex; justify-content: flex-end; align-items: center; margin: 0; border: 2px solid #000; border-right: 3px solid #000; border-top: none; text-align: right; background-color: #A9D08E;">
                     <p style="margin: 0; line-height: 1; font-size: 14px; display: flex; align-items: center; gap: 6px; padding: 2px 6px;">
                         <strong>SOA NO.:</strong>
-                        <input type="text" id="soaNumberInput" style="border: 1px solid #ccc; height: 20px; padding: 0 6px; padding-right: 50px; width: 120px; font-family: Arial, sans-serif; font-size: 12px; color: red;" placeholder="Enter SOA No." value="{{ $soaNumber ?? '' }}">
+                        <input type="text" id="soaNumberInput" style="border: 1px solid #ccc; height: 15px; padding: 0 6px; padding-right: 50px; width: 120px; font-family: Arial, sans-serif; font-size: 10px; color: red;" placeholder="Enter SOA No." value="{{ $soaNumber ?? '' }}">
                         <span id="soaNumberStatus" style="font-size: 11px; color: green; display: none; margin-left: 6px;">✓ Saved</span>
                         <button type="button" onclick="saveSoaNumber()" style="margin-left: 6px; height: 20px; line-height: 18px; padding: 0 6px; background: #007cba; color: white; border: none; border-radius: 3px; font-size: 10px; cursor: pointer;" title="Save">💾</button>
                     </p>
@@ -377,14 +377,12 @@
                         <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: light; min-height: 12px; display: flex; align-items: center; justify-content: left; padding-bottom: 3px; color: #fff;">.</p>
                         <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: light; min-height: 12px; display: flex; align-items: center; justify-content: left; padding-bottom: 3px; color: #fff;">.</p>
                         <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: light; min-height: 12px; display: flex; align-items: center; justify-content: left; padding-bottom: 2.5px; font-style: italic; ">Attached is photocopy of BL for your reference….</p>
-                        <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: light; min-height: 12px; display: flex; align-items: center; justify-content: left; padding-bottom: 3px; color: #fff;">.</p>
-                        <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: light; border-bottom: 2px solid #000; min-height: 12px; display: flex; align-items: center; justify-content: left; color: #fff;">.</p>
+                        <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: light; border-bottom: 2px solid #000; min-height: 20px; display: flex; align-items: center; justify-content: left; color: #fff;">.</p>
                     </div>
                     <div style="flex: 0 0 50%; box-sizing: border-box; text-align: center; display: flex; flex-direction: column;">
-                        <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: light; border-bottom: 2px solid #000; border-left: 2px solid #000; min-height: 12px; display: flex; align-items: center; justify-content: center; background-color: #A9D08E; font-style: italic;">Signature Over Printed Name</p>
+                        <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: light; border-bottom: 2px solid #000; border-left: 2px solid #000; min-height: 15px; display: flex; align-items: center; justify-content: center; background-color: #A9D08E; font-style: italic;">Signature Over Printed Name</p>
                         <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: bold; border-bottom: 2px solid #000; border-left: 2px solid #000; min-height: 12px; display: flex; align-items: center; justify-content: left; background-color: #A9D08E;">DATE:</p>
-                        <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: bold; border-left: 2px solid #000; min-height: 12px; display: flex; align-items: center; justify-content: center; padding-bottom: 3px;">{{ date('F d, Y') }}</p>
-                        <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: light; border-bottom: 2px solid #000; border-left: 2px solid #000; min-height: 12px; display: flex; align-items: center; justify-content: left; color: #fff;">.</p>
+                        <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: bold; border-bottom: 2px solid #000; border-left: 2px solid #000; min-height: 12px; display: flex; align-items: center; justify-content: center; padding-bottom: 3px;">{{ date('F d, Y') }}</p>
                         <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: light; border-bottom: 2px solid #000; border-left: 2px solid #000; min-height: 12px; display: flex; align-items: center; justify-content: center; font-style: italic; background-color: #A9D08E;">MM / DD / YR</p>
                     </div>
                 </div>
@@ -496,7 +494,7 @@
             printWindow.document.write(`
                 @page {
                     size: A4 landscape;
-                    margin: 0.5in;
+                    margin: 0.2in;
                 }
                 @media print {
                     html, body { 
@@ -510,9 +508,24 @@
                     }
                     .print-container {
                         position: relative;
-                        width: 100%;
+                        width: 297mm;
+                        height: 210mm;
+                        box-sizing: border-box;
+                        padding: 4mm;
                         page-break-after: avoid !important;
                         overflow: hidden !important;
+                        line-height: 0.7 !important;
+                    }
+                    .print-container * {
+                        line-height: 0.9 !important;
+                    }
+                    .print-container p {
+                        line-height: 0.7 !important;
+                        margin: 0 !important;
+                        padding: 1px 5px !important;
+                    }
+                    .print-container div {
+                        min-height: 12px !important;
                     }
                     .main-content {
                         position: relative;
@@ -622,14 +635,26 @@
                     }
                     /* Compact SOA section for print */
                     .print-container div[style*="background-color: #A9D08E"] {
-                        line-height: 0.8 !important;
-                        min-height: 13px !important;
+                        line-height: 0.4 !important;
+                        min-height: 8px !important;
                     }
                     .print-container div[style*="background-color: #A9D08E"] p {
-                        line-height: 0.8 !important;
+                        line-height: 0.4 !important;
                         margin: 0 !important;
                         padding: 1px 5px !important;
-                        font-size: 14px !important;
+                        font-size: 10px !important;
+                    }
+                    .print-container div[style*="background-color: #A9D08E"] input {
+                        font-size: 8px !important;
+                        height: 12px !important;
+                    }
+                    .print-container div[style*="background-color: #A9D08E"] span {
+                        font-size: 9px !important;
+                    }
+                    .print-container div[style*="background-color: #A9D08E"] button {
+                        font-size: 8px !important;
+                        height: 16px !important;
+                        line-height: 14px !important;
                     }
                     #soaNumberStatus { display: none !important; }
                     button[title="Test Save"] { display: none !important; }
