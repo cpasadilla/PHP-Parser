@@ -152,7 +152,7 @@
 
         <!-- Pagination -->
         <div class="mt-6">
-            {{ $gatePasses->links() }}
+            {{ $gatePasses->appends(request()->query())->links() }}
         </div>
     </div>
 </x-app-layout>
