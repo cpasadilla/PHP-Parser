@@ -27,12 +27,12 @@
                 @endphp
                 
                 <div class="border border-gray-300 dark:border-gray-600 rounded-lg p-4 hover:shadow-lg transition-shadow">
-                    <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center justify-between mb-3 cursor-pointer" onclick="toggleVoyages('{{ $shipNum }}')">
                         <h4 class="text-lg font-bold">{{ $shipName }}</h4>
-                        <span class="text-sm text-gray-500">{{ $shipNum }}</span>
+                        <span class="text-sm text-gray-500 hover:text-blue-600">{{ $shipNum }}</span>
                     </div>
                     
-                    <div class="space-y-2">
+                    <div id="voyages-{{ $shipNum }}" class="space-y-2" style="display: none;">
                         <p class="text-sm font-semibold text-gray-700 dark:text-gray-300">Select Voyage:</p>
                         <div class="space-y-1 max-h-60 overflow-y-auto">
                             @foreach($voyages->sortByDesc(function($voyage) { return (int) $voyage->voyageNum; }) as $voyage)
@@ -51,4 +51,15 @@
             @endforelse
         </div>
     </div>
+
+    <script>
+        function toggleVoyages(shipNum) {
+            var voyagesDiv = document.getElementById('voyages-' + shipNum);
+            if (voyagesDiv.style.display === 'none' || voyagesDiv.style.display === '') {
+                voyagesDiv.style.display = 'block';
+            } else {
+                voyagesDiv.style.display = 'none';
+            }
+        }
+    </script>
 </x-app-layout>
