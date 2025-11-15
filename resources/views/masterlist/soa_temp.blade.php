@@ -76,17 +76,17 @@
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700" style="font-family: Arial, sans-serif; font-size: 11px; table-layout: fixed; width: 100%; border: 2px solid #000;">
                         <thead class="bg-gray-100 dark:bg-gray-800" style="font-size: 13px;">
                             <tr>
-                                <th style="width: 5%; border: 2px solid #000; font-size: 13px;" class="px-4 py-2">BL #</th>
-                                <th style="width: 12%; border: 2px solid #000; font-size: 13px;" class="px-4 py-2">CONSIGNEE</th>
-                                <th style="width: 12%; border: 2px solid #000; font-size: 13px;" class="px-4 py-2">SHIPPER</th>
-                                <th style="width: 33%; border: 2px solid #000; font-size: 13px;" class="px-4 py-2">DESCRIPTION</th>
-                                <th style="width: 8%; border: 2px solid #000; font-size: 13px;" class="px-4 py-2">FREIGHT</th>
-                                <th style="width: 8%; border: 2px solid #000; font-size: 13px;" class="px-4 py-2">VALUATION</th>
-                                <th style="width: 8%; border: 2px solid #000; font-size: 13px;" class="px-4 py-2">WHARFAGE</th>
-                                <th style="width: 8%; border: 2px solid #000; font-size: 13px;" class="px-4 py-2">OTHERS FEE</th>
-                                <th style="width: 8%; border: 2px solid #000; font-size: 13px;" class="px-4 py-2">PPA MANILA</th>
-                                <th style="width: 8%; border: 2px solid #000; font-size: 13px;" class="px-4 py-2">TOTAL</th>
-                                <th style="width: 4%; border: 2px solid #000; font-size: 13px;" class="px-2 py-2">&nbsp;</th>
+                                <th style="width: 4%; border: 2px solid #000; font-size: 13px;" class="px-4 py-2 text-center">BL #</th>
+                                <th style="width: 10%; border: 2px solid #000; font-size: 13px;" class="px-4 py-2 text-center">CONSIGNEE</th>
+                                <th style="width: 10%; border: 2px solid #000; font-size: 13px;" class="px-4 py-2 text-center">SHIPPER</th>
+                                <th style="width: 20%; border: 2px solid #000; font-size: 13px;" class="px-4 py-2 text-center">DESCRIPTION</th>
+                                <th style="width: 9%; border: 2px solid #000; font-size: 13px;" class="px-4 py-2 text-center">FREIGHT</th>
+                                <th style="width: 9%; border: 2px solid #000; font-size: 13px;" class="px-4 py-2 text-center">VALUATION</th>
+                                <th style="width: 9%; border: 2px solid #000; font-size: 13px;" class="px-4 py-2 text-center">WHARFAGE</th>
+                                <th style="width: 9%; border: 2px solid #000; font-size: 13px;" class="px-4 py-2 text-center">OTHERS FEE</th>
+                                <th style="width: 9%; border: 2px solid #000; font-size: 13px;" class="px-4 py-2 text-center">PPA MANILA</th>
+                                <th style="width: 9%; border: 2px solid #000; font-size: 13px;" class="px-4 py-2 text-center">TOTAL</th>
+                                <th style="width: 4%; border: 2px solid #000; font-size: 13px;" class="px-2 py-2 text-center">&nbsp;</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -125,9 +125,9 @@
                                 @endphp
                                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 soa-order-row" style="font-family: Arial, sans-serif; font-size: 13px; line-height: 1.2;" data-freight="{{ $order->freight }}" data-valuation="{{ $order->valuation }}" data-wharfage="{{ $order->wharfage ?? 0 }}" data-padlock="{{ $order->padlock_fee ?? 0 }}" data-ppa="{{ $order->ppa_manila ?? 0 }}" data-interest="{{ $interestAmount }}">
                                     <td class="px-4 py-2 text-center" style="word-wrap: break-word; text-align: center; border: 2px solid #000; font-size: 13px;">{{ $order->orderId }}</td>
-                                    <td class="px-4 py-2 text-center" style="word-wrap: break-word; border: 2px solid #000; font-size: 13px;">{{ $order->recName }}</td>
-                                    <td class="px-4 py-2 text-center" style="word-wrap: break-word; border: 2px solid #000; font-size: 13px;">{{ $order->shipperName }}</td>
-                                    <td class="px-4 py-2 text-center" style="word-wrap: break-word; white-space: normal; border: 2px solid #000; font-size: 13px;">
+                                    <td class="px-4 py-2 text-center" style="word-wrap: break-word; border: 2px solid #000; font-size: 10px;">{{ $order->recName }}</td>
+                                    <td class="px-4 py-2 text-center" style="word-wrap: break-word; border: 2px solid #000; font-size: 103px;">{{ $order->shipperName }}</td>
+                                    <td class="px-4 py-2 text-center" style="word-wrap: break-word; white-space: normal; border: 2px solid #000; font-size: 11.5px;">
                                         @php 
                                             $parcelItems = [];
                                             foreach($order->parcels as $parcel) {
@@ -216,12 +216,7 @@
                                 </tr>
                             @endif
                                 <tr id="penaltyInfoRow" class="font-semibold" style="line-height: 0.8; background-color:rgb(231, 15, 22); color: white; font-size: 13px;">
-                                    <td colspan="4" class="px-4 py-1" style="text-align: left; word-wrap: break-word; white-space: normal; color: white; font-size: 13px;">a PENALTY rate of 1% PER MONTH will be applied to total bills if not paid every after 30days</td>
-                                    <td class="px-4 py-1 text-right" style="font-size: 13px;"></td>
-                                    <td class="px-4 py-1 text-right" style="font-size: 13px;"></td>
-                                    <td class="px-4 py-1 text-right" style="font-size: 13px;"></td>
-                                    <td class="px-4 py-1 text-right" style="font-size: 13px;"></td>
-                                    <td class="px-4 py-1 text-right" style="font-size: 13px;"></td>
+                                    <td colspan="9" class="px-4 py-1" style="text-align: left; word-wrap: break-word; white-space: normal; color: white; font-size: 13px;">a PENALTY rate of 1% PER MONTH will be applied to total bills if not paid every after 30days</td>
                                     <td class="px-4 py-1 text-right" style="color: white; font-size: 13px;">
                                         <span id="finalAmount" class="font-bold" style="color: white; font-size: 13px;">
                                             @if($voyageInterest > 0)
@@ -471,7 +466,7 @@
                         border-collapse: collapse; 
                         width: 100%; 
                         font-family: Arial, sans-serif; 
-                        table-layout: auto;
+                        table-layout: fixed;
                         page-break-inside: auto;
                     }
                     thead {
@@ -502,6 +497,13 @@
                     th {
                         font-size: 10px;
                         font-weight: bold;
+                        text-align: center;
+                    }
+                    td.text-center {
+                        text-align: center;
+                    }
+                    td.text-right {
+                        text-align: right;
                     }
                     /* Hide delete button column in print - only in main SOA table */
                     table.min-w-full th:last-child, 
