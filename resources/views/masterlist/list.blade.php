@@ -1847,12 +1847,24 @@
             const aValue = a.cells[columnIndex].textContent.trim().toLowerCase();
             const bValue = b.cells[columnIndex].textContent.trim().toLowerCase();
             
-            // Special handling for the BL column (numeric sort)
+            // Special handling for the BL column (numeric sort with prefix)
             if (column === 'bl') {
-                // Extract numeric parts if they exist
-                const numA = parseInt(aValue.match(/\d+/)) || 0;
-                const numB = parseInt(bValue.match(/\d+/)) || 0;
+                // Extract prefix and numeric parts
+                const matchA = aValue.match(/^([A-Za-z]*\s*)(\d+)$/);
+                const matchB = bValue.match(/^([A-Za-z]*\s*)(\d+)$/);
                 
+                const prefixA = matchA ? matchA[1].trim() : '';
+                const prefixB = matchB ? matchB[1].trim() : '';
+                const numA = matchA ? parseInt(matchA[2]) : 0;
+                const numB = matchB ? parseInt(matchB[2]) : 0;
+                
+                // First compare prefixes
+                const prefixCompare = prefixA.localeCompare(prefixB);
+                if (prefixCompare !== 0) {
+                    return direction === 'asc' ? prefixCompare : -prefixCompare;
+                }
+                
+                // If prefixes are equal, compare numbers
                 return direction === 'asc' ? (numA - numB) : (numB - numA);
             } 
             // For text columns (like shipper and consignee), use localeCompare
