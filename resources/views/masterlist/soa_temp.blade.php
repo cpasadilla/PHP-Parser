@@ -125,8 +125,8 @@
                                 @endphp
                                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 soa-order-row" style="font-family: Arial, sans-serif; font-size: 13px; line-height: 1.2;" data-freight="{{ $order->freight }}" data-valuation="{{ $order->valuation }}" data-wharfage="{{ $order->wharfage ?? 0 }}" data-padlock="{{ $order->padlock_fee ?? 0 }}" data-ppa="{{ $order->ppa_manila ?? 0 }}" data-interest="{{ $interestAmount }}">
                                     <td class="px-4 py-2 text-center" style="word-wrap: break-word; text-align: center; border: 2px solid #000; font-size: 13px;">{{ $order->orderId }}</td>
-                                    <td class="px-4 py-2 text-center" style="word-wrap: break-word; border: 2px solid #000; font-size: 10px;">{{ $order->recName }}</td>
-                                    <td class="px-4 py-2 text-center" style="word-wrap: break-word; border: 2px solid #000; font-size: 103px;">{{ $order->shipperName }}</td>
+                                    <td class="px-4 py-2 text-center" style="word-wrap: break-word; border: 2px solid #000; font-size: 11px;">{{ $order->recName }}</td>
+                                    <td class="px-4 py-2 text-center" style="word-wrap: break-word; border: 2px solid #000; font-size: 11px;">{{ $order->shipperName }}</td>
                                     <td class="px-4 py-2 text-center" style="word-wrap: break-word; white-space: normal; border: 2px solid #000; font-size: 11.5px;">
                                         @php 
                                             $parcelItems = [];
