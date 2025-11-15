@@ -382,7 +382,7 @@
                     <div style="flex: 0 0 50%; box-sizing: border-box; text-align: center; display: flex; flex-direction: column;">
                         <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: light; border-bottom: 2px solid #000; border-left: 2px solid #000; min-height: 15px; display: flex; align-items: center; justify-content: center; background-color: #A9D08E; font-style: italic;">Signature Over Printed Name</p>
                         <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: bold; border-bottom: 2px solid #000; border-left: 2px solid #000; min-height: 12px; display: flex; align-items: center; justify-content: left; background-color: #A9D08E;">DATE:</p>
-                        <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: bold; border-bottom: 2px solid #000; border-left: 2px solid #000; min-height: 12px; display: flex; align-items: center; justify-content: center; padding-bottom: 3px;">{{ date('F d, Y') }}</p>
+                        <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: bold; border-bottom: 2px solid #000; border-left: 2px solid #000; min-height: 12px; display: flex; align-items: center; justify-content: center; padding-bottom: 3px; color: #fff;">.</p>
                         <p style="margin: 0; font-size: 15.5px; padding: 1px 5px; font-weight: light; border-bottom: 2px solid #000; border-left: 2px solid #000; min-height: 12px; display: flex; align-items: center; justify-content: center; font-style: italic; background-color: #A9D08E;">MM / DD / YR</p>
                     </div>
                 </div>
