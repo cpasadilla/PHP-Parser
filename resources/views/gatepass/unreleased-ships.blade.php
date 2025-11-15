@@ -35,7 +35,7 @@
                     <div class="space-y-2">
                         <p class="text-sm font-semibold text-gray-700 dark:text-gray-300">Select Voyage:</p>
                         <div class="space-y-1 max-h-60 overflow-y-auto">
-                            @foreach($voyages as $voyage)
+                            @foreach($voyages->sortByDesc(function($voyage) { return (int) $voyage->voyageNum; }) as $voyage)
                                 <a href="{{ route('gatepass.unreleased.voyage', ['shipNum' => $shipNum, 'voyageNum' => $voyage->voyageNum]) }}" 
                                    class="block px-3 py-2 bg-blue-50 dark:bg-blue-900 hover:bg-blue-100 dark:hover:bg-blue-800 rounded text-blue-700 dark:text-blue-200 text-sm font-medium transition-colors">
                                     Voyage {{ $voyage->voyageNum }} ( {{ strtoupper($voyage->origin) }} - {{ strtoupper($voyage->destination) }} )
