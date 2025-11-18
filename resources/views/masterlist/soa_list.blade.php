@@ -33,7 +33,7 @@
                     <div id="tab-{{ $ship }}" class="hidden">
                         <h3 class="text-lg font-semibold mt-8 mb-4 dark:text-gray-200">Ship: M/V Everwin Star {{ $ship }}</h3>
                         <div class="accordion">
-                            @foreach($voyageGroups as $voyage => $orders)
+                            @foreach($voyageGroups->sortByDesc(fn($orders, $voyage) => (int) $voyage) as $voyage => $orders)
                                 @php
                                     $firstOrder = $orders->first();
                                     $origin = $firstOrder ? $firstOrder->origin : '';
