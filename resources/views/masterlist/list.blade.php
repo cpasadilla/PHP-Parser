@@ -957,7 +957,7 @@
 
     /* Set fixed pixel widths for columns */
     #ordersTable th:nth-child(1), #ordersTable td:nth-child(1) { width: 75px; }  /* BL */
-    #ordersTable th:nth-child(2), #ordersTable td:nth-child(2) { width: 200px; } /* DATE */
+    #ordersTable th:nth-child(2), #ordersTable td:nth-child(2) { width: 150px; } /* DATE */
     #ordersTable th:nth-child(3), #ordersTable td:nth-child(3) { width: 150px; }  /* CONTAINER */
     #ordersTable th:nth-child(4), #ordersTable td:nth-child(4) { width: 150px; } /* CARGO STATUS */
     #ordersTable th:nth-child(5), #ordersTable td:nth-child(5) { width: 230px; } /* SHIPPER */
