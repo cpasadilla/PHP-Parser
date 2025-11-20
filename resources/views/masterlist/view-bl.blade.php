@@ -115,7 +115,7 @@
                         <tr class="border border-gray">
                             <th class="p-2" style="font-family: Arial; font-size: 13px;">QTY</th>
                             <th class="p-2" style="font-family: Arial; font-size: 13px; width: 70px;">UNIT</th>
-                            <th class="p-2" style="font-family: Arial; font-size: 13px;">DESCRIPTION</th>
+                            <th class="p-2 description-column" style="font-family: Arial; font-size: 13px; text-align: left;">DESCRIPTION</th>
                             <th class="p-2" style="font-family: Arial; font-size: 13px;">VALUE</th>
                             <th class="p-2" style="font-family: Arial; font-size: 13px;">WEIGHT</th>
                             <th class="p-2" style="font-family: Arial; font-size: 13px; width: 140px;">MEASUREMENT</th>
@@ -128,7 +128,7 @@
                         <tr class="border-gray" style="border-bottom: 1px solid #cccccc;">
                             <td class="p-2 text-center" style="font-family: Arial; font-size: 13px; text-align: center;">{{$parcel->quantity}}</td>
                             <td class="p-2" style="font-family: Arial; font-size: 13px; text-align: center; width: 70px;">{{$parcel->unit}}</td>
-                            <td class="p-2" style="font-family: Arial; font-size: 13px; text-align: left;">
+                            <td class="p-2 description-column" style="font-family: Arial; font-size: 13px; text-align: left;">
                                 {{$parcel->itemName}}{{ !empty($parcel->desc) ? ' - '.$parcel->desc : '' }}
                             </td>
                             <td class="p-2" style="font-family: Arial; font-size: 13px;"></td>
@@ -409,6 +409,12 @@
                 .border-gray[style*="border-bottom: none"] {
                     border-bottom: none !important;
                 }
+
+                .description-column {
+                    width: 260px !important;
+                    min-width: 260px !important;
+                    text-align: left !important;
+                }
             }
         `);
         printWindow.document.write("</style></head><body>");
@@ -516,6 +522,12 @@
     
     .main-table tr {
         border-bottom: 1px solid #cccccc;
+    }
+
+    .description-column {
+        width: 260px;
+        min-width: 260px;
+        text-align: left;
     }
     
     /* Screen Display */
