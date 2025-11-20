@@ -36,26 +36,8 @@
                     @endif
                 </div>
                 <!-- Title -->
-            <div style="display: flex; justify-content: center; margin-top: 5px; position: relative;">
+            <div style="display: flex; justify-content: center; margin-top: 5px;">
                 <span style="font-family: Arial; font-weight: bold; font-size: 17px;">BILL OF LADING</span>
-                
-                @if($order->gatePasses->count() > 0)
-                    @php
-                        $firstGatePass = $order->gatePasses->sortBy('release_date')->first();
-                        $releaseDate = \Carbon\Carbon::parse($firstGatePass->release_date)->format('M d, Y');
-                    @endphp
-                    <div style="position: absolute; right: 10px; top: -10px; transform: rotate(15deg); 
-                                border: 3px solid #d32f2f; padding: 10px 20px; border-radius: 5px;
-                                background-color: rgba(255, 255, 255, 0.9);">
-                        <div style="font-family: Arial; font-weight: bold; font-size: 18px; color: #d32f2f; 
-                                    text-align: center; letter-spacing: 3px;">
-                            RELEASED
-                        </div>
-                        <div style="font-family: Arial; font-size: 10px; color: #d32f2f; text-align: center; margin-top: 2px;">
-                            {{ $releaseDate }}
-                        </div>
-                    </div>
-                @endif
             </div>
 
             <div style="display: flex; justify-content: right;">
@@ -115,7 +97,7 @@
                         <tr class="border border-gray">
                             <th class="p-2" style="font-family: Arial; font-size: 13px;">QTY</th>
                             <th class="p-2" style="font-family: Arial; font-size: 13px; width: 70px;">UNIT</th>
-                            <th class="p-2 description-column" style="font-family: Arial; font-size: 13px; text-align: left;">DESCRIPTION</th>
+                            <th class="p-2 description-col" style="font-family: Arial; font-size: 13px;">DESCRIPTION</th>
                             <th class="p-2" style="font-family: Arial; font-size: 13px;">VALUE</th>
                             <th class="p-2" style="font-family: Arial; font-size: 13px;">WEIGHT</th>
                             <th class="p-2" style="font-family: Arial; font-size: 13px; width: 140px;">MEASUREMENT</th>
@@ -128,7 +110,7 @@
                         <tr class="border-gray" style="border-bottom: 1px solid #cccccc;">
                             <td class="p-2 text-center" style="font-family: Arial; font-size: 13px; text-align: center;">{{$parcel->quantity}}</td>
                             <td class="p-2" style="font-family: Arial; font-size: 13px; text-align: center; width: 70px;">{{$parcel->unit}}</td>
-                            <td class="p-2 description-column" style="font-family: Arial; font-size: 13px; text-align: left;">
+                                <td class="p-2 description-col" style="font-family: Arial; font-size: 13px; text-align: left;">
                                 {{$parcel->itemName}}{{ !empty($parcel->desc) ? ' - '.$parcel->desc : '' }}
                             </td>
                             <td class="p-2" style="font-family: Arial; font-size: 13px;"></td>
@@ -137,10 +119,10 @@
                                     {{$parcel->weight}}
                                 @endif
                             </td>
-                            <td class="p-2" style="font-family: Arial; font-size: 13px;  width: 150px;">
+                            <td class="p-2" style="font-family: Arial; font-size: 13px; width: 150px;">
                                 @if (!empty($parcel->measurements) && is_array($parcel->measurements))
                                     @foreach($parcel->measurements as $measurement)
-                                        {{$measurement['length']}} × {{$measurement['width']}} × {{$measurement['height']}} ({{$measurement['quantity']}})<br>
+                                        {{is_array($measurement) ? $measurement['length'] : $measurement->length}} × {{is_array($measurement) ? $measurement['width'] : $measurement->width}} × {{is_array($measurement) ? $measurement['height'] : $measurement->height}} ({{is_array($measurement) ? $measurement['quantity'] : $measurement->quantity}})<br>
                                     @endforeach
                                 @elseif (!empty($parcel->length) && !empty($parcel->width) && !empty($parcel->height) && 
                                     $parcel->length != '0' && $parcel->length != '0.00' && 
@@ -150,22 +132,10 @@
                                 @endif
                             </td>
                             <td class="p-2" style="font-family: Arial; font-size: 13px; text-align: right; width: 100px;">
-                                @if (!empty($parcel->measurements) && is_array($parcel->measurements))
-                                    @foreach($parcel->measurements as $measurement)
-                                        {{ number_format(is_array($measurement) ? $measurement['rate'] : $measurement->rate, 2) }}<br>
-                                    @endforeach
-                                @else
-                                    {{ number_format($parcel->itemPrice, 2) }}
-                                @endif
+                                <!-- RATE column - kept blank -->
                             </td>
                             <td class="p-2" style="font-family: Arial; font-size: 13px; text-align: right; width: 100px;">
-                                @if (!empty($parcel->measurements) && is_array($parcel->measurements))
-                                    @foreach($parcel->measurements as $measurement)
-                                        {{ number_format(is_array($measurement) ? $measurement['freight'] : $measurement->freight, 2) }}<br>
-                                    @endforeach
-                                @else
-                                    {{ number_format($parcel->total, 2) }}
-                                @endif
+                                <!-- FREIGHT column - kept blank -->
                             </td>
                         </tr>
                         @endforeach
@@ -176,23 +146,27 @@
                             <td class="p-2" style="font-family: Arial; font-weight: bold; font-size: 13px; height: 30px;">VALUE: {{ number_format($order->value, 2) }}</td>
                             <td class="p-2"></td>
                             <td class="p-2"></td>
-                            <td class="p-2" style="font-family: Arial; font-weight: bold; font-size: 13px; text-align: right; height: 30px;">₱</td>
-                            <td class="p-2" style="font-family: Arial; font-weight: bold; font-size: 13px; text-align: right; height: 30px;">{{ number_format($order->freight, 2) }}</td>
+                            <td class="p-2" style="font-family: Arial; font-weight: bold; font-size: 13px; text-align: right; height: 30px;">
+                                <!-- VALUATION column - kept blank -->
+                            </td>
+                            <td class="p-2" style="font-family: Arial; font-weight: bold; font-size: 13px; text-align: right; height: 30px;">
+                                <!-- WHARFAGE column - kept blank -->
+                            </td>
+                        </tr>
+                        <tr class="border-gray" style="border-bottom: none;">
+                            <td class="p-2"></td>
+                            <td class="p-2"></td>
+                            <td class="p-2"></td>
+                            <td class="p-2"></td>
+                            <td class="p-2"></td>
+                            <td class="p-2"></td>
+                            <td class="p-2" style="font-family: Arial; font-weight: bold; font-size: 13px; text-align: right; height: 30px;">TOTAL:</td>
+                            <td class="p-2" style="font-family: Arial; font-weight: bold; font-size: 13px; text-align: right; height: 30px;">
+                                <!-- TOTAL column - kept blank -->
+                            </td>
                         </tr>
                     </tbody>
                 </table>
-                @if($order->blStatus === 'PAID')
-                    <div class="paid-stamp" style="position: absolute; bottom: 210px; right: 10px; color: red; border: 3px solid rgb(128, 0, 0); color: rgb(128, 0, 0); font-size: 16px; font-weight: bold; font-family: 'Bebas Neue', sans-serif; padding: 5px; text-align: center; background-color: none; z-index: 1000; width: 220px; height: 50px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-                        <span>PAID IN {{ strtoupper($order->display_updated_location ?? $order->updated_location ?? '') }}</span>
-                        @if(!empty($order->AR) && !empty($order->OR))
-                            <span>OR#: {{ $order->OR }} | AR#: {{ $order->AR }}</span>
-                        @elseif(!empty($order->AR))
-                            <span>AR#: {{ $order->AR }}</span>
-                        @elseif(!empty($order->OR))
-                            <span>OR#: {{ $order->OR }}</span>
-                        @endif
-                    </div>
-                @endif
 
                 <script>
                     function removePaddingForPrint() {
@@ -208,7 +182,7 @@
                 </script>
             </div>
             <footer style="margin-top: auto;">
-                <!-- Your existing footer content here -->
+                <!-- Terms and Conditions -->
                 <table class="w-full text-xs border-collapse">
                     <tr>
                         <td colspan="6" style="text-align: left; font-family: Arial; font-size: 12px; font-weight: bold; padding: 2px;">Terms and Conditions:</td>
@@ -227,13 +201,17 @@
                         <td style="width: 50%;"></td> <!-- Adjusted size -->
                         <td style="width: 20%;">
                         <td style="width: 15%;  text-align: left; font-family: Arial; font-size: 12px;">Freight:</td>
-                        <td style="width: 25%; border-bottom: 1px solid black; font-family: Arial; font-size: 12px;  text-align: center;">{{ number_format($order->freight, 2) }}</td>
+                        <td style="width: 25%; border-bottom: 1px solid black; font-family: Arial; font-size: 12px;  text-align: center;">
+                            <!-- FREIGHT kept blank -->
+                        </td>
                     </tr>
                     <tr>
                         <td style="text-align: center; font-family: Arial; font-size: 12px;">Received on board vessel in apparent good condition.</td>
                         <td></td>
                         <td style="text-align: left; font-family: Arial; font-size: 12px;">Valuation:</td>
-                        <td style="border-bottom: 1px solid black; font-family: Arial; font-size: 12px;  text-align: center;">{{ number_format($order->valuation, 2) }}</td>
+                        <td style="border-bottom: 1px solid black; font-family: Arial; font-size: 12px;  text-align: center;">
+                            <!-- VALUATION kept blank -->
+                        </td>
                     </tr>
                     <tr>
                         <td></td>
@@ -242,35 +220,39 @@
                             Wharfage:
                         </td>
                         <td style="border-bottom: 1px solid black; font-family: Arial; font-size: 12px; text-align: center;">
-                            {{ $order->wharfage != 0 ? number_format($order->wharfage, 2) : '' }}
+                            <!-- WHARFAGE kept blank -->
                         </td>
                     </tr>
                     <tr>
                     <td style="text-align: center; font-family: Arial; font-size: 14px; font-weight: bold; border-bottom: 1px solid black;">{{$order->checkName}} </td>
                         <td></td>
                         <td style="text-align: left; font-family: Arial; font-size: 12px;">VAT:</td>
-                        <td style="border-bottom: 1px solid black; text-align: center;"></td>
+                        <td style="border-bottom: 1px solid black; text-align: center;">
+                            <!-- VAT kept blank -->
+                        </td>
                     </tr>
                     <tr>
                         <td style="text-align: center; font-family: Arial; font-size: 12px;">Vessel's Checker or Authorized Representative</td>
                         <td></td>
                         <td style="text-align: left; font-family: Arial; font-size: 12px;">Other Charges:</td>
                         <td style="border-bottom: 1px solid black; font-family: Arial; font-size: 12px; text-align: center;">
-                            {{ $order->other != 0 ? number_format($order->other, 2) : '' }}
+                            <!-- OTHER CHARGES kept blank -->
                         </td>
                     </tr>
                     <tr>
                         <td></td>
                         <td></td>
                         <td style="text-align: left; font-family: Arial; font-size: 12px;">Stuffing/Stippings:</td>
-                        <td style="border-bottom: 1px solid black; text-align: center;"> </td>
+                        <td style="border-bottom: 1px solid black; text-align: center;">
+                            <!-- STUFFING/STRIPINGS kept blank -->
+                        </td>
                     </tr>
                     <tr>
                         <td></td>
                         <td></td>
                         <td style="text-align: left; font-family: Arial; font-size: 12px; font-weight: bold; color: black;">TOTAL:</td>
                         <td style="border-bottom: 1px solid black; font-family: Arial; font-size: 14px; font-weight: bold;  text-align: center; color: black;">
-                            {{ number_format($order->totalAmount, 2) }}
+                            <!-- TOTAL kept blank -->
                         </td>
                     </tr>
                 </table>
@@ -283,13 +265,6 @@
     function printContent(divId) {
         console.log("printContent function called");
         var printContainer = document.getElementById(divId);
-        // Save original padding-bottom of the main content div so we can restore it after print
-        var originalPaddingBottom = '';
-        var mainContentDiv = null;
-        if (printContainer) {
-            mainContentDiv = printContainer.querySelector('div');
-            originalPaddingBottom = mainContentDiv ? (mainContentDiv.style.paddingBottom || window.getComputedStyle(mainContentDiv).paddingBottom) : '';
-        }
         if (!printContainer) {
             console.error("Print container not found");
             return;
@@ -347,10 +322,8 @@
         // Filter out null values
         replacedElements = replacedElements.filter(element => element !== null);
 
-            // initial visual short-footer state will be set after printWindow detects actual print fit
-
-            // Get updated print content (include wrapper so styles apply to #printContainer)
-            var printContents = printContainer.outerHTML;
+        // Get updated print content
+        var printContents = printContainer.innerHTML;
 
         // Open new print window
         var printWindow = window.open("", "", "width=1000,height=800");
@@ -362,7 +335,7 @@
                 size: auto;
             }
             
-                @media print {
+            @media print {
                 body { 
                     -webkit-print-color-adjust: exact; 
                     print-color-adjust: exact; 
@@ -375,15 +348,16 @@
                     min-height: 11in; 
                     margin: 0;
                     padding: 0;
-                    display: flex;
-                    flex-direction: column;
                 }
                 img { display: block !important; margin: 0 auto; }
-                /* placeholder for footer css: will be updated dynamically in onload */
-                footer { margin-top: auto; flex-shrink: 0; page-break-inside: avoid; }
+                footer { position: absolute; bottom: 0; left: 0; width: 100%; }
                 table { border-collapse: collapse; width: 100%; }
                 thead { background-color: {{ $headerColor }} !important; color: white !important; }
                 button { display: none; }
+                .description-col {
+                    width: 35% !important;
+                    text-align: left !important;
+                }
                 
                 /* Paid stamp print styles */
                 .paid-stamp {
@@ -421,12 +395,6 @@
                 .border-gray[style*="border-bottom: none"] {
                     border-bottom: none !important;
                 }
-
-                .description-column {
-                    width: 260px !important;
-                    min-width: 260px !important;
-                    text-align: left !important;
-                }
             }
         `);
         printWindow.document.write("</style></head><body>");
@@ -439,63 +407,6 @@
         printWindow.onload = function () {
             // Add a small delay to ensure content is fully loaded
             setTimeout(function() {
-                // Determine whether the footer fits on the first page along with the main content
-                try {
-                    var pageHeight = printWindow.innerHeight || printWindow.document.documentElement.clientHeight;
-                    var footerEl = printWindow.document.querySelector('footer');
-                    var footerHeight = footerEl ? footerEl.getBoundingClientRect().height : 0;
-                    var footerTop = footerEl ? footerEl.getBoundingClientRect().top : 0;
-                    var mainTableEl = printWindow.document.querySelector('.main-table');
-                    var mainTableBottom = mainTableEl ? mainTableEl.getBoundingClientRect().bottom : 0;
-
-                    // Ensure the footer and the main table fit in the first page (not solely based on footer position)
-                    var fitsOnFirstPage = false;
-                    if (mainTableEl) {
-                        fitsOnFirstPage = (mainTableBottom + footerHeight) <= pageHeight;
-                    } else {
-                        fitsOnFirstPage = (footerTop + footerHeight) <= pageHeight;
-                    }
-                    // Prepare style element to apply to printWindow
-                    var styleEl = printWindow.document.createElement('style');
-                    styleEl.id = 'print-footer-style';
-                    if (fitsOnFirstPage) {
-                        // Keep footer fixed at bottom of page and add padding so content does not overlap
-                        var paddingBottomPx = Math.ceil(footerHeight + 8); // add a small gap
-                        styleEl.innerHTML = 'footer { position: fixed; bottom: 0; left: 0; width: 100%; } #printContainer { min-height: auto !important; padding-bottom: ' + paddingBottomPx + 'px !important; }';
-                        // Add short-footer visual class on the original container for consistent screen preview
-                        try {
-                            if (printContainer && !printContainer.classList.contains('short-footer')) {
-                                printContainer.classList.add('short-footer');
-                            }
-                            // also set main content padding-bottom to match the computed footer height (for accurate preview)
-                            if (printContainer) {
-                                const mainContentDiv = printContainer.querySelector('div');
-                                if (mainContentDiv) mainContentDiv.style.paddingBottom = paddingBottomPx + 'px';
-                            }
-                        } catch (e) {
-                            console.log('Error adding short-footer class to parent:', e);
-                        }
-                    } else {
-                        // Force footer into its own last page instead of displaying earlier
-                        styleEl.innerHTML = 'footer { page-break-before: always; page-break-inside: avoid; } #printContainer { padding-bottom: 0 !important; }';
-                        // Remove any short-footer visual class on the original container and restore padding
-                        try {
-                            if (printContainer && printContainer.classList.contains('short-footer')) {
-                                printContainer.classList.remove('short-footer');
-                            }
-                            if (printContainer) {
-                                const mainContentDiv = printContainer.querySelector('div');
-                                if (mainContentDiv) mainContentDiv.style.paddingBottom = originalPaddingBottom;
-                            }
-                        } catch (e) {
-                            console.log('Error removing short-footer class on parent:', e);
-                        }
-                    }
-                    printWindow.document.head.appendChild(styleEl);
-                } catch (e) {
-                    console.log('Error calculating footer fit in printWindow:', e);
-                }
-
                 printWindow.print();
                 
                 // Use a different approach - don't auto-close, let user close manually
@@ -511,39 +422,7 @@
                         }
                     });
                 });
-                // When user finishes printing (supported in many browsers), clean up and restore
-                printWindow.onafterprint = function () {
-                    // Restore elements
-                    replacedElements.forEach(({ originalElement, newElement }) => {
-                        if (newElement && newElement.parentNode) {
-                            try {
-                                newElement.parentNode.replaceChild(originalElement, newElement);
-                            } catch (e) {
-                                console.log("Element already restored or not found");
-                            }
-                        }
-                    });
-
-                    // Remove short-footer class on the original container
-                    try {
-                        if (printContainer && printContainer.classList.contains('short-footer')) {
-                            printContainer.classList.remove('short-footer');
-                        }
-                        // restore original padding-bottom
-                        try {
-                            if (mainContentDiv) {
-                                mainContentDiv.style.paddingBottom = originalPaddingBottom;
-                            }
-                        } catch (e) {
-                            console.log('Error restoring padding-bottom on parent:', e);
-                        }
-                    } catch (e) {
-                        console.log('Error removing short-footer class:', e);
-                    }
-                };
                 
-                // NOTE: page-count-based footer style injection removed - handled above based on footer fit logic
-
                 // Alternative: Use media query change detection
                 const mediaQueryList = printWindow.matchMedia('print');
                 mediaQueryList.addListener(function(mql) {
@@ -566,17 +445,6 @@
                         }, 1000);
                     }
                 });
-                // Also remove preview changes to original container
-                try {
-                    if (printContainer && printContainer.classList.contains('short-footer')) {
-                        printContainer.classList.remove('short-footer');
-                    }
-                    if (mainContentDiv) {
-                        mainContentDiv.style.paddingBottom = originalPaddingBottom;
-                    }
-                } catch (e) {
-                    console.log('Error cleaning up original container on beforeunload:', e);
-                }
                 
             }, 500); // 500ms delay to ensure content is ready
         };
@@ -601,28 +469,6 @@
         box-sizing: border-box;
         background: white;
         position: relative;
-        display: flex;
-        flex-direction: column;
-    }
-
-    footer {
-        margin-top: auto;
-        flex-shrink: 0;
-        page-break-inside: avoid;
-    }
-
-    /* Keep footer fixed at bottom for short content */
-    .short-footer footer {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        z-index: 50;
-    }
-
-    /* When footer is fixed we add bottom padding so it doesn't overlap content */
-    .short-footer > div:first-of-type {
-        padding-bottom: 3in; /* room for footer on print and screen; 3in to be safe for tall footers */
     }
 
     /* Table Layout */
@@ -631,6 +477,11 @@
         border-collapse: collapse;
         border-spacing: 0;
         max-width: 7.5in;
+    }
+
+    .description-col {
+        width: 35%;
+        text-align: left;
     }
 
     /* Reduce Row Height */
@@ -656,12 +507,6 @@
     
     .main-table tr {
         border-bottom: 1px solid #cccccc;
-    }
-
-    .description-column {
-        width: 260px;
-        min-width: 260px;
-        text-align: left;
     }
     
     /* Screen Display */
