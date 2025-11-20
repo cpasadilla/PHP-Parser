@@ -97,7 +97,7 @@
                         <tr class="border border-gray">
                             <th class="p-2" style="font-family: Arial; font-size: 13px;">QTY</th>
                             <th class="p-2" style="font-family: Arial; font-size: 13px; width: 70px;">UNIT</th>
-                            <th class="p-2" style="font-family: Arial; font-size: 13px;">DESCRIPTION</th>
+                            <th class="p-2 description-col" style="font-family: Arial; font-size: 13px;">DESCRIPTION</th>
                             <th class="p-2" style="font-family: Arial; font-size: 13px;">VALUE</th>
                             <th class="p-2" style="font-family: Arial; font-size: 13px;">WEIGHT</th>
                             <th class="p-2" style="font-family: Arial; font-size: 13px; width: 140px;">MEASUREMENT</th>
@@ -110,7 +110,7 @@
                         <tr class="border-gray" style="border-bottom: 1px solid #cccccc;">
                             <td class="p-2 text-center" style="font-family: Arial; font-size: 13px; text-align: center;">{{$parcel->quantity}}</td>
                             <td class="p-2" style="font-family: Arial; font-size: 13px; text-align: center; width: 70px;">{{$parcel->unit}}</td>
-                            <td class="p-2" style="font-family: Arial; font-size: 13px; text-align: left;">
+                                <td class="p-2 description-col" style="font-family: Arial; font-size: 13px; text-align: left;">
                                 {{$parcel->itemName}}{{ !empty($parcel->desc) ? ' - '.$parcel->desc : '' }}
                             </td>
                             <td class="p-2" style="font-family: Arial; font-size: 13px;"></td>
@@ -354,6 +354,10 @@
                 table { border-collapse: collapse; width: 100%; }
                 thead { background-color: {{ $headerColor }} !important; color: white !important; }
                 button { display: none; }
+                .description-col {
+                    width: 35% !important;
+                    text-align: left !important;
+                }
                 
                 /* Paid stamp print styles */
                 .paid-stamp {
@@ -473,6 +477,11 @@
         border-collapse: collapse;
         border-spacing: 0;
         max-width: 7.5in;
+    }
+
+    .description-col {
+        width: 35%;
+        text-align: left;
     }
 
     /* Reduce Row Height */
