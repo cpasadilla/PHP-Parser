@@ -560,7 +560,22 @@
                             <td class="p-2" data-column="dp">{{ ($order->display_or_ar_date ?? $order->or_ar_date) ? \Carbon\Carbon::parse($order->display_or_ar_date ?? $order->or_ar_date)->setTimezone('Asia/Manila')->format('F d, Y h:i A') : ' ' }}</td>
                             <td class="p-2" data-column="updated_by">{{ $order->display_updated_by ?? $order->updated_by ?? ' ' }}</td>
                             <td class="p-2" data-column="updated_location">{{ $order->display_updated_location ?? $order->updated_location ?? ' ' }}</td>
-                            <td class="p-2" data-column="bl_status">{{ $order->blStatus }}</td>
+                            <td class="p-2 text-center" data-column="bl_status">
+                                @php
+                                    if (strtoupper(trim($order->blStatus)) === 'PAID') {
+                                        $blStatusText = 'PAID';
+                                        $blStatusColor = '#4CAF50';
+                                        $blTextColor = 'white';
+                                    } else {
+                                        $blStatusText = 'UNPAID';
+                                        $blStatusColor = '#f44336';
+                                        $blTextColor = 'white';
+                                    }
+                                @endphp
+                                <span style="background-color: {{ $blStatusColor }}; color: {{ $blTextColor }}; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; display: inline-block; white-space: nowrap;">
+                                    {{ $blStatusText }}
+                                </span>
+                            </td>
                             <td class="p-2 remark-cell" data-column="bl_remark">
                                 @if(Auth::user()->hasSubpagePermission('masterlist', 'list', 'edit'))
                                 <textarea 
