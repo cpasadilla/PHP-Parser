@@ -14,6 +14,9 @@
         <!-- SEARCH FORM -->
         <form method="GET" class="w-full max-w-xl">
             <div class="flex">
+                <input type="hidden" name="sort" value="{{ request('sort') }}">
+                <input type="hidden" name="direction" value="{{ request('direction') }}">
+                <input type="hidden" name="per_page" value="{{ request('per_page', 10) }}">
                 <input type="text" name="search" placeholder="Search by Customer ID, First Name, Last Name"
                     class="w-full px-4 py-2 border rounded-l-md focus:ring focus:ring-indigo-200 dark:bg-gray-800 dark:text-white">
                 <button type="submit" class="px-4 py-2 text-white bg-emerald-500 rounded-r-md hover:bg-emerald-700">
@@ -161,6 +164,34 @@
         </div>
     @endif
 
+    <!-- Pagination Controls -->
+    <div class="flex justify-between items-center mb-4">
+        <div class="flex items-center space-x-2">
+            <span class="text-sm text-gray-700 dark:text-gray-300">Show:</span>
+            <form method="GET" class="inline">
+                <!-- Preserve current parameters -->
+                <input type="hidden" name="search" value="{{ request('search') }}">
+                <input type="hidden" name="sort" value="{{ request('sort') }}">
+                <input type="hidden" name="direction" value="{{ request('direction') }}">
+                
+                <select name="per_page" onchange="this.form.submit()" 
+                        class="px-3 py-1 border rounded-md text-sm bg-white dark:bg-gray-800 dark:text-white dark:border-gray-600 focus:ring focus:ring-indigo-200">
+                    <option value="10" {{ request('per_page', 10) == 10 ? 'selected' : '' }}>10</option>
+                    <option value="15" {{ request('per_page', 10) == 15 ? 'selected' : '' }}>15</option>
+                    <option value="25" {{ request('per_page', 10) == 25 ? 'selected' : '' }}>25</option>
+                    <option value="50" {{ request('per_page', 10) == 50 ? 'selected' : '' }}>50</option>
+                    <option value="75" {{ request('per_page', 10) == 75 ? 'selected' : '' }}>75</option>
+                    <option value="100" {{ request('per_page', 10) == 100 ? 'selected' : '' }}>100</option>
+                </select>
+            </form>
+            <span class="text-sm text-gray-700 dark:text-gray-300">entries per page</span>
+        </div>
+        
+        <div class="text-sm text-gray-700 dark:text-gray-300">
+            Showing {{ $customer->firstItem() ?? 0 }} to {{ $customer->lastItem() ?? 0 }} of {{ $customer->total() }} results
+        </div>
+    </div>
+
     <!-- Main Accounts Table -->
     <div class="p-6 bg-white rounded-md shadow-md dark:bg-dark-eval-1">
         <div class="card-header">
@@ -172,7 +203,7 @@
                 <tr>
                     <th class="p-2 text-black-700 dark:text-white-700">CUSTOMER ID</th>
                     <th class="p-2 text-black-700 dark:text-white-700">
-                        <a href="{{ route('customer', ['sort' => 'first_name', 'direction' => (request('sort') == 'first_name' && request('direction') == 'asc') ? 'desc' : 'asc', 'search' => request('search')]) }}" class="flex items-center justify-center">
+                        <a href="{{ route('customer', ['sort' => 'first_name', 'direction' => (request('sort') == 'first_name' && request('direction') == 'asc') ? 'desc' : 'asc', 'search' => request('search'), 'per_page' => request('per_page', 10)]) }}" class="flex items-center justify-center">
                             FIRST NAME
                             @if(request('sort') == 'first_name')
                                 <span class="ml-1">
@@ -186,7 +217,7 @@
                         </a>
                     </th>
                     <th class="p-2 text-black-700 dark:text-white-700">
-                        <a href="{{ route('customer', ['sort' => 'last_name', 'direction' => (request('sort') == 'last_name' && request('direction') == 'asc') ? 'desc' : 'asc', 'search' => request('search')]) }}" class="flex items-center justify-center">
+                        <a href="{{ route('customer', ['sort' => 'last_name', 'direction' => (request('sort') == 'last_name' && request('direction') == 'asc') ? 'desc' : 'asc', 'search' => request('search'), 'per_page' => request('per_page', 10)]) }}" class="flex items-center justify-center">
                             LAST NAME
                             @if(request('sort') == 'last_name')
                                 <span class="ml-1">
@@ -200,7 +231,7 @@
                         </a>
                     </th>
                     <th class="p-2 text-black-700 dark:text-white-700">
-                        <a href="{{ route('customer', ['sort' => 'company_name', 'direction' => (request('sort') == 'company_name' && request('direction') == 'asc') ? 'desc' : 'asc', 'search' => request('search')]) }}" class="flex items-center justify-center">
+                        <a href="{{ route('customer', ['sort' => 'company_name', 'direction' => (request('sort') == 'company_name' && request('direction') == 'asc') ? 'desc' : 'asc', 'search' => request('search'), 'per_page' => request('per_page', 10)]) }}" class="flex items-center justify-center">
                             COMPANY NAME
                             @if(request('sort') == 'company_name')
                                 <span class="ml-1">

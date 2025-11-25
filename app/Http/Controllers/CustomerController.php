@@ -69,10 +69,12 @@ class CustomerController extends Controller {
         $customerQuery->orderBy($sortColumn, $sortDirection);
         $subAccountQuery->orderBy($sortColumn, $sortDirection);
 
-        // Paginate results (10 per page)
-        $perPage = 10;
-        $customers = $customerQuery->paginate($perPage)->appends($request->only(['search', 'sort', 'direction']));
-        $subAccounts = $subAccountQuery->paginate($perPage)->appends($request->only(['search', 'sort', 'direction']));
+        // Get per_page parameter with default value of 10
+        $perPage = $request->input('per_page', 10);
+        
+        // Paginate results
+        $customers = $customerQuery->paginate($perPage)->appends($request->only(['search', 'sort', 'direction', 'per_page']));
+        $subAccounts = $subAccountQuery->paginate($perPage)->appends($request->only(['search', 'sort', 'direction', 'per_page']));
 
         // Check if both customers and sub-accounts are empty
         if ($customers->isEmpty() && $subAccounts->isEmpty()) {
@@ -582,8 +584,8 @@ class CustomerController extends Controller {
             $skipWharfage = true;
             $wharfage = 0;
         } else {
-            // Check if parcels are only GROCERIES
-            $onlyGroceries = true;
+            // Check if any parcel is GROCERIES
+            $hasGroceries = false;
             $hasItems = false;
             $hasGM019orGM020 = false;
             
@@ -591,9 +593,9 @@ class CustomerController extends Controller {
             if ($cart) {
                 $hasItems = count($cart) > 0;
                 foreach ($cart as $item) {
-                    // Check if item is not GROCERIES
-                    if (($item->category ?? '') != 'GROCERIES') {
-                        $onlyGroceries = false;
+                    // Check if any item is GROCERIES
+                    if (($item->category ?? '') == 'GROCERIES') {
+                        $hasGroceries = true;
                     }
                     
                     // Check if the item is GM-019 or GM-020 (safely check if item_code property exists)
@@ -612,8 +614,8 @@ class CustomerController extends Controller {
             if (($value <= 0 && $freight <= 0) || $skipWharfage) {
                 $wharfage = 0;
             } else {
-                // Use GROCERIES formula ONLY if all items are groceries and cart is not empty
-                if ($onlyGroceries && $hasItems) {
+                // Use GROCERIES formula if the cart contains any groceries and the cart is not empty
+                if ($hasGroceries && $hasItems) {
                     $wharfage = $freight / 800 * 23;
                 } else {
                     $wharfage = $freight / 1200 * 23;
