@@ -1967,8 +1967,18 @@ class MasterListController extends Controller
             if ($skipWharfage) {
                 $wharfage = 0;
             } else {
-                // Use formula: FREIGHT / 1200 * 23, min 11.20, if freight is zero then 11.20
-                $wharfage = ($freight > 0) ? ($freight / 1200 * 23) : 11.20;
+                // Check if all parcels are GROCERIES
+                $parcels = Parcel::where('orderId', $order->id)->get();
+                $itemCodes = $parcels->pluck('itemId');
+                $pricelists = PriceList::whereIn('item_code', $itemCodes)->get()->keyBy('item_code');
+                $allGroceries = $parcels->isNotEmpty() && $parcels->every(function($parcel) use ($pricelists) {
+                    $pricelist = $pricelists->get($parcel->itemId);
+                    return $pricelist && strtoupper($pricelist->category ?? '') === 'GROCERIES';
+                });
+                $divisor = $allGroceries ? 800 : 1200;
+                
+                // Use formula: FREIGHT / divisor * 23, min 11.20, if freight is zero then 11.20
+                $wharfage = ($freight > 0) ? ($freight / $divisor * 23) : 11.20;
                 if ($wharfage > 0 && $wharfage < 11.20) {
                     $wharfage = 11.20;
                 }
