@@ -2851,6 +2851,7 @@
             });
 
             updateDescriptionFilter();
+            calculateTotals();
         }
 
         // Function to update the "DESCRIPTION" filter dropdown dynamically
