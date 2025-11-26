@@ -12,6 +12,11 @@ class parcel extends Model
         return $this->belongsTo(Order::class, 'orderId', 'id');
     }
 
+    public function pricelist()
+    {
+        return $this->belongsTo(PriceList::class, 'itemId', 'item_code');
+    }
+
     protected $fillable = [
         'orderId',
         'itemId',

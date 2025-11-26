@@ -289,6 +289,36 @@ class MasterListController extends Controller
             'uniqueUpdatedBy' => $orders->pluck('display_updated_by')->filter()->unique()->sort()->values(),
         ];
         
+        // Get parcels with pricelist for categories
+        $parcels = Parcel::with(['pricelist' => function($query) {
+            $query->select('id', 'item_code', 'category');
+        }])->whereIn('orderId', $orders->pluck('id'))->get();
+        
+        // Get unique categories from all pricelists
+        $uniqueCategories = PriceList::whereNotNull('category')->pluck('category')->unique()->sort()->values();
+        
+        // Get items by category from parcels
+        $itemsByCategory = [];
+        foreach ($uniqueCategories as $cat) {
+            $items = $parcels->where('pricelist.category', $cat)->pluck('itemName')->unique()->sort()->values();
+            $itemsByCategory[$cat] = $items;
+        }
+        
+        // Get unique item names
+        $uniqueItemNames = $parcels->pluck('itemName')->unique()->sort()->values();
+        
+        // Get order categories
+        $orderCategories = $orders->mapWithKeys(function($order) use ($parcels) {
+            $cats = $parcels->where('orderId', $order->id)->pluck('pricelist.category')->filter()->unique()->implode(',');
+            return [$order->id => $cats];
+        });
+        
+        // Add to filterData
+        $filterData['uniqueCategories'] = $uniqueCategories;
+        $filterData['itemsByCategory'] = $itemsByCategory;
+        $filterData['uniqueItemNames'] = $uniqueItemNames;
+        $filterData['orderCategories'] = $orderCategories;
+        
         return view('masterlist.list', compact('orders', 'filterData'));
     }
 
@@ -1370,6 +1400,36 @@ class MasterListController extends Controller
         $allParcels = $orders->flatMap->parcels;
         $filterData['uniqueItemNames'] = $allParcels->pluck('itemName')->filter()->unique()->sort()->values();
 
+        // Get parcels with pricelist for categories
+        $parcels = Parcel::with(['pricelist' => function($query) {
+            $query->select('id', 'item_code', 'category');
+        }])->whereIn('orderId', $orders->pluck('id'))->get();
+        
+        // Get unique categories from all pricelists
+        $uniqueCategories = PriceList::whereNotNull('category')->pluck('category')->unique()->sort()->values();
+        
+        // Get items by category from parcels
+        $itemsByCategory = [];
+        foreach ($uniqueCategories as $cat) {
+            $items = $parcels->where('pricelist.category', $cat)->pluck('itemName')->unique()->sort()->values();
+            $itemsByCategory[$cat] = $items;
+        }
+        
+        // Update unique item names from parcels
+        $uniqueItemNames = $parcels->pluck('itemName')->unique()->sort()->values();
+        
+        // Get order categories
+        $orderCategories = $orders->mapWithKeys(function($order) use ($parcels) {
+            $cats = $parcels->where('orderId', $order->id)->pluck('pricelist.category')->filter()->unique()->implode(',');
+            return [$order->id => $cats];
+        });
+        
+        // Add to filterData
+        $filterData['uniqueCategories'] = $uniqueCategories;
+        $filterData['itemsByCategory'] = $itemsByCategory;
+        $filterData['uniqueItemNames'] = $uniqueItemNames;
+        $filterData['orderCategories'] = $orderCategories;
+
         return view('masterlist.list', compact('orders', 'shipNum', 'voyageNum', 'filterData'));
     }
 
@@ -1436,6 +1496,36 @@ class MasterListController extends Controller
         // Get unique item names from parcels - use all orders for parcels
         $allParcels = $orders->flatMap->parcels;
         $filterData['uniqueItemNames'] = $allParcels->pluck('itemName')->filter()->unique()->sort()->values();
+
+        // Get parcels with pricelist for categories
+        $parcels = Parcel::with(['pricelist' => function($query) {
+            $query->select('id', 'item_code', 'category');
+        }])->whereIn('orderId', $orders->pluck('id'))->get();
+        
+        // Get unique categories from all pricelists
+        $uniqueCategories = PriceList::whereNotNull('category')->pluck('category')->unique()->sort()->values();
+        
+        // Get items by category from parcels
+        $itemsByCategory = [];
+        foreach ($uniqueCategories as $cat) {
+            $items = $parcels->where('pricelist.category', $cat)->pluck('itemName')->unique()->sort()->values();
+            $itemsByCategory[$cat] = $items;
+        }
+        
+        // Update unique item names from parcels
+        $uniqueItemNames = $parcels->pluck('itemName')->unique()->sort()->values();
+        
+        // Get order categories
+        $orderCategories = $orders->mapWithKeys(function($order) use ($parcels) {
+            $cats = $parcels->where('orderId', $order->id)->pluck('pricelist.category')->filter()->unique()->implode(',');
+            return [$order->id => $cats];
+        });
+        
+        // Add to filterData
+        $filterData['uniqueCategories'] = $uniqueCategories;
+        $filterData['itemsByCategory'] = $itemsByCategory;
+        $filterData['uniqueItemNames'] = $uniqueItemNames;
+        $filterData['orderCategories'] = $orderCategories;
 
         return view('masterlist.list', [
             'orders' => $orders,

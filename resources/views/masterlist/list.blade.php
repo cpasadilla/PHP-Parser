@@ -181,8 +181,14 @@
                         <th>
                             <div class="flex flex-col gap-1">
                                 <input type="text" class="filter-input mb-1" data-column="description" placeholder="Search description...">
-                                <select class="filter-dropdown" data-column="description">
-                                    <option value="">All</option>
+                                <select class="filter-dropdown" id="descriptionCategoryFilter" data-column="description-category">
+                                    <option value="">All Categories</option>
+                                    @foreach($filterData['uniqueCategories'] ?? [] as $cat)
+                                        <option value="{{ $cat }}">{{ $cat }}</option>
+                                    @endforeach
+                                </select>
+                                <select class="filter-dropdown" id="descriptionItemFilter" data-column="description">
+                                    <option value="">All Items</option>
                                     @foreach(($filterData['uniqueItemNames'] ?? []) as $itemName)
                                         <option value="{{ $itemName }}">{{ $itemName }}</option>
                                     @endforeach
@@ -289,7 +295,7 @@
                 </thead>
                 <tbody>
                     @foreach($orders as $order)
-                        <tr class="border-b @if(str_contains($order->remark ?? '', 'TRANSFERRED FROM')) transferred-order @endif" data-order-id="{{ $order->id }}">
+                        <tr class="border-b @if(str_contains($order->remark ?? '', 'TRANSFERRED FROM')) transferred-order @endif" data-order-id="{{ $order->id }}" data-categories="{{ $filterData['orderCategories'][$order->id] ?? '' }}">
                             <td class="p-2" data-column="bl">
                                 {{ $order->orderId }}
                                 @if(str_contains($order->remark ?? '', 'TRANSFERRED FROM'))
@@ -2739,6 +2745,26 @@
 <script>
     // Function to filter table rows based on input values
     document.addEventListener('DOMContentLoaded', function () {
+        const itemsByCategory = @json($filterData['itemsByCategory'] ?? []);
+        const uniqueItemNames = @json($filterData['uniqueItemNames'] ?? []);
+        
+        document.getElementById('descriptionCategoryFilter').addEventListener('change', function() {
+            const selectedCategory = this.value;
+            const itemSelect = document.getElementById('descriptionItemFilter');
+            itemSelect.innerHTML = '<option value="">All Items</option>';
+            let items = uniqueItemNames;
+            if (selectedCategory) {
+                items = itemsByCategory[selectedCategory] || [];
+            }
+            items.forEach(item => {
+                const option = document.createElement('option');
+                option.value = item;
+                option.textContent = item;
+                itemSelect.appendChild(option);
+            });
+            applyFilters();
+        });
+        
         const filterInputs = document.querySelectorAll('.filter-input');
 
         filterInputs.forEach(input => {
@@ -2790,25 +2816,32 @@
                 let isVisible = true;
 
                 Object.keys(activeFilters).forEach(column => {
-                    const cell = row.querySelector(`td[data-column="${column}"]`);
                     const filterValue = activeFilters[column];
-                    if (cell) {
-                        if (column === 'bl_status') {
-                            // Special handling for BL STATUS - exact match only
-                            const cellValue = cell.textContent.trim().toLowerCase();
-                            
-                            // Use exact matching for BL STATUS
-                            if (cellValue !== filterValue) {
-                                isVisible = false;
-                            }
-                        } else {
-                            const cellValue = cell.querySelector('input') 
+                    if (column === 'description-category') {
+                        const categories = row.dataset.categories || '';
+                        if (!categories.toLowerCase().includes(filterValue)) {
+                            isVisible = false;
+                        }
+                    } else {
+                        const cell = row.querySelector(`td[data-column="${column}"]`);
+                        if (cell) {
+                            if (column === 'bl_status') {
+                                // Special handling for BL STATUS - exact match only
+                                const cellValue = cell.textContent.trim().toLowerCase();
+                                
+                                // Use exact matching for BL STATUS
+                                if (cellValue !== filterValue) {
+                                    isVisible = false;
+                                }
+                            } else {
+                                const cellValue = cell.querySelector('input') 
  
-                                ? cell.querySelector('input').value.trim().toLowerCase() 
-                                : cell.textContent.trim().toLowerCase();
+                                    ? cell.querySelector('input').value.trim().toLowerCase() 
+                                    : cell.textContent.trim().toLowerCase();
 
-                            if (!cellValue.includes(filterValue)) {
-                                isVisible = false;
+                                if (!cellValue.includes(filterValue)) {
+                                    isVisible = false;
+                                }
                             }
                         }
                     }
