@@ -507,7 +507,7 @@
                             class="w-full p-2 border rounded-md mb-1 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200">
 
                         <label class="block font-medium text-gray-900 dark:text-gray-200">Category:</label>
-                        <input type="text" id="category" name="category" readonly
+                        <input type="text" id="category" name="category"
                             class="w-full p-2 border rounded-md mb-1 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200">
 
                         <label class="block font-medium text-gray-900 dark:text-gray-200">Unit:</label>

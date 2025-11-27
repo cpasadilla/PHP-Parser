@@ -330,8 +330,13 @@
                                 class="w-full p-2 border rounded-md mb-1 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200" style="height: 32px;">
 
                             <label class="block font-medium text-gray-900 dark:text-gray-200">Category:</label>
-                            <input type="text" id="category" name="category" readonly
+                            <select id="category" name="category"
                                 class="w-full p-2 border rounded-md mb-1 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring focus:ring-indigo-200" style="height: 32px;">
+                                <option value="">Select Category</option>
+                                @foreach($uniqueCategories as $cat)
+                                    <option value="{{ $cat }}">{{ $cat }}</option>
+                                @endforeach
+                            </select>
 
                             <label class="block font-medium text-gray-900 dark:text-gray-200">Unit:</label>
                             <div class="flex items-center gap-2">

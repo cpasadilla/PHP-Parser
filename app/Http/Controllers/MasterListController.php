@@ -922,10 +922,13 @@ class MasterListController extends Controller
         $total = $parcels->sum('total'); // Calculate the total of all parcels
         $lists = PriceList::all(); // Fetch all items from the PriceList model
 
+        // Fetch unique categories for the dropdown
+        $uniqueCategories = PriceList::whereNotNull('category')->pluck('category')->unique()->sort()->values();
+
         // Fetch all customers for the shipper and consignee dropdowns
         $customers = Customer::all();
 
-        return view('masterlist.edit-bl', compact('order', 'parcels', 'lists', 'total', 'customers'));
+        return view('masterlist.edit-bl', compact('order', 'parcels', 'lists', 'total', 'customers', 'uniqueCategories'));
 
     }
 
