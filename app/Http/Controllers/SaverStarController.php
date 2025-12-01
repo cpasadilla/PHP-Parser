@@ -149,7 +149,7 @@ class SaverStarController extends Controller
             'shipperName', 'recName', 'checkName', 'remark', 'note', 'origin', 'destination',
             'blStatus', 'totalAmount', 'freight', 'valuation', 'wharfage', 'value', 'other',
             'bir', 'discount', 'originalFreight', 'padlock_fee', 'or_ar_date',
-            'OR', 'AR', 'updated_by', 'updated_location', 'image', 'created_at', 'creator'
+               'OR', 'AR', 'updated_by', 'updated_location', 'image', 'created_at', 'creator', 'bl_computed'
         ])
         ->orderBy('orderId', 'asc')
         ->get();
