@@ -146,6 +146,8 @@
                             </th>
                             <th class="px-4 py-2 border dark:border-gray-700">Ship</th>
                             <th class="px-4 py-2 border dark:border-gray-700">Voyage</th>
+                            <th class="px-4 py-2 border dark:border-gray-700">BL COMPUTED</th>
+                            <th class="px-4 py-2 border dark:border-gray-700">BL COMPUTED</th>
                             <th class="px-4 py-2 border dark:border-gray-700">Field Updated</th>
                             <th class="px-4 py-2 border dark:border-gray-700">Old Value</th>
                             <th class="px-4 py-2 border dark:border-gray-700">New Value</th>
@@ -161,6 +163,20 @@
                                 <td class="border px-4 py-2 dark:border-gray-700 text-center">{{ $log->bl_number }}</td>
                                 <td class="border px-4 py-2 dark:border-gray-700 text-center">{{ $log->ship_name }}</td>
                                 <td class="border px-4 py-2 dark:border-gray-700 text-center">{{ $log->voyage_number }}</td>
+                                
+                                
+                                <td class="border px-4 py-2 dark:border-gray-700 text-center">
+                                    @php
+                                        $computed = $log->bl_computed ?? null;
+                                    @endphp
+                                    @if($computed === 1 || $computed === true || $computed === '1')
+                                        <span class="px-2 py-1 text-xs font-semibold rounded bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">Computed</span>
+                                    @elseif($computed === 0 || $computed === false || $computed === '0')
+                                        <span class="px-2 py-1 text-xs font-semibold rounded bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">Not</span>
+                                    @else
+                                        <span class="text-gray-400 dark:text-gray-500 italic">-</span>
+                                    @endif
+                                </td>
                                 <td class="border px-4 py-2 dark:border-gray-700 text-center">
                                     @if($log->field_name)
                                         <span class="px-2 py-1 text-xs font-semibold rounded bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">

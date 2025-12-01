@@ -44,7 +44,8 @@ class HistoryController extends Controller
                 'order_update_logs.*',
                 'orders.shipNum as ship_name',
                 'orders.voyageNum as voyage_number',
-                'orders.orderId as bl_number'
+                'orders.orderId as bl_number',
+                'orders.bl_computed as bl_computed'
             )
             ->when($updatedByFilter, function ($query, $updatedByFilter) {
                 return $query->where('order_update_logs.updated_by', 'like', "%$updatedByFilter%");
