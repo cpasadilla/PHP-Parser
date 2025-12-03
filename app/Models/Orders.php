@@ -38,6 +38,7 @@ class order extends Model
         'freight_manual',
         'cargoType',
         'blStatus',
+        'bl_computed',
         'discount', // Add this field
         'bir', // Ensure this field is fillable
         'OR', // Add OR field
@@ -55,6 +56,8 @@ class order extends Model
 
     protected $casts = [
         'image' => 'string',
+        // Treat bl_computed as boolean consistently in PHP
+        'bl_computed' => 'boolean',
     ];
 
     public static function boot()

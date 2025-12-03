@@ -387,6 +387,10 @@ Route::middleware('auth')->group(function () {
         Route::post('/update-note-field/{orderId}', [MasterListController::class, 'updateNoteField']);
         Route::post('/remove-order-image/{orderId}', [MasterListController::class, 'removeImage'])->name('order.remove-image');
         Route::post('/remove-image/{orderId}', [MasterListController::class, 'removeImage'])->name('remove.image');
+        
+        // BL Computed routes
+        Route::post('/masterlist/toggle-bl-computed', [MasterListController::class, 'toggleBlComputed'])->name('masterlist.toggle-bl-computed');
+        Route::post('/masterlist/mark-bl-computed', [MasterListController::class, 'markBlComputed'])->name('masterlist.mark-bl-computed');
 
         // Route for applying early payment discount
         Route::post('/api/apply-early-payment-discount', [EarlyPaymentController::class, 'applyDiscount'])->name('api.early-payment-discount');

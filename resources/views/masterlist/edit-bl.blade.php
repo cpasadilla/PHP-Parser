@@ -295,7 +295,8 @@
             </div>
 
             <!-- Submit Button -->
-            <div class="flex justify-end mt-4">
+            <div class="flex justify-end gap-2 mt-4">
+                <button id="markComputedBtn" type="button" class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600" onclick="markBLAsComputed()">Mark as Computed</button>
                 <button id="submitOrder" type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">Update BL</button>
             </div>
 
@@ -2463,4 +2464,43 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     console.log('Motorcycle item test function loaded. Run testMotorcycleItems() in console to debug.');
+</script>
+
+<!-- Mark BL as Computed Function -->
+<script>
+function markBLAsComputed() {
+    const orderId = {{ $order->id }};
+    const shipNum = '{{ $order->shipNum }}';
+    const voyageNum = '{{ $order->voyageNum }}';
+    const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    
+    fetch("{{ route('masterlist.mark-bl-computed') }}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': token,
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            order_id: orderId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('BL marked as computed successfully!');
+            // Redirect back to the list page to see the updated status
+            const listUrl = "{{ route('masterlist.voyage-orders', ['shipNum' => '__SHIP__', 'voyageNum' => '__VOYAGE__']) }}"
+                .replace('__SHIP__', encodeURIComponent(shipNum))
+                .replace('__VOYAGE__', encodeURIComponent(voyageNum));
+            window.location.href = listUrl;
+        } else {
+            alert('Failed to mark BL as computed: ' + (data.message || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error marking BL as computed: ' + error.message);
+    });
+}
 </script>

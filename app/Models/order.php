@@ -62,6 +62,7 @@ class order extends Model
         'freight_manual',
         'cargoType',
         'blStatus',
+        'bl_computed',
         'discount',
         'bir',
         'OR',
@@ -79,6 +80,8 @@ class order extends Model
 
     protected $casts = [
         'image' => 'string',
+        // Treat bl_computed as boolean consistently in PHP
+        'bl_computed' => 'boolean',
     ];
 
     public static function boot()

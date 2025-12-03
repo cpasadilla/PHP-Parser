@@ -255,7 +255,7 @@ class MasterListController extends Controller
             'shipperName', 'recName', 'checkName', 'remark', 'note', 'origin', 'destination',
             'blStatus', 'totalAmount', 'freight', 'valuation', 'wharfage', 'value', 'other',
             'bir', 'discount', 'originalFreight', 'padlock_fee', 'or_ar_date',
-            'OR', 'AR', 'updated_by', 'updated_location', 'image', 'created_at', 'creator'
+            'OR', 'AR', 'updated_by', 'updated_location', 'image', 'created_at', 'creator', 'bl_computed' // <-- Add this lineS
         ])
         ->orderByRaw("CASE WHEN remark LIKE '%TRANSFERRED FROM%' THEN 0 ELSE 1 END ASC")
         ->orderBy('orderId', 'asc')
@@ -1363,7 +1363,7 @@ class MasterListController extends Controller
                 'shipperName', 'recName', 'checkName', 'remark', 'note', 'origin', 'destination',
                 'blStatus', 'totalAmount', 'freight', 'valuation', 'wharfage', 'value', 'other',
                 'bir', 'discount', 'originalFreight', 'padlock_fee', 'or_ar_date',
-                'OR', 'AR', 'updated_by', 'updated_location', 'image', 'created_at', 'creator'
+                'OR', 'AR', 'updated_by', 'updated_location', 'image', 'created_at', 'creator', 'bl_computed'
             ])
             ->orderBy('orderId', 'asc')
             ->get(); // Load ALL orders (removed pagination limit)
@@ -1460,7 +1460,7 @@ class MasterListController extends Controller
                 'shipperName', 'recName', 'checkName', 'remark', 'note', 'origin', 'destination',
                 'blStatus', 'totalAmount', 'freight', 'valuation', 'wharfage', 'value', 'other',
                 'bir', 'discount', 'originalFreight', 'padlock_fee', 'or_ar_date',
-                'OR', 'AR', 'updated_by', 'updated_location', 'image', 'created_at', 'dock_number', 'creator'
+                'OR', 'AR', 'updated_by', 'updated_location', 'image', 'created_at', 'dock_number', 'creator', 'bl_computed'
             ])
             ->orderBy('orderId', 'asc')
             ->get(); // Load ALL orders (removed pagination limit)
@@ -3698,5 +3698,80 @@ class MasterListController extends Controller
 
         // Pass data to the view
         return view('masterlist.bl_list_all', compact('orders', 'customers', 'ships'));
+    }
+
+    public function toggleBlComputed(Request $request)
+    {
+        try {
+            $orderId = $request->input('order_id');
+            
+            // Find the order
+            $order = Order::find($orderId);
+            
+            if (!$order) {
+                return response()->json(['success' => false, 'message' => 'Order not found'], 404);
+            }
+            
+            // Toggle the bl_computed status
+            $order->bl_computed = !$order->bl_computed;
+            $order->save();
+            
+            // Log the update
+            Log::info('BL Computed toggled', [
+                'order_id' => $orderId,
+                'bl_computed' => $order->bl_computed,
+                'updated_by' => Auth::id(),
+            ]);
+            
+            return response()->json([
+                'success' => true,
+                'bl_computed' => $order->bl_computed,
+                'message' => 'BL Computed status updated successfully'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error toggling BL Computed status', [
+                'error' => $e->getMessage(),
+                'order_id' => $request->input('order_id'),
+            ]);
+            
+            return response()->json(['success' => false, 'message' => 'Error updating status: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function markBlComputed(Request $request)
+    {
+        try {
+            $orderId = $request->input('order_id');
+            
+            // Find the order
+            $order = Order::find($orderId);
+            
+            if (!$order) {
+                return response()->json(['success' => false, 'message' => 'Order not found'], 404);
+            }
+            
+            // Mark as computed
+            $order->bl_computed = true;
+            $order->save();
+            
+            // Log the update
+            Log::info('BL marked as computed', [
+                'order_id' => $orderId,
+                'updated_by' => Auth::id(),
+            ]);
+            
+            return response()->json([
+                'success' => true,
+                'bl_computed' => $order->bl_computed,
+                'message' => 'BL marked as computed successfully'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error marking BL as computed', [
+                'error' => $e->getMessage(),
+                'order_id' => $request->input('order_id'),
+            ]);
+            
+            return response()->json(['success' => false, 'message' => 'Error marking BL as computed: ' . $e->getMessage()], 500);
+        }
     }
 }

@@ -96,6 +96,7 @@
                         <th class="p-2">NOTED BY</th>
                         <th class="p-2">PAID IN</th>
                         <th class="p-2">BL STATUS</th>
+                        <th class="p-2">BL COMPUTED</th>
                         <th class="p-2">REMARK</th>
                         <th class="p-2">NOTE</th>
                         <th class="p-2" style="text-align: center;">IMAGE</th>
@@ -264,6 +265,13 @@
                                 @foreach($orders->pluck('blStatus')->unique()->sort() as $blStatus)
                                     <option value="{{ $blStatus }}">{{ $blStatus }}</option>
                                 @endforeach
+                            </select>
+                        </th>
+                        <th>
+                            <select class="filter-dropdown" data-column="bl_computed">
+                                <option value="">All</option>
+                                <option value="Computed">Computed</option>
+                                <option value="Not">Not</option>
                             </select>
                         </th>
                         <th>
@@ -582,6 +590,11 @@
                                     {{ $blStatusText }}
                                 </span>
                             </td>
+                            <td class="p-2 text-center bl-computed-cell" data-column="bl_computed" data-order-id="{{ $order->id }}" style="cursor: pointer; transition: background-color 0.2s;">
+                                <span class="bl-computed-badge" style="background-color: {{ $order->bl_computed == 1 ? '#4CAF50' : '#f44336' }}; color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; display: inline-block; white-space: nowrap; cursor: pointer;">
+                                    {{ $order->bl_computed == 1 ? 'Computed' : 'Not' }}
+                                </span>
+                            </td>
                             <td class="p-2 remark-cell" data-column="bl_remark">
                                 @if(Auth::user()->hasSubpagePermission('masterlist', 'list', 'edit'))
                                 <textarea 
@@ -846,7 +859,7 @@
     /* Ensure the table layout is fixed with proper width */
     #ordersTable {
         table-layout: fixed;
-        width: 5060px; /* Fixed width to accommodate all columns (reduced 30px from BIR column) */
+        width: 5160px; /* Fixed width to accommodate all columns including BL COMPUTED */
         border-collapse: collapse;
     }
 
@@ -1003,12 +1016,13 @@
     #ordersTable th:nth-child(24), #ordersTable td:nth-child(24) { width: 150px; } /* NOTED BY (UPDATED BY) */ 
     #ordersTable th:nth-child(25), #ordersTable td:nth-child(25) { width: 150px; } /* PAID IN (UPDATED LOCATION) */ 
     #ordersTable th:nth-child(26), #ordersTable td:nth-child(26) { width: 100px; } /* BL STATUS */ 
-    #ordersTable th:nth-child(27), #ordersTable td:nth-child(27) { width: 250px; } /* BL REMARK */
-    #ordersTable th:nth-child(28), #ordersTable td:nth-child(28) { width: 300px; } /* NOTE */ 
-    #ordersTable th:nth-child(29), #ordersTable td:nth-child(29) { width: 170px; } /* IMAGE */ 
-    #ordersTable th:nth-child(30), #ordersTable td:nth-child(30) { width: 100px; } /* VIEW BL */
-    #ordersTable th:nth-child(31), #ordersTable td:nth-child(31) { width: 100px; } /* VIEW NO-PRICE BL */
-    #ordersTable th:nth-child(32), #ordersTable td:nth-child(32) { width: 100px; } /* TRANSFER */
+    #ordersTable th:nth-child(27), #ordersTable td:nth-child(27) { width: 100px; } /* BL COMPUTED */ 
+    #ordersTable th:nth-child(28), #ordersTable td:nth-child(28) { width: 250px; } /* BL REMARK */
+    #ordersTable th:nth-child(29), #ordersTable td:nth-child(29) { width: 300px; } /* NOTE */ 
+    #ordersTable th:nth-child(30), #ordersTable td:nth-child(30) { width: 170px; } /* IMAGE */ 
+    #ordersTable th:nth-child(31), #ordersTable td:nth-child(31) { width: 100px; } /* VIEW BL */
+    #ordersTable th:nth-child(32), #ordersTable td:nth-child(32) { width: 100px; } /* VIEW NO-PRICE BL */
+    #ordersTable th:nth-child(33), #ordersTable td:nth-child(33) { width: 100px; } /* TRANSFER */
     /* UPDATE and DELETE BL columns are conditionally displayed, so we use classes instead of fixed nth-child selectors */
     .update-bl-column { width: 100px; }
     .delete-bl-column { width: 100px; }
@@ -1316,7 +1330,7 @@
     /* Ensure the table layout is fixed */
     #ordersTable {
         table-layout: fixed;
-        width: 5060px; /* Fixed width to accommodate all columns (reduced 30px from BIR column) */
+        width: 5160px; /* Fixed width to accommodate all columns including BL COMPUTED */
     }
     /* Dark mode styles for table headers */
     .dark #ordersTable th {
@@ -1385,6 +1399,34 @@
         background-color: #1a202c; /* Dark mode background */
         color: #fff; /* Dark mode font color */
         border: 1px solid #4a5568; /* Dark mode border */
+    }
+
+    /* BL Computed Cell Styling */
+    .bl-computed-cell {
+        padding: 8px !important;
+        text-align: center;
+        cursor: pointer !important;
+        transition: all 0.2s ease;
+        user-select: none;
+    }
+
+    .bl-computed-cell:hover {
+        background-color: #f0f0f0 !important;
+    }
+
+    .dark .bl-computed-cell:hover {
+        background-color: #374151 !important;
+    }
+
+    .bl-computed-badge {
+        cursor: pointer !important;
+        transition: all 0.2s ease;
+        display: inline-block !important;
+    }
+
+    .bl-computed-badge:hover {
+        opacity: 0.8;
+        transform: scale(1.05);
     }
 
     .container-input {
@@ -4145,6 +4187,57 @@
             });
             console.log('Cleared all test highlights');
         };
+
+        // BL Computed Toggle Functionality
+        const computedCells = document.querySelectorAll('.bl-computed-cell');
+        computedCells.forEach(cell => {
+            cell.addEventListener('click', function(e) {
+                e.preventDefault();
+                const orderId = this.getAttribute('data-order-id');
+                const badge = this.querySelector('.bl-computed-badge');
+                const currentStatus = badge.textContent.trim();
+                const newStatus = currentStatus === 'Computed' ? false : true;
+                
+                // Update BL Computed status via AJAX
+                const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                
+                fetch("{{ route('masterlist.toggle-bl-computed') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': token,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        order_id: orderId
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update the badge appearance
+                        const newText = data.bl_computed ? 'Computed' : 'Not';
+                        const newColor = data.bl_computed ? '#4CAF50' : '#f44336';
+                        badge.textContent = newText;
+                        badge.style.backgroundColor = newColor;
+                    } else {
+                        alert('Failed to update BL Computed status: ' + (data.message || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error updating BL Computed status: ' + error.message);
+                });
+            });
+            
+            // Add hover effect
+            cell.addEventListener('mouseenter', function() {
+                this.style.backgroundColor = '#f0f0f0';
+            });
+            cell.addEventListener('mouseleave', function() {
+                this.style.backgroundColor = '';
+            });
+        });
     });
 </script>
 

@@ -110,6 +110,7 @@
                     <option value="checkName" {{ request('field_name') == 'checkName' ? 'selected' : '' }}>Checker Name</option>
                     <option value="cargoType" {{ request('field_name') == 'cargoType' ? 'selected' : '' }}>Cargo Type</option>
                     <option value="blStatus" {{ request('field_name') == 'blStatus' ? 'selected' : '' }}>BL Status</option>
+                    <option value="bl_computed" {{ request('field_name') == 'bl_computed' ? 'selected' : '' }}>BL Computed</option>
                     <option value="image" {{ request('field_name') == 'image' ? 'selected' : '' }}>Image</option>
                 </select>
                 <select name="action_type" class="border rounded px-4 py-2 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300">
