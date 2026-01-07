@@ -78,7 +78,12 @@ class InventoryController extends Controller
                 $previousBalance = $currentBalances['balance'];
                 $inValue = floatval($data['in'] ?? 0);
                 $outValue = floatval($data['out'] ?? 0);
-                $data['balance'] = $previousBalance + $inValue - $outValue;
+                // If previous balance is negative and IN is provided, treat IN as a reset point
+                if ($previousBalance < 0 && $inValue > 0) {
+                    $data['balance'] = $inValue - $outValue;
+                } else {
+                    $data['balance'] = $previousBalance + $inValue - $outValue;
+                }
             }
         }
         
@@ -128,30 +133,27 @@ class InventoryController extends Controller
             'hollowblock_6_inch_in' => 'nullable|numeric',
         ]);
 
-        // Get current balances to add to them
-        $currentBalances = $this->getCurrentBalances($data['item']);
-
-        // For starting balance, we put the NEW balance amount in the IN column
-        // and add it to the current balance
+        // For starting balance, we put the balance amount in the IN column
+        // and set the balance to exactly this amount (replacing any previous balance)
         $data['in'] = $data['balance'];
-        $data['balance'] = $currentBalances['balance'] + $data['balance'];
+        // Balance stays as entered - it's the new starting point, not added to previous
         $data['onsite_in'] = $data['onsite_balance'];
-        $data['onsite_balance'] = ($currentBalances['onsite_balance'] ?? 0) + $data['onsite_balance'];
+        // Onsite balance stays as entered - it's the new starting point, not added to previous
 
         // Handle hollowblock sizes for starting balance
         if ($data['item'] === 'HOLLOWBLOCKS' && isset($data['hollowblock_size'])) {
             $size = $data['hollowblock_size'];
 
-            // Set the appropriate hollowblock size fields - add to current balance
+            // Set the appropriate hollowblock size fields - set to the starting balance amount
             if ($size === '4_inch') {
                 $data['hollowblock_4_inch_in'] = $data['balance'];
-                $data['hollowblock_4_inch_balance'] = $currentBalances['hollowblock_4_inch_balance'] + $data['balance'];
+                $data['hollowblock_4_inch_balance'] = $data['balance'];
             } elseif ($size === '5_inch') {
                 $data['hollowblock_5_inch_in'] = $data['balance'];
-                $data['hollowblock_5_inch_balance'] = $currentBalances['hollowblock_5_inch_balance'] + $data['balance'];
+                $data['hollowblock_5_inch_balance'] = $data['balance'];
             } elseif ($size === '6_inch') {
                 $data['hollowblock_6_inch_in'] = $data['balance'];
-                $data['hollowblock_6_inch_balance'] = $currentBalances['hollowblock_6_inch_balance'] + $data['balance'];
+                $data['hollowblock_6_inch_balance'] = $data['balance'];
             }
         }
 
@@ -281,7 +283,12 @@ class InventoryController extends Controller
             } else {
                 // Calculate balance based on previous balance + IN - OUT
                 $currentSizeBalance = $currentBalances['hollowblock_' . $hollowblockSize . '_balance'] ?? 0;
-                $data[$sizeFieldBalance] = $currentSizeBalance + $inValue - $outValue;
+                // If previous balance is negative and IN is provided, treat IN as a reset point
+                if ($currentSizeBalance < 0 && $inValue > 0) {
+                    $data[$sizeFieldBalance] = $inValue - $outValue;
+                } else {
+                    $data[$sizeFieldBalance] = $currentSizeBalance + $inValue - $outValue;
+                }
                 \Log::info('Calculated balance for ' . $hollowblockSize, ['balance' => $data[$sizeFieldBalance]]);
             }
             
@@ -304,7 +311,12 @@ class InventoryController extends Controller
                 if (isset($data['hollowblock_4_inch_balance']) && $data['hollowblock_4_inch_balance'] !== null) {
                     $data['hollowblock_4_inch_balance'] = floatval($data['hollowblock_4_inch_balance']);
                 } else {
-                    $data['hollowblock_4_inch_balance'] = $previousBalance + $inValue - $outValue;
+                    // If previous balance is negative and IN is provided, treat IN as a reset point
+                    if ($previousBalance < 0 && $inValue > 0) {
+                        $data['hollowblock_4_inch_balance'] = $inValue - $outValue;
+                    } else {
+                        $data['hollowblock_4_inch_balance'] = $previousBalance + $inValue - $outValue;
+                    }
                 }
             }
             
@@ -317,7 +329,12 @@ class InventoryController extends Controller
                 if (isset($data['hollowblock_5_inch_balance']) && $data['hollowblock_5_inch_balance'] !== null) {
                     $data['hollowblock_5_inch_balance'] = floatval($data['hollowblock_5_inch_balance']);
                 } else {
-                    $data['hollowblock_5_inch_balance'] = $previousBalance + $inValue - $outValue;
+                    // If previous balance is negative and IN is provided, treat IN as a reset point
+                    if ($previousBalance < 0 && $inValue > 0) {
+                        $data['hollowblock_5_inch_balance'] = $inValue - $outValue;
+                    } else {
+                        $data['hollowblock_5_inch_balance'] = $previousBalance + $inValue - $outValue;
+                    }
                 }
             }
             
@@ -330,7 +347,12 @@ class InventoryController extends Controller
                 if (isset($data['hollowblock_6_inch_balance']) && $data['hollowblock_6_inch_balance'] !== null) {
                     $data['hollowblock_6_inch_balance'] = floatval($data['hollowblock_6_inch_balance']);
                 } else {
-                    $data['hollowblock_6_inch_balance'] = $previousBalance + $inValue - $outValue;
+                    // If previous balance is negative and IN is provided, treat IN as a reset point
+                    if ($previousBalance < 0 && $inValue > 0) {
+                        $data['hollowblock_6_inch_balance'] = $inValue - $outValue;
+                    } else {
+                        $data['hollowblock_6_inch_balance'] = $previousBalance + $inValue - $outValue;
+                    }
                 }
             }
         }
@@ -440,7 +462,12 @@ class InventoryController extends Controller
                 $previousBalance = $this->getPreviousEntryBalance($entry);
                 $inValue = floatval($data['in'] ?? 0);
                 $outValue = floatval($data['out'] ?? 0);
-                $data['balance'] = $previousBalance + $inValue - $outValue;
+                // If previous balance is negative and IN is provided, treat IN as a reset point
+                if ($previousBalance < 0 && $inValue > 0) {
+                    $data['balance'] = $inValue - $outValue;
+                } else {
+                    $data['balance'] = $previousBalance + $inValue - $outValue;
+                }
             }
         }
 
@@ -516,7 +543,12 @@ class InventoryController extends Controller
 
             $actualOut = floatval($entry->actual_out ?? 0);
             $inValue = floatval($entry->in ?? 0);
-            $newBalance = floatval($lastBalance) - $actualOut + $inValue;
+            // If previous balance is negative and IN is provided, treat IN as a reset point
+            if (floatval($lastBalance) < 0 && $inValue > 0) {
+                $newBalance = $inValue - $actualOut;
+            } else {
+                $newBalance = floatval($lastBalance) - $actualOut + $inValue;
+            }
 
             // Always update onsite_balance to match the formula
             if ($entry->onsite_balance != $newBalance) {
@@ -551,7 +583,12 @@ class InventoryController extends Controller
 
             $actualOut = floatval($entry->actual_out ?? 0);
             $inValue = floatval($entry->in ?? 0);
-            $newBalance = floatval($lastBalance) - $actualOut + $inValue;
+            // If previous balance is negative and IN is provided, treat IN as a reset point
+            if (floatval($lastBalance) < 0 && $inValue > 0) {
+                $newBalance = $inValue - $actualOut;
+            } else {
+                $newBalance = floatval($lastBalance) - $actualOut + $inValue;
+            }
 
             // Always update onsite_balance to match the formula
             if ($entry->onsite_balance != $newBalance) {
@@ -597,7 +634,12 @@ class InventoryController extends Controller
 
             $outValue = floatval($entry->out ?? 0);
             $inValue = floatval($entry->in ?? 0);
-            $newBalance = floatval($lastBalance) - $outValue + $inValue;
+            // If previous balance is negative and IN is provided, treat IN as a reset point
+            if (floatval($lastBalance) < 0 && $inValue > 0) {
+                $newBalance = $inValue - $outValue;
+            } else {
+                $newBalance = floatval($lastBalance) - $outValue + $inValue;
+            }
 
             // Always update balance to match the formula
             if ($entry->balance != $newBalance) {
@@ -635,7 +677,12 @@ class InventoryController extends Controller
 
             $outValue = floatval($entry->out ?? 0);
             $inValue = floatval($entry->in ?? 0);
-            $newBalance = floatval($lastBalance) - $outValue + $inValue;
+            // If previous balance is negative and IN is provided, treat IN as a reset point
+            if (floatval($lastBalance) < 0 && $inValue > 0) {
+                $newBalance = $inValue - $outValue;
+            } else {
+                $newBalance = floatval($lastBalance) - $outValue + $inValue;
+            }
 
             // Always update the size-specific balance to match the formula
             if ($entry->$balanceField != $newBalance) {

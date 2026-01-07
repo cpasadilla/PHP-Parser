@@ -328,7 +328,12 @@
                                                         $inValue = $entry->in ?? 0;
                                                         $outValue = $entry->out ?? 0;
                                                     }
-                                                    $runningBalance = $runningBalance - $outValue + $inValue;
+                                                    // If previous balance is negative and IN is provided, treat IN as a reset point
+                                                    if ($runningBalance < 0 && $inValue > 0) {
+                                                        $runningBalance = $inValue - $outValue;
+                                                    } else {
+                                                        $runningBalance = $runningBalance - $outValue + $inValue;
+                                                    }
                                                 }
                                             @endphp
                                             {{ number_format($runningBalance, 2) }}
