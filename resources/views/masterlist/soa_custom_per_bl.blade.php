@@ -677,8 +677,9 @@
             };
         }
 
-        // SOA Number save functionality
+        // SOA Number save functionality with localStorage persistence
         let soaNumberTimeout;
+        const SOA_STORAGE_KEY = 'soa_number_{{ $customer->id }}_{{ $ship }}_{{ $voyage }}_{{ $orderId }}';
             
         function saveSoaNumber() {
             const soaInputElement = document.getElementById('soaNumberInput');
@@ -714,6 +715,9 @@
                     soaInputElement.setAttribute('value', soaNumber);
                     soaInputElement.defaultValue = soaNumber;
                     
+                    // Save to localStorage for persistence across page closes/refreshes
+                    localStorage.setItem(SOA_STORAGE_KEY, soaNumber);
+                    
                     statusElement.textContent = '✓ Saved';
                     statusElement.style.color = 'green';
                     
@@ -744,6 +748,13 @@
         document.addEventListener('DOMContentLoaded', function() {
             const soaInput = document.getElementById('soaNumberInput');
             if (soaInput) {
+                // Restore from localStorage if available
+                const savedSoaNumber = localStorage.getItem(SOA_STORAGE_KEY);
+                if (savedSoaNumber && !soaInput.value) {
+                    soaInput.value = savedSoaNumber;
+                    soaInput.setAttribute('value', savedSoaNumber);
+                }
+                
                 soaInput.addEventListener('input', function() {
                     clearTimeout(soaNumberTimeout);
                     soaNumberTimeout = setTimeout(saveSoaNumber, 1000);
