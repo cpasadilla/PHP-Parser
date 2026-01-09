@@ -652,6 +652,20 @@ class CustomerController extends Controller {
         $user = auth()->user();
         $userName = $user->fName . ' ' . $user->lName;
 
+        // Get the dock_number from the voyage
+        $dockNumber = 0; // Default to 0 for orders without dock separation
+        // Extract the numeric part from voyageNum (e.g., "1-IN" -> "1")
+        $numericVoyage = preg_replace('/[^0-9]/', '', $voyageNum);
+        $voyageRecord = voyage::where('ship', $data['ship_no'])
+            ->where('v_num', $numericVoyage ?: $voyageNum)
+            ->where('lastStatus', 'READY')
+            ->orderBy('dock_number', 'desc')
+            ->first();
+
+        if ($voyageRecord) {
+            $dockNumber = $voyageRecord->dock_number ?? 0;
+        }
+
         $order = order::create([
             "orderId" => $orderId,
             "shipperId" => $data['shipperId'],
@@ -679,6 +693,7 @@ class CustomerController extends Controller {
             "valuation" => $valuation,
             "orderCreated" => now(),
             "creator" => $userName,
+            "dock_number" => $dockNumber,
         ]);
 
         // Only process cart items if cart is not empty
@@ -1325,13 +1340,26 @@ class CustomerController extends Controller {
     public function getAvailableVoyagesWithRoute($shipNumber, $origin = null, $destination = null) {
         $voyages = [];
         
+        // Check if ship is in DRY DOCK status - no voyages available
+        $ship = Ship::where('ship_number', $shipNumber)->first();
+        if ($ship && $ship->status === 'DRY DOCK') {
+            return []; // Return empty voyages for DRY DOCK ships
+        }
+        
+        // Get the latest dock_number for this ship to filter voyages correctly
+        $maxDockNumber = voyage::where('ship', $shipNumber)->max('dock_number');
+        
         // Get all READY voyages for this ship
         if ($shipNumber == 'I' || $shipNumber == 'II') {
             $readyVoyages = voyage::where('ship', $shipNumber)
                                 ->where('lastStatus', 'READY')
-                                ->where(function($query) {
+                                ->where(function($query) use ($maxDockNumber) {
                                     $query->whereNull('dock_period')
                                     ->orWhere('dock_period', 'like', 'post_dock_%');
+                                    // Include voyages from the latest dock number
+                                    if ($maxDockNumber !== null) {
+                                        $query->orWhere('dock_number', $maxDockNumber);
+                                    }
                                 })
                                 ->orderBy('v_num', 'desc')
                                 ->orderBy('is_primary', 'desc')
@@ -1339,9 +1367,13 @@ class CustomerController extends Controller {
         } else {
             $readyVoyages = voyage::where('ship', $shipNumber)
                                 ->where('lastStatus', 'READY')
-                                ->where(function($query) {
+                                ->where(function($query) use ($maxDockNumber) {
                                     $query->whereNull('dock_period')
                                     ->orWhere('dock_period', 'like', 'post_dock_%');
+                                    // Include voyages from the latest dock number
+                                    if ($maxDockNumber !== null) {
+                                        $query->orWhere('dock_number', $maxDockNumber);
+                                    }
                                 })
                                 ->orderBy('v_num', 'desc')
                                 ->orderBy('is_primary', 'desc')

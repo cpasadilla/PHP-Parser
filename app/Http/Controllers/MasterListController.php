@@ -98,6 +98,18 @@ class MasterListController extends Controller
             $data['shipNum'] = $request->input('target_ship');
             $data['voyageNum'] = $request->input('target_voyage');
 
+            // Get the dock_number from the target voyage
+            $numericVoyage = preg_replace('/[^0-9]/', '', $request->input('target_voyage'));
+            $targetVoyage = voyage::where('ship', $request->input('target_ship'))
+                ->where('v_num', $numericVoyage ?: $request->input('target_voyage'))
+                ->where('lastStatus', 'READY')
+                ->orderBy('dock_number', 'desc')
+                ->first();
+            
+            if ($targetVoyage) {
+                $data['dock_number'] = $targetVoyage->dock_number ?? 0;
+            }
+
             // Keep a trace to the original order (optional) by adding a transferred_from field if exists,
             // otherwise use remark to note transfer.
             if (in_array('transferred_from', $original->getFillable())) {
@@ -1352,9 +1364,23 @@ class MasterListController extends Controller
     }
 
     public function voyageOrders(Request $request, $shipNum, $voyageNum) {
+        // Get the voyage record to retrieve dock_number for filtering
+        // The voyageNum might be in format "1-IN" for ships I and II, or just "1" for others
+        // Extract numeric part first (e.g., "1-IN" -> "1")
+        $numericPart = preg_replace('/[^0-9]/', '', $voyageNum);
+        $voyageRecord = voyage::where('ship', $shipNum)
+            ->where('v_num', $numericPart ?: $voyageNum)
+            ->where('lastStatus', 'READY')
+            ->orderBy('dock_number', 'desc')
+            ->first();
+        
+        // Use the dock_number from the voyage, or default to 0
+        $dockNumber = $voyageRecord ? ($voyageRecord->dock_number ?? 0) : 0;
+
         // Get ALL orders for the specific ship and voyage (removed pagination)
         $orders = Order::where('shipNum', $shipNum)
             ->where('voyageNum', $voyageNum)
+            ->where('dock_number', $dockNumber)
             ->with(['parcels' => function($query) {
                 $query->select('id', 'orderId', 'itemName', 'quantity', 'unit', 'desc');
             }])
