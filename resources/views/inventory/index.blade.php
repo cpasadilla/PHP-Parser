@@ -178,7 +178,7 @@
                     <!-- Tabs -->
                     <div class="border-b border-gray-200 dark:border-gray-700 mb-4">
                         <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="inventoryTabs">
-                            @foreach(['G1 DAMORTIS','G1 CURRIMAO','3/4 GRAVEL','VIBRO SAND','SAND S1 M','HOLLOWBLOCKS 4 INCH','HOLLOWBLOCKS 5 INCH','HOLLOWBLOCKS 6 INCH'] as $idx => $item)
+                            @foreach(['G1 DAMORTIS','G1 CURRIMAO','3/4 GRAVEL DAMORTIS','3/4 GRAVEL CURRIMAO','VIBRO SAND','SAND S1 M','HOLLOWBLOCKS 4 INCH','HOLLOWBLOCKS 5 INCH','HOLLOWBLOCKS 6 INCH'] as $idx => $item)
                                 <li class="mr-2">
                                     <button class="inline-block p-4 border-b-2 rounded-t-lg text-gray-700 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400" id="tab{{ $idx }}" onclick="showInventoryTab('tabContent{{ $idx }}', 'tab{{ $idx }}')">
                                         {{ $item }}
@@ -189,7 +189,7 @@
                     </div>
                     <!-- Tab Contents -->
                     @php 
-                        $inventoryItems = ['G1 DAMORTIS','G1 CURRIMAO','3/4 GRAVEL','VIBRO SAND','SAND S1 M','HOLLOWBLOCKS 4 INCH','HOLLOWBLOCKS 5 INCH','HOLLOWBLOCKS 6 INCH'];
+                        $inventoryItems = ['G1 DAMORTIS','G1 CURRIMAO','3/4 GRAVEL DAMORTIS','3/4 GRAVEL CURRIMAO','VIBRO SAND','SAND S1 M','HOLLOWBLOCKS 4 INCH','HOLLOWBLOCKS 5 INCH','HOLLOWBLOCKS 6 INCH'];
                         $hollowblockSizeMap = [
                             'HOLLOWBLOCKS 4 INCH' => ['size' => '4_inch', 'original' => 'HOLLOWBLOCKS'],
                             'HOLLOWBLOCKS 5 INCH' => ['size' => '5_inch', 'original' => 'HOLLOWBLOCKS'],
@@ -452,7 +452,7 @@
                 <div class="mb-2">
                     <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Item</label>
                     <select name="item" class="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400" required onchange="updateBalance()">
-                        @foreach(['G1 DAMORTIS','G1 CURRIMAO','3/4 GRAVEL','VIBRO SAND','SAND S1 M'] as $item)
+                        @foreach(['G1 DAMORTIS','G1 CURRIMAO','3/4 GRAVEL DAMORTIS','3/4 GRAVEL CURRIMAO','VIBRO SAND','SAND S1 M'] as $item)
                             <option value="{{ $item }}">{{ $item }}</option>
                         @endforeach
                         <optgroup label="HOLLOWBLOCKS">
@@ -644,7 +644,7 @@
                 <div class="mb-2">
                     <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Item</label>
                     <select name="item" class="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400" required onchange="updateStartingBalanceFields()">
-                        @foreach(['G1 DAMORTIS','G1 CURRIMAO','3/4 GRAVEL','VIBRO SAND','SAND S1 M'] as $item)
+                        @foreach(['G1 DAMORTIS','G1 CURRIMAO','3/4 GRAVEL DAMORTIS','3/4 GRAVEL CURRIMAO','VIBRO SAND','SAND S1 M'] as $item)
                             <option value="{{ $item }}">{{ $item }}</option>
                         @endforeach
                         <optgroup label="HOLLOWBLOCKS">
@@ -1004,7 +1004,8 @@
                     }
                     break;
                     
-                case '3/4 GRAVEL':
+                case '3/4 GRAVEL DAMORTIS':
+                case '3/4 GRAVEL CURRIMAO':
                     if (pickupDeliveryType === 'pickup_pier') {
                         priceMultiplier = (vatType === 'with_vat') ? 4514.40 : 4180.00;
                     } else if (pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
@@ -1296,7 +1297,8 @@
                     }
                     break;
                     
-                case '3/4 GRAVEL':
+                case '3/4 GRAVEL DAMORTIS':
+                case '3/4 GRAVEL CURRIMAO':
                     if (pickupDeliveryType === 'pickup_pier') {
                         priceMultiplier = (vatType === 'with_vat') ? 4514.40 : 4180.00;
                     } else if (pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
@@ -1617,7 +1619,7 @@
                 const workbook = XLSX.utils.book_new();
                 
                 // Define the inventory items
-                const inventoryItems = ['G1 DAMORTIS','G1 CURRIMAO','3/4 GRAVEL','VIBRO SAND','SAND S1 M','HOLLOWBLOCKS'];
+                const inventoryItems = ['G1 DAMORTIS','G1 CURRIMAO','3/4 GRAVEL DAMORTIS','3/4 GRAVEL CURRIMAO','VIBRO SAND','SAND S1 M','HOLLOWBLOCKS'];
                 
                 // Process each inventory item
                 inventoryItems.forEach((itemName, index) => {

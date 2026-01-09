@@ -752,7 +752,8 @@ class InventoryController extends Controller
                 }
                 break;
                 
-            case '3/4 GRAVEL':
+            case '3/4 GRAVEL DAMORTIS':
+            case '3/4 GRAVEL CURRIMAO':
                 if ($pickupDeliveryType === 'pickup_pier') {
                     $priceMultiplier = ($vatType === 'with_vat') ? 4514.40 : 4180.00;
                 } elseif ($pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
