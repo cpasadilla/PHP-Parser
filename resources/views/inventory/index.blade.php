@@ -976,11 +976,11 @@
                     
                 case 'VIBRO SAND':
                     if (pickupDeliveryType === 'pickup_pier') {
-                        priceMultiplier = (vatType === 'with_vat') ? 4681.80 : 4335.00;
+                        priceMultiplier = (vatType === 'with_vat') ? 4951.80 : 4585.00;
                     } else if (pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
-                        priceMultiplier = (vatType === 'with_vat') ? 4811.40 : 4455.00;
+                        priceMultiplier = (vatType === 'with_vat') ? 5081.40 : 4705.00;
                     } else if (pickupDeliveryType === 'delivered_stockpile') {
-                        priceMultiplier = (vatType === 'with_vat') ? 4941.00 : 4575.00;
+                        priceMultiplier = (vatType === 'with_vat') ? 5211.00 : 4825.00;
                     }
                     break;
                     
@@ -1021,7 +1021,7 @@
                     } else if (hollowblockSize === '5_inch') {
                         priceMultiplier = (vatType === 'with_vat') ? 80.08 : 71.50;
                     } else if (hollowblockSize === '6_inch') {
-                        priceMultiplier = (vatType === 'with_vat') ? 80.08 : 71.50;
+                        priceMultiplier = (vatType === 'with_vat') ? 86.24 : 77.00;
                     }
                     break;
                     
@@ -1269,11 +1269,11 @@
                     
                 case 'VIBRO SAND':
                     if (pickupDeliveryType === 'pickup_pier') {
-                        priceMultiplier = (vatType === 'with_vat') ? 4681.80 : 4335.00;
+                        priceMultiplier = (vatType === 'with_vat') ? 4951.80 : 4585.00;
                     } else if (pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
-                        priceMultiplier = (vatType === 'with_vat') ? 4811.40 : 4455.00;
+                        priceMultiplier = (vatType === 'with_vat') ? 5081.40 : 4705.00;
                     } else if (pickupDeliveryType === 'delivered_stockpile') {
-                        priceMultiplier = (vatType === 'with_vat') ? 4941.00 : 4575.00;
+                        priceMultiplier = (vatType === 'with_vat') ? 5211.00 : 4825.00;
                     }
                     break;
                     
