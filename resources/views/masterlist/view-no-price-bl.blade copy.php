@@ -113,7 +113,9 @@
                                 <td class="p-2 description-col" style="font-family: Arial; font-size: 13px; text-align: left;">
                                 {{$parcel->itemName}}{{ !empty($parcel->desc) ? ' - '.$parcel->desc : '' }}
                             </td>
-                            <td class="p-2" style="font-family: Arial; font-size: 13px;"></td>
+                            <td class="p-2" style="font-family: Arial; font-size: 13px;">
+                                 <!-- RATE column - kept blank -->
+                            </td>
                             <td class="p-2" style="font-family: Arial; font-size: 13px; width: 60px;">
                                 @if ($parcel->weight && $parcel->weight != '0' && $parcel->weight != '0.00')
                                     {{$parcel->weight}}
