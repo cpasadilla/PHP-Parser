@@ -1314,7 +1314,7 @@
                     } else if (hollowblockSize === '5_inch') {
                         priceMultiplier = (vatType === 'with_vat') ? 80.08 : 71.50;
                     } else if (hollowblockSize === '6_inch') {
-                        priceMultiplier = (vatType === 'with_vat') ? 80.08 : 71.50;
+                        priceMultiplier = (vatType === 'with_vat') ? 86.24 : 77.00;
                     }
                     break;
                     
