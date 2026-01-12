@@ -209,6 +209,77 @@
             transform: translateY(-2px);
             box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.1);
         }
+        
+        /* Pie Chart Legend Styling */
+        .chart-legend-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 8px;
+            margin-top: 12px;
+            padding: 12px;
+            background-color: #f9fafb;
+            border-radius: 0.5rem;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        
+        .dark .chart-legend-container {
+            background-color: #1f2937;
+        }
+        
+        .chart-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            padding: 4px 6px;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            color: #4b5563;
+        }
+        
+        .dark .chart-legend-item {
+            color: #d1d5db;
+        }
+        
+        .chart-legend-item:hover {
+            background-color: #e5e7eb;
+        }
+        
+        .dark .chart-legend-item:hover {
+            background-color: #374151;
+        }
+        
+        .chart-legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+        
+        /* Scrollbar styling */
+        .chart-legend-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .chart-legend-container::-webkit-scrollbar-track {
+            background: #e5e7eb;
+            border-radius: 3px;
+        }
+        
+        .dark .chart-legend-container::-webkit-scrollbar-track {
+            background: #374151;
+        }
+        
+        .chart-legend-container::-webkit-scrollbar-thumb {
+            background: #9ca3af;
+            border-radius: 3px;
+        }
+        
+        .chart-legend-container::-webkit-scrollbar-thumb:hover {
+            background: #6b7280;
+        }
     </style>
 
     <!-- Individual Graph Sections for Each Ship -->
@@ -320,18 +391,65 @@
 
     <!-- Pie Chart Section -->
     <div class="p-6" style="{{ auth()->user()->hasSubpagePermission('dashboard', 'pie-charts') || (auth()->user()->roles && in_array(strtoupper(trim(auth()->user()->roles->roles)), ['ADMIN', 'ADMINISTRATOR'])) ? '' : 'display: none;' }}">
-        <div class="bg-white dark:bg-dark-eval-1 rounded-lg shadow-md p-6">
-            <h2 class="text-lg font-semibold text-center text-gray-800 dark:text-gray-200">Number of BL Per Ship</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-6">
+        <div class="bg-white dark:bg-dark-eval-1 rounded-lg shadow-lg p-8">
+            <!-- Section Header -->
+            <div class="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div class="pl-6">
+                    <div class="flex items-center gap-3 mb-2 pt-6">
+                        <svg class="w-7 h-7 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100">BL Distribution by Ship</h2>
+                    </div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 ml-10">Overview of Bill of Lading distribution across all vessels</p>
+                </div>
+            </div>
+
+            <!-- Ship Cards Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
                 @foreach($ships as $ship)
-                <div class="flex flex-col items-center p-4 bg-white dark:bg-dark-eval-2 rounded-lg shadow-md">
-                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">M/V Everwin Star {{ $ship->ship_number }}</h3>
-                    <div class="w-full aspect-square">
-                        <canvas id="blDistributionChart{{ $loop->index }}" style="width: 100%; height: 100%; min-height: 300px;"></canvas>
+                <div class="bl-distribution-card group relative overflow-hidden rounded-xl border border-gray-100 dark:border-gray-700 bg-gradient-to-br from-white to-gray-50 dark:from-dark-eval-2 dark:to-gray-900 p-6 shadow-md hover:shadow-xl transition-all duration-300">
+                    <!-- Decorative Background Element -->
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-blue-100 dark:bg-blue-900/20 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform duration-300 opacity-0 group-hover:opacity-100"></div>
+                    
+                    <!-- Card Content -->
+                    <div class="relative z-10">
+                        <!-- Ship Header -->
+                        <div class="mb-6 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/40">
+                                    <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M11 3a1 1 0 10-2 0v1a1 1 0 102 0V3zM15.657 5.757a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM15.657 14.243a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414l.707.707zM11 17a1 1 0 102 0v-1a1 1 0 10-2 0v1zM5.757 15.657a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707zM3 10a1 1 0 01 1 1h1a1 1 0 110-2H4a1 1 0 00-1 1zM5.757 5.757a1 1 0 000-1.414L5.05 3.636a1 1 0 10-1.414 1.414l.707.707z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 leading-tight">M/V Everwin Star</h3>
+                                    <p class="text-sm font-semibold text-blue-600 dark:text-blue-400">{{ $ship->ship_number }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Chart Container -->
+                        <div class="flex justify-center mb-4">
+                            <div class="w-full" style="max-width: 280px; height: 280px;">
+                                <canvas id="blDistributionChart{{ $loop->index }}" class="pie-chart-canvas" style="width: 100%; height: 100%;"></canvas>
+                            </div>
+                        </div>
+                        
+                        <!-- Legend Container -->
+                        <div id="chartLegend{{ $loop->index }}" class="chart-legend-container"></div>
+
+                        <!-- Chart Footer Info -->
+                        <div class="pt-4 border-t border-gray-200 dark:border-gray-600 text-center">
+                            <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">Total BL Count</p>
+                            <p class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ isset($totalBlPerShip[$ship->ship_number]) ? $totalBlPerShip[$ship->ship_number] : 0 }}</p>
+                        </div>
                     </div>
                 </div>
                 @endforeach
             </div>
+
+
         </div>
     </div>
 
@@ -941,7 +1059,7 @@
         // Create the pie chart
         try {
             const ctx = canvas.getContext('2d');
-            new Chart(ctx, {
+            const piChart = new Chart(ctx, {
                 type: 'pie',
                 data: {
                     labels: labels,
@@ -964,31 +1082,7 @@
                     },
                     plugins: {
                         legend: {
-                            position: 'right',
-                            display: true,
-                            align: 'center',
-                            labels: {
-                                padding: 15,
-                                usePointStyle: true,
-                                pointStyle: 'circle',
-                                font: {
-                                    size: 11
-                                },
-                                generateLabels: function(chart) {
-                                    const data = chart.data;
-                                    if (data.labels.length && data.datasets.length) {
-                                        return data.labels.map((label, i) => {
-                                            const value = data.datasets[0].data[i];
-                                            return {
-                                                text: `${label}: ${value} BL`,
-                                                fillStyle: data.datasets[0].backgroundColor[i],
-                                                index: i
-                                            };
-                                        });
-                                    }
-                                    return [];
-                                }
-                            }
+                            display: false  // Hide default legend
                         },
                         tooltip: {
                             callbacks: {
@@ -1004,6 +1098,31 @@
                     }
                 }
             });
+            
+            // Create custom legend
+            const legendContainer = document.getElementById(`chartLegend${index}`);
+            if (legendContainer) {
+                legendContainer.innerHTML = '';
+                labels.forEach((label, i) => {
+                    const value = data[i];
+                    const color = backgroundColors[i];
+                    
+                    const legendItem = document.createElement('div');
+                    legendItem.className = 'chart-legend-item';
+                    legendItem.innerHTML = `
+                        <div class="chart-legend-dot" style="background-color: ${color};"></div>
+                        <span title="${label}: ${value} BL">${label}: ${value}</span>
+                    `;
+                    
+                    // Add click handler to toggle segment visibility
+                    legendItem.addEventListener('click', function() {
+                        piChart.toggleDataVisibility(i);
+                        piChart.update();
+                    });
+                    
+                    legendContainer.appendChild(legendItem);
+                });
+            }
         } catch (error) {
             console.error(`Error creating chart for M/V Everwin Star ${shipNumber}:`, error);
         }
