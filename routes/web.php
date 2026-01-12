@@ -7,6 +7,7 @@ use App\Http\Controllers\UserPermissionController;
 use App\Http\Controllers\AccountingController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\GatePassController;
+use App\Http\Controllers\AnnouncementController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PriceListController;
@@ -36,6 +37,12 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
     ->name('dashboard');
 
 Route::middleware('auth')->group(function () {
+    // Announcement routes - accessible to all authenticated users
+    Route::get('/announcements', [AnnouncementController::class, 'index'])->name('announcements.index');
+    Route::post('/announcements', [AnnouncementController::class, 'store'])->name('announcements.store');
+    Route::get('/announcements/api/get', [AnnouncementController::class, 'getAnnouncements'])->name('announcements.get');
+    Route::delete('/announcements/{announcement}', [AnnouncementController::class, 'destroy'])->name('announcements.destroy');
+
     // Profile routes - always accessible
     Route::middleware('page.permission:profile')->group(function () {
         Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

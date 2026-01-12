@@ -21,6 +21,24 @@
     </div>
     @endif
 
+    <!-- Announcements Section -->
+    <div class="p-6 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 mx-6 mb-6 rounded-r">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.961 1.961 0 01-2.437 1.91M15.75 5.881c.84.049 1.678.238 2.5.564M5.072 12c.585.283 1.173.646 1.772 1.053a4.914 4.914 0 00-.063 1.881A4.972 4.972 0 006.75 12.75"></path>
+                </svg>
+                <div>
+                    <h3 class="text-lg font-semibold text-blue-900 dark:text-blue-100">Announcements - Freedom Wall</h3>
+                    <p class="text-sm text-blue-700 dark:text-blue-300">Share updates, announcements, and messages with everyone</p>
+                </div>
+            </div>
+            <a href="{{ route('announcements.index') }}" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition font-medium">
+                View All
+            </a>
+        </div>
+    </div>
+
     <style>
         .tab-link.active {
             color: #3B82F6;

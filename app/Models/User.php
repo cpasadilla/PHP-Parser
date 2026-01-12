@@ -158,4 +158,14 @@ class User extends Authenticatable
             ? json_decode($this->permissions->pages, true) 
             : $this->permissions->pages;
     }
+
+    /**
+     * Check if user is an admin
+     * 
+     * @return bool
+     */
+    public function isAdmin(): bool
+    {
+        return $this->roles && in_array(strtoupper(trim($this->roles->roles)), ['ADMIN', 'ADMINISTRATOR']);
+    }
 }
