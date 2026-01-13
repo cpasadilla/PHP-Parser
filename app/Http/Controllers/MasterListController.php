@@ -128,9 +128,10 @@ class MasterListController extends Controller
             // $data['updated_by'] = Auth::user()->fName . ' ' . Auth::user()->lName;
             // $data['updated_location'] = $request->input('target_ship') . ' ' . $request->input('target_voyage');
 
+            // Create the new BL (the copy retains the original amounts here)
             $copy = Order::create($data);
 
-            // Copy parcels
+            // Copy parcels to the new BL
             foreach ($original->parcels as $parcel) {
                 $p = $parcel->replicate();
                 $p->orderId = $copy->id;
@@ -143,6 +144,29 @@ class MasterListController extends Controller
             // Preserve original ship/voyage explicitly to ensure they are not changed
             $originalShip = $original->shipNum;
             $originalVoyage = $original->voyageNum;
+
+            // Reset all financial fields to zero on the original record
+            $original->freight = 0;
+            $original->valuation = 0;
+            $original->value = 0;
+            $original->wharfage = 0;
+            $original->discount = 0;
+            $original->bir = 0;
+            $original->other = 0; // Ensure this matches your column name 'other'
+            $original->totalAmount = 0;
+            $original->originalFreight = 0; // Optional: zero this if you want to prevent recalculation logic
+
+            if (in_array('transferred_to', $original->getFillable())) {
+                $original->transferred_to = $copy->id;
+            } else {
+                $original->remark = trim(($original->remark ?? '') . "\n" . $transferToInfo);
+            }
+
+            // Reassign identifiers to prevent accidental movement and SAVE
+            $original->shipNum = $originalShip;
+            $original->voyageNum = $originalVoyage;
+            $original->save();
+
 
             if (in_array('transferred_to', $original->getFillable())) {
                 $original->transferred_to = $copy->id;
