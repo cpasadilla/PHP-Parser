@@ -218,7 +218,15 @@
                             </thead>    
                             <thead>
                                     <tr class="bg-gray-100 dark:bg-gray-700">
-                                        <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">DATE</th>
+                                        <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600" 
+                                            onclick="toggleDateSort({{ $idx }})">
+                                            <div class="flex items-center justify-center gap-1">
+                                                DATE
+                                                <svg id="sortIcon{{ $idx }}" class="w-2 h-2 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                                </svg>
+                                            </div>
+                                        </th>
                                         <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">CUSTOMER</th>
                                         <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">SHIP#</th>
                                         <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">VOYAGE#</th>
@@ -718,6 +726,46 @@
             });
         });
 
+        function toggleDateSort(tabIdx) {
+            const tabContent = document.getElementById('tabContent' + tabIdx);
+            const tbody = tabContent.querySelector('table tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            const icon = document.getElementById('sortIcon' + tabIdx);
+
+            // 1. Identify "Groups" (A month header + its following data rows)
+            let groups = [];
+            let currentGroup = null;
+
+            rows.forEach(row => {
+                // If it's a Month Header or the "Final Summary" row at the bottom
+                if (row.style.backgroundColor === 'rgb(210, 180, 140)' || row.classList.contains('font-semibold')) {
+                    if (currentGroup) groups.push(currentGroup);
+                    currentGroup = { header: row, data: [] };
+                } else if (currentGroup) {
+                    currentGroup.data.push(row);
+                }
+            });
+            if (currentGroup) groups.push(currentGroup);
+
+            // 2. Reverse the groups (Newest Month vs Oldest Month)
+            groups.reverse();
+
+            // 3. Reverse the data rows within each month (Newest Day vs Oldest Day)
+            groups.forEach(group => {
+                group.data.reverse();
+            });
+
+            // 4. Clear and Re-append
+            tbody.innerHTML = '';
+            groups.forEach(group => {
+                tbody.appendChild(group.header);
+                group.data.forEach(dataRow => tbody.appendChild(dataRow));
+            });
+
+            // 5. Rotate Icon to show direction
+            icon.style.transform = icon.style.transform === 'rotate(180deg)' ? 'rotate(0deg)' : 'rotate(180deg)';
+        }
+
         function handleAmountManualToggle() {
             const manualToggle = document.getElementById('amountManualToggle');
             const amountInput = document.getElementById('amountInput');
@@ -1166,11 +1214,11 @@
             </div>`;
             
             // Add Updated Onsite Date field - accessible to everyone
-            var updatedOnsiteDate = found.updated_onsite_date || '';
-            fields += `<div class='mb-2'>
-                <label class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>Updated Onsite Date</label>
-                <input type='date' name='updated_onsite_date' value='${updatedOnsiteDate}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' />
-            </div>`;
+            // var updatedOnsiteDate = found.updated_onsite_date || '';
+            // fields += `<div class='mb-2'>
+            //    <label class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>Updated Onsite Date</label>
+            //    <input type='date' name='updated_onsite_date' value='${updatedOnsiteDate}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' />
+            // </div>`;
             
             // Add hidden fields for hollowblock sizes
             fields += `<input type='hidden' name='hollowblock_4_inch_in' id='edit_hollowblock_4_inch_in' value='${found.hollowblock_4_inch_in || ''}' />`;
