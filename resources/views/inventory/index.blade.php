@@ -1053,13 +1053,22 @@
                     break;
                     
                 case '3/4 GRAVEL DAMORTIS':
-                case '3/4 GRAVEL CURRIMAO':
                     if (pickupDeliveryType === 'pickup_pier') {
                         priceMultiplier = (vatType === 'with_vat') ? 4514.40 : 4180.00;
                     } else if (pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
                         priceMultiplier = (vatType === 'with_vat') ? 4644.00 : 4300.00;
                     } else if (pickupDeliveryType === 'delivered_stockpile') {
                         priceMultiplier = (vatType === 'with_vat') ? 4773.60 : 4420.00;
+                    }
+                    break;
+
+                case '3/4 GRAVEL CURRIMAO':
+                    if (pickupDeliveryType === 'pickup_pier') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4298.40 : 3980.00;
+                    } else if (pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4395.00 : 4070.00;
+                    } else if (pickupDeliveryType === 'delivered_stockpile') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4492.80 : 4160.00;
                     }
                     break;
                     
@@ -1346,13 +1355,22 @@
                     break;
                     
                 case '3/4 GRAVEL DAMORTIS':
-                case '3/4 GRAVEL CURRIMAO':
                     if (pickupDeliveryType === 'pickup_pier') {
                         priceMultiplier = (vatType === 'with_vat') ? 4514.40 : 4180.00;
                     } else if (pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
                         priceMultiplier = (vatType === 'with_vat') ? 4644.00 : 4300.00;
                     } else if (pickupDeliveryType === 'delivered_stockpile') {
                         priceMultiplier = (vatType === 'with_vat') ? 4773.60 : 4420.00;
+                    }
+                    break;
+
+                case '3/4 GRAVEL CURRIMAO':
+                    if (pickupDeliveryType === 'pickup_pier') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4298.40 : 3980.00;
+                    } else if (pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4395.00 : 4070.00;
+                    } else if (pickupDeliveryType === 'delivered_stockpile') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4492.80 : 4160.00;
                     }
                     break;
                     
