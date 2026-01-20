@@ -713,6 +713,10 @@ class InventoryController extends Controller
         
         switch ($item) {
             case 'SAND S1 M':
+                // Changed $type to $pickupDeliveryType
+                if ($pickupDeliveryType === 'truck_load_307') return 13062.85;
+                if ($pickupDeliveryType === 'truck_load_352') return 14977.60;
+
                 if ($pickupDeliveryType === 'pickup_pier') {
                     $priceMultiplier = ($vatType === 'with_vat') ? 4336.20 : 4015.00;
                 } elseif ($pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
@@ -723,6 +727,9 @@ class InventoryController extends Controller
                 break;
                 
             case 'VIBRO SAND':
+                if ($pickupDeliveryType === 'truck_load_307') return 14812.75;
+                if ($pickupDeliveryType === 'truck_load_352') return 146984.00;
+
                 if ($pickupDeliveryType === 'pickup_pier') {
                     $priceMultiplier = ($vatType === 'with_vat') ? 4951.80 : 4585.00;
                 } elseif ($pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
@@ -733,6 +740,9 @@ class InventoryController extends Controller
                 break;
                 
             case 'G1 CURRIMAO':
+                if ($pickupDeliveryType === 'truck_load_307') return 12341.40;
+                if ($pickupDeliveryType === 'truck_load_352') return 14150.40;
+
                 if ($pickupDeliveryType === 'pickup_pier') {
                     $priceMultiplier = ($vatType === 'with_vat') ? 4082.40 : 3780.00;
                 } elseif ($pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
@@ -743,6 +753,9 @@ class InventoryController extends Controller
                 break;
                 
             case 'G1 DAMORTIS':
+                if ($pickupDeliveryType === 'truck_load_307') return 13062.85;
+                if ($pickupDeliveryType === 'truck_load_352') return 14977.60;
+
                 if ($pickupDeliveryType === 'pickup_pier') {
                     $priceMultiplier = ($vatType === 'with_vat') ? 4336.20 : 4015.00;
                 } elseif ($pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
@@ -753,6 +766,9 @@ class InventoryController extends Controller
                 break;
                 
             case '3/4 GRAVEL DAMORTIS':
+                if ($pickupDeliveryType === 'truck_load_307') return 13569.40;
+                if ($pickupDeliveryType === 'truck_load_352') return 15558.40;
+
                 if ($pickupDeliveryType === 'pickup_pier') {
                     $priceMultiplier = ($vatType === 'with_vat') ? 4514.40 : 4180.00;
                 } elseif ($pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
@@ -763,6 +779,9 @@ class InventoryController extends Controller
                 break;
 
             case '3/4 GRAVEL CURRIMAO':
+                if ($pickupDeliveryType === 'truck_load_307') return 12771.20;
+                if ($pickupDeliveryType === 'truck_load_352') return 14643.20;
+
                 if ($pickupDeliveryType === 'pickup_pier') {
                     $priceMultiplier = ($vatType === 'with_vat') ? 4298.40 : 3980.00;
                 } elseif ($pickupDeliveryType === 'pickup_stockpile_delivered_pier') {

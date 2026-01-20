@@ -520,6 +520,8 @@
                         <option value="pickup_stockpile_delivered_pier">Pick up from Stock Pile & Delivered from Pier</option>
                         <option value="delivered_stockpile">Delivered from Stock Pile</option>
                         <option value="per_bag">Per Bag (Manual Amount)</option>
+                        <option value="truck_load_307">Truck Load 03.07</option>
+                        <option value="truck_load_352">Truck Load 03.52</option>
                     </select>
                 </div>
                 
@@ -942,163 +944,195 @@
         }
 
     function updateAmountCalculation() {
-            var itemSelect = document.querySelector('#inventoryModal select[name="item"]');
-            var outInput = document.querySelector('#inventoryModal input[name="out"]');
-            var pickupDeliverySelect = document.querySelector('#inventoryModal select[name="pickup_delivery_type"]');
-            var vatSelect = document.querySelector('#inventoryModal select[name="vat_type"]');
-            var hollowblockSizeSelect = document.querySelector('#inventoryModal select[name="hollowblock_size"]');
-            var amountInput = document.querySelector('#inventoryModal input[name="amount"]');
-            var amountLabel = document.getElementById('amountLabel');
+        var itemSelect = document.querySelector('#inventoryModal select[name="item"]');
+        var outInput = document.querySelector('#inventoryModal input[name="out"]');
+        var pickupDeliverySelect = document.querySelector('#inventoryModal select[name="pickup_delivery_type"]');
+        var vatSelect = document.querySelector('#inventoryModal select[name="vat_type"]');
+        var hollowblockSizeSelect = document.querySelector('#inventoryModal select[name="hollowblock_size"]');
+        var amountInput = document.querySelector('#inventoryModal input[name="amount"]');
+        var amountLabel = document.getElementById('amountLabel');
         var manualToggle = document.getElementById('amountManualToggle');
             
-            if (!itemSelect || !outInput || !amountInput) return;
+        if (!itemSelect || !outInput || !amountInput) return;
             
-            var item = itemSelect.value;
-            var outValue = parseFloat(outInput.value) || 0;
-            var pickupDeliveryType = pickupDeliverySelect ? pickupDeliverySelect.value : '';
-            var vatType = vatSelect ? vatSelect.value : '';
-            var hollowblockSize = hollowblockSizeSelect ? hollowblockSizeSelect.value : '';
-            
-            // Update OUT field placeholder and label based on pickup delivery type
-            var outLabel = document.querySelector('label[for="out"], label[aria-label="out"]');
-            if (pickupDeliveryType === 'per_bag') {
-                outInput.placeholder = 'Enter number of bags (e.g., 5 bags → 0.139 cubic)';
-                if (outLabel) {
-                    outLabel.textContent = 'OUT (Number of Bags)';
-                }
-                // Update the manual toggle to be checked for per_bag
-                if (manualToggle) {
-                    manualToggle.checked = true;
-                }
-            } else {
-                outInput.placeholder = 'Enter cubic meters';
-                if (outLabel) {
-                    outLabel.textContent = 'OUT';
-                }
+        var item = itemSelect.value;
+        var outValue = parseFloat(outInput.value) || 0;
+        var pickupDeliveryType = pickupDeliverySelect ? pickupDeliverySelect.value : '';
+        var vatType = vatSelect ? vatSelect.value : '';
+        var hollowblockSize = hollowblockSizeSelect ? hollowblockSizeSelect.value : '';
+
+        // --- NEW LOGIC FOR TRUCK LOADS AUTO-SET ---
+        if (pickupDeliveryType === 'truck_load_307') {
+            outInput.value = "3.07";
+            outInput.readOnly = true;
+            outInput.classList.add('bg-gray-100'); // Visual cue that it is locked
+        } else if (pickupDeliveryType === 'truck_load_352') {
+            outInput.value = "3.52";
+            outInput.readOnly = true;
+            outInput.classList.add('bg-gray-100');
+        } else {
+            outInput.readOnly = false;
+            outInput.classList.remove('bg-gray-100');
+        }
+
+        // Update OUT field placeholder and label based on pickup delivery type
+        var outLabel = document.querySelector('label[for="out"], label[aria-label="out"]');
+        if (pickupDeliveryType === 'per_bag') {
+            outInput.placeholder = 'Enter number of bags (e.g., 5 bags → 0.139 cubic)';
+            if (outLabel) {
+                outLabel.textContent = 'OUT (Number of Bags)';
             }
+            // Update the manual toggle to be checked for per_bag
+            if (manualToggle) {
+                manualToggle.checked = true;
+            }
+        } else {
+            outInput.placeholder = 'Enter cubic meters';
+            if (outLabel) {
+                outLabel.textContent = 'OUT';
+            }
+        }
             
         // Manual amount if toggle is on OR per_bag type
         if ((manualToggle && manualToggle.checked) || pickupDeliveryType === 'per_bag') {
-                // Make amount field editable for manual entry
-                amountInput.readOnly = false;
-                amountInput.classList.remove('bg-gray-100', 'dark:bg-gray-600');
-                amountInput.classList.add('bg-white', 'dark:bg-gray-700');
-                if (amountLabel) {
-            amountLabel.textContent = pickupDeliveryType === 'per_bag' ? 'AMOUNT (Per Bag - Manual Entry)' : 'AMOUNT (Manual Entry)';
-                }
-                return;
-            } else {
-                // Make amount field auto-calculated and read-only
-                amountInput.readOnly = true;
-                amountInput.classList.remove('bg-white', 'dark:bg-gray-700');
-                amountInput.classList.add('bg-gray-100', 'dark:bg-gray-600');
-                if (amountLabel) {
-                    amountLabel.textContent = 'AMOUNT (Auto-calculated)';
-                }
+            // Make amount field editable for manual entry
+            amountInput.readOnly = false;
+            amountInput.classList.remove('bg-gray-100', 'dark:bg-gray-600');
+            amountInput.classList.add('bg-white', 'dark:bg-gray-700');
+            if (amountLabel) {
+                amountLabel.textContent = pickupDeliveryType === 'per_bag' ? 'AMOUNT (Per Bag - Manual Entry)' : 'AMOUNT (Manual Entry)';
             }
-            
-            // For amount calculation, use the CUBIC value (converted from bags if needed)
-            var calculationOutValue = outValue;
-            if (pickupDeliveryType === 'per_bag') {
-                calculationOutValue = outValue / 36; // Convert bags to cubic for amount calculation
-                console.log(`Amount calculation: ${outValue} bags → ${calculationOutValue.toFixed(6)} cubic`);
+            return;
+        } else {
+            // Make amount field auto-calculated and read-only
+            amountInput.readOnly = true;
+            amountInput.classList.remove('bg-white', 'dark:bg-gray-700');
+            amountInput.classList.add('bg-gray-100', 'dark:bg-gray-600');
+            if (amountLabel) {
+                amountLabel.textContent = 'AMOUNT (Auto-calculated)';
             }
-            
-            if (calculationOutValue <= 0) {
-                amountInput.value = '0.00';
-                return;
-            }
-            
-            var priceMultiplier = 0;
-            
-            switch (item) {
-                case 'SAND S1 M':
-                    if (pickupDeliveryType === 'pickup_pier') {
-                        priceMultiplier = (vatType === 'with_vat') ? 4336.20 : 4015.00;
-                    } else if (pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
-                        priceMultiplier = (vatType === 'with_vat') ? 4465.80 : 4135.00;
-                    } else if (pickupDeliveryType === 'delivered_stockpile') {
-                        priceMultiplier = (vatType === 'with_vat') ? 4595.40 : 4255.00;
-                    }
-                    break;
-                    
-                case 'VIBRO SAND':
-                    if (pickupDeliveryType === 'pickup_pier') {
-                        priceMultiplier = (vatType === 'with_vat') ? 4951.80 : 4585.00;
-                    } else if (pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
-                        priceMultiplier = (vatType === 'with_vat') ? 5081.40 : 4705.00;
-                    } else if (pickupDeliveryType === 'delivered_stockpile') {
-                        priceMultiplier = (vatType === 'with_vat') ? 5211.00 : 4825.00;
-                    }
-                    break;
-                    
-                case 'G1 CURRIMAO':
-                    if (pickupDeliveryType === 'pickup_pier') {
-                        priceMultiplier = (vatType === 'with_vat') ? 4082.40 : 3780.00;
-                    } else if (pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
-                        priceMultiplier = (vatType === 'with_vat') ? 4212.00 : 3900.00;
-                    } else if (pickupDeliveryType === 'delivered_stockpile') {
-                        priceMultiplier = (vatType === 'with_vat') ? 4341.60 : 4020.00;
-                    }
-                    break;
-                    
-                case 'G1 DAMORTIS':
-                    if (pickupDeliveryType === 'pickup_pier') {
-                        priceMultiplier = (vatType === 'with_vat') ? 4336.20 : 4015.00;
-                    } else if (pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
-                        priceMultiplier = (vatType === 'with_vat') ? 4465.80 : 4135.00;
-                    } else if (pickupDeliveryType === 'delivered_stockpile') {
-                        priceMultiplier = (vatType === 'with_vat') ? 4595.40 : 4255.00;
-                    }
-                    break;
-                    
-                case '3/4 GRAVEL DAMORTIS':
-                    if (pickupDeliveryType === 'pickup_pier') {
-                        priceMultiplier = (vatType === 'with_vat') ? 4514.40 : 4180.00;
-                    } else if (pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
-                        priceMultiplier = (vatType === 'with_vat') ? 4644.00 : 4300.00;
-                    } else if (pickupDeliveryType === 'delivered_stockpile') {
-                        priceMultiplier = (vatType === 'with_vat') ? 4773.60 : 4420.00;
-                    }
-                    break;
-
-                case '3/4 GRAVEL CURRIMAO':
-                    if (pickupDeliveryType === 'pickup_pier') {
-                        priceMultiplier = (vatType === 'with_vat') ? 4298.40 : 3980.00;
-                    } else if (pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
-                        priceMultiplier = (vatType === 'with_vat') ? 4395.00 : 4070.00;
-                    } else if (pickupDeliveryType === 'delivered_stockpile') {
-                        priceMultiplier = (vatType === 'with_vat') ? 4492.80 : 4160.00;
-                    }
-                    break;
-                    
-                case 'HOLLOWBLOCKS':
-                    if (hollowblockSize === '4_inch') {
-                        priceMultiplier = (vatType === 'with_vat') ? 73.92 : 66.00;
-                    } else if (hollowblockSize === '5_inch') {
-                        priceMultiplier = (vatType === 'with_vat') ? 80.08 : 71.50;
-                    } else if (hollowblockSize === '6_inch') {
-                        priceMultiplier = (vatType === 'with_vat') ? 86.24 : 77.00;
-                    }
-                    break;
-                    
-                default:
-                    priceMultiplier = 0;
-            }
-            
-            var calculatedAmount = calculationOutValue * priceMultiplier;
-            amountInput.value = calculatedAmount.toFixed(2);
         }
-
-        // Function to get initial balance value for edit modal
-        function getInitialBalanceValue(found) {
-            if (found.item === 'HOLLOWBLOCKS' && found.hollowblock_size) {
-                // Get the size-specific balance field from the entry itself
-                var balanceField = 'hollowblock_' + found.hollowblock_size + '_balance';
-                return found[balanceField] || 0;
-            }
-            return found.balance || '';
+            
+        // For amount calculation, use the CUBIC value (converted from bags if needed)
+        var calculationOutValue = outValue;
+        if (pickupDeliveryType === 'per_bag') {
+            calculationOutValue = outValue / 36; // Convert bags to cubic for amount calculation
+            console.log(`Amount calculation: ${outValue} bags → ${calculationOutValue.toFixed(6)} cubic`);
         }
+            
+        if (calculationOutValue <= 0) {
+            amountInput.value = '0.00';
+            return;
+        }
+            
+        var priceMultiplier = 0;
+            
+        switch (item) {
+            case 'SAND S1 M':
+                if (pickupDeliveryType === 'truck_load_307') return amountInput.value = "13062.85";
+                if (pickupDeliveryType === 'truck_load_352') return amountInput.value = "14977.60";
+
+                if (pickupDeliveryType === 'pickup_pier') {
+                    priceMultiplier = (vatType === 'with_vat') ? 4336.20 : 4015.00;
+                } else if (pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
+                    priceMultiplier = (vatType === 'with_vat') ? 4465.80 : 4135.00;
+                } else if (pickupDeliveryType === 'delivered_stockpile') {
+                    priceMultiplier = (vatType === 'with_vat') ? 4595.40 : 4255.00;
+                }
+                break;
+                    
+            case 'VIBRO SAND':
+                if (pickupDeliveryType === 'truck_load_307') return amountInput.value = "14812.75";
+                if (pickupDeliveryType === 'truck_load_352') return amountInput.value = "146984.00";
+
+                if (pickupDeliveryType === 'pickup_pier') {
+                    priceMultiplier = (vatType === 'with_vat') ? 4951.80 : 4585.00;
+                } else if (pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
+                    priceMultiplier = (vatType === 'with_vat') ? 5081.40 : 4705.00;
+                } else if (pickupDeliveryType === 'delivered_stockpile') {
+                    priceMultiplier = (vatType === 'with_vat') ? 5211.00 : 4825.00;
+                }
+                break;
+                    
+            case 'G1 CURRIMAO':
+                if (pickupDeliveryType === 'truck_load_307') return amountInput.value = "12341.40";
+                if (pickupDeliveryType === 'truck_load_352') return amountInput.value = "14150.40";
+                
+                if (pickupDeliveryType === 'pickup_pier') {
+                    priceMultiplier = (vatType === 'with_vat') ? 4082.40 : 3780.00;
+                } else if (pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
+                    priceMultiplier = (vatType === 'with_vat') ? 4212.00 : 3900.00;
+                } else if (pickupDeliveryType === 'delivered_stockpile') {
+                    priceMultiplier = (vatType === 'with_vat') ? 4341.60 : 4020.00;
+                }
+                break;
+                    
+            case 'G1 DAMORTIS':
+                if (pickupDeliveryType === 'truck_load_307') return amountInput.value = "13062.85";
+                if (pickupDeliveryType === 'truck_load_352') return amountInput.value = "14977.60";
+
+                if (pickupDeliveryType === 'pickup_pier') {
+                    priceMultiplier = (vatType === 'with_vat') ? 4336.20 : 4015.00;
+                } else if (pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
+                    priceMultiplier = (vatType === 'with_vat') ? 4465.80 : 4135.00;
+                } else if (pickupDeliveryType === 'delivered_stockpile') {
+                    priceMultiplier = (vatType === 'with_vat') ? 4595.40 : 4255.00;
+                }
+                break;
+                    
+            case '3/4 GRAVEL DAMORTIS':
+                if (pickupDeliveryType === 'truck_load_307') return amountInput.value = "13569.40";
+                if (pickupDeliveryType === 'truck_load_352') return amountInput.value = "15558.40";
+
+                if (pickupDeliveryType === 'pickup_pier') {
+                    priceMultiplier = (vatType === 'with_vat') ? 4514.40 : 4180.00;
+                } else if (pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
+                    priceMultiplier = (vatType === 'with_vat') ? 4644.00 : 4300.00;
+                } else if (pickupDeliveryType === 'delivered_stockpile') {
+                    priceMultiplier = (vatType === 'with_vat') ? 4773.60 : 4420.00;
+                }
+                break;
+
+            case '3/4 GRAVEL CURRIMAO':
+                if (pickupDeliveryType === 'truck_load_307') return amountInput.value = "12771.20";
+                if (pickupDeliveryType === 'truck_load_352') return amountInput.value = "14643.20";
+
+                if (pickupDeliveryType === 'pickup_pier') {
+                    priceMultiplier = (vatType === 'with_vat') ? 4298.40 : 3980.00;
+                } else if (pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
+                    priceMultiplier = (vatType === 'with_vat') ? 4395.00 : 4070.00;
+                } else if (pickupDeliveryType === 'delivered_stockpile') {
+                    priceMultiplier = (vatType === 'with_vat') ? 4492.80 : 4160.00;
+                }
+                break;
+                    
+            case 'HOLLOWBLOCKS':
+                if (hollowblockSize === '4_inch') {
+                    priceMultiplier = (vatType === 'with_vat') ? 73.92 : 66.00;
+                } else if (hollowblockSize === '5_inch') {
+                    priceMultiplier = (vatType === 'with_vat') ? 80.08 : 71.50;
+                } else if (hollowblockSize === '6_inch') {
+                    priceMultiplier = (vatType === 'with_vat') ? 86.24 : 77.00;
+                }
+                break;
+                    
+            default:
+                priceMultiplier = 0;
+        }
+            
+        var calculatedAmount = calculationOutValue * priceMultiplier;
+        amountInput.value = calculatedAmount.toFixed(2);
+    }
+
+    // Function to get initial balance value for edit modal
+    function getInitialBalanceValue(found) {
+        if (found.item === 'HOLLOWBLOCKS' && found.hollowblock_size) {
+            // Get the size-specific balance field from the entry itself
+            var balanceField = 'hollowblock_' + found.hollowblock_size + '_balance';
+            return found[balanceField] || 0;
+        }
+        return found.balance || '';
+    }
 
     function openEditModal(id) {
             var entry = @json($entries);
@@ -1143,6 +1177,8 @@
                     <option value='pickup_stockpile_delivered_pier' ${found.pickup_delivery_type === 'pickup_stockpile_delivered_pier' ? 'selected' : ''}>Pick up from Stock Pile & Delivered from Pier</option>
                     <option value='delivered_stockpile' ${found.pickup_delivery_type === 'delivered_stockpile' ? 'selected' : ''}>Delivered from Stock Pile</option>
                     <option value='per_bag' ${found.pickup_delivery_type === 'per_bag' ? 'selected' : ''}>Per Bag (Manual Amount)</option>
+                    <option value='truck_load_03_07' ${found.pickup_delivery_type === 'truck_load_03_07' ? 'selected' : ''}>Truck Load 03.07</option>
+                    <option value='truck_load_03_52' ${found.pickup_delivery_type === 'truck_load_03_52' ? 'selected' : ''}>Truck Load 03.52</option>
                 </select>
             </div>`;
             
