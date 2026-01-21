@@ -519,7 +519,7 @@
                         <option value="pickup_pier">Pick up from Pier</option>
                         <option value="pickup_stockpile_delivered_pier">Pick up from Stock Pile & Delivered from Pier</option>
                         <option value="delivered_stockpile">Delivered from Stock Pile</option>
-                        <option value="per_bag">Per Bag (Manual Amount)</option>
+                        <option value="per_bag">Per Bag</option>
                         <option value="truck_load_307">Truck Load 03.07</option>
                         <option value="truck_load_352">Truck Load 03.52</option>
                     </select>
@@ -869,7 +869,7 @@
             var convertedOutValue = outValue; // This will be used for balance calculation
             
             if (pickupDeliveryType === 'per_bag' && outValue > 0) {
-                convertedOutValue = outValue / 36; // Convert bags to cubic meters
+                convertedOutValue = outValue * 0.028; // Convert bags to cubic meters
                 // Store original bag count for display/reference
                 if (outInput) {
                     outInput.setAttribute('data-original-bags', outValue);
@@ -961,11 +961,11 @@
         var vatType = vatSelect ? vatSelect.value : '';
         var hollowblockSize = hollowblockSizeSelect ? hollowblockSizeSelect.value : '';
 
-        // --- NEW LOGIC FOR TRUCK LOADS AUTO-SET ---
+        // --- TRUCK LOADS AUTO-SET ---
         if (pickupDeliveryType === 'truck_load_307') {
             outInput.value = "3.07";
             outInput.readOnly = true;
-            outInput.classList.add('bg-gray-100'); // Visual cue that it is locked
+            outInput.classList.add('bg-gray-100'); 
         } else if (pickupDeliveryType === 'truck_load_352') {
             outInput.value = "3.52";
             outInput.readOnly = true;
@@ -975,52 +975,50 @@
             outInput.classList.remove('bg-gray-100');
         }
 
-        // Update OUT field placeholder and label based on pickup delivery type
+        // --- UI UPDATES FOR BAGS VS CUBIC ---
         var outLabel = document.querySelector('label[for="out"], label[aria-label="out"]');
         if (pickupDeliveryType === 'per_bag') {
-            outInput.placeholder = 'Enter number of bags (e.g., 5 bags → 0.139 cubic)';
-            if (outLabel) {
-                outLabel.textContent = 'OUT (Number of Bags)';
-            }
-            // Update the manual toggle to be checked for per_bag
-            if (manualToggle) {
-                manualToggle.checked = true;
-            }
+            outInput.placeholder = 'Enter number of bags';
+            if (outLabel) outLabel.textContent = 'OUT (Number of Bags)';
         } else {
             outInput.placeholder = 'Enter cubic meters';
-            if (outLabel) {
-                outLabel.textContent = 'OUT';
-            }
+            if (outLabel) outLabel.textContent = 'OUT';
         }
             
-        // Manual amount if toggle is on OR per_bag type
-        if ((manualToggle && manualToggle.checked) || pickupDeliveryType === 'per_bag') {
-            // Make amount field editable for manual entry
+        // --- MANUAL TOGGLE LOGIC ---
+        // Note: We check manualToggle first. If it's checked, we stop and let user type.
+        if (manualToggle && manualToggle.checked) {
             amountInput.readOnly = false;
             amountInput.classList.remove('bg-gray-100', 'dark:bg-gray-600');
             amountInput.classList.add('bg-white', 'dark:bg-gray-700');
-            if (amountLabel) {
-                amountLabel.textContent = pickupDeliveryType === 'per_bag' ? 'AMOUNT (Per Bag - Manual Entry)' : 'AMOUNT (Manual Entry)';
-            }
+            if (amountLabel) amountLabel.textContent = 'AMOUNT (Manual Entry)';
             return;
         } else {
-            // Make amount field auto-calculated and read-only
             amountInput.readOnly = true;
             amountInput.classList.remove('bg-white', 'dark:bg-gray-700');
             amountInput.classList.add('bg-gray-100', 'dark:bg-gray-600');
-            if (amountLabel) {
-                amountLabel.textContent = 'AMOUNT (Auto-calculated)';
+            if (amountLabel) amountLabel.textContent = 'AMOUNT (Auto-calculated)';
+        }
+
+        // --- NEW LOGIC: PER BAG CALCULATION ---
+        if (pickupDeliveryType === 'per_bag') {
+            var bagPrices = {
+                'SAND S1 M': 140,
+                'VIBRO SAND': 157,
+                'G1 CURRIMAO': 130,
+                'G1 DAMORTIS': 140,
+                '3/4 GRAVEL CURRIMAO': 130,
+                '3/4 GRAVEL DAMORTIS': 150
+            };
+
+            if (bagPrices[item]) {
+                amountInput.value = (outValue * bagPrices[item]).toFixed(2);
+                return; // Exit function early as we've finished calculating for bags
             }
         }
             
-        // For amount calculation, use the CUBIC value (converted from bags if needed)
-        var calculationOutValue = outValue;
-        if (pickupDeliveryType === 'per_bag') {
-            calculationOutValue = outValue / 36; // Convert bags to cubic for amount calculation
-            console.log(`Amount calculation: ${outValue} bags → ${calculationOutValue.toFixed(6)} cubic`);
-        }
-            
-        if (calculationOutValue <= 0) {
+        // --- STANDARD CUBIC CALCULATION ---
+        if (outValue <= 0) {
             amountInput.value = '0.00';
             return;
         }
@@ -1120,7 +1118,7 @@
                 priceMultiplier = 0;
         }
             
-        var calculatedAmount = calculationOutValue * priceMultiplier;
+        var calculatedAmount = outValue * priceMultiplier;
         amountInput.value = calculatedAmount.toFixed(2);
     }
 
@@ -1176,7 +1174,7 @@
                     <option value='pickup_pier' ${found.pickup_delivery_type === 'pickup_pier' ? 'selected' : ''}>Pick up from Pier</option>
                     <option value='pickup_stockpile_delivered_pier' ${found.pickup_delivery_type === 'pickup_stockpile_delivered_pier' ? 'selected' : ''}>Pick up from Stock Pile & Delivered from Pier</option>
                     <option value='delivered_stockpile' ${found.pickup_delivery_type === 'delivered_stockpile' ? 'selected' : ''}>Delivered from Stock Pile</option>
-                    <option value='per_bag' ${found.pickup_delivery_type === 'per_bag' ? 'selected' : ''}>Per Bag (Manual Amount)</option>
+                    <option value='per_bag' ${found.pickup_delivery_type === 'per_bag' ? 'selected' : ''}>Per Bag</option>
                     <option value='truck_load_03_07' ${found.pickup_delivery_type === 'truck_load_03_07' ? 'selected' : ''}>Truck Load 03.07</option>
                     <option value='truck_load_03_52' ${found.pickup_delivery_type === 'truck_load_03_52' ? 'selected' : ''}>Truck Load 03.52</option>
                 </select>

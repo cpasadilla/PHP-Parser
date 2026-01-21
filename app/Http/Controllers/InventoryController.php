@@ -59,11 +59,12 @@ class InventoryController extends Controller
             $data['customer_id'] = str_replace('sub-', '', $data['customer_id']);
         }
         
-        // Handle PER BAG conversion: 1 BAG = 0.028 cubic (BAG / 36)
+        // Handle PER BAG conversion: 1 BAG = 0.028 cubic
         $pickupDeliveryType = $data['pickup_delivery_type'] ?? '';
         if ($pickupDeliveryType === 'per_bag' && isset($data['out']) && $data['out'] > 0) {
-            $data['out_original_bags'] = $data['out']; // Store original bag count
-            $data['out'] = $data['out'] / 36; // Convert bags to cubic (1 bag = 0.028 cubic)
+            $data['out_original_bags'] = $data['out']; 
+            // Explicitly use the 0.028 conversion factor
+            $data['out'] = $data['out'] * 0.028; 
         }
         
         // Handle HOLLOWBLOCKS - process separate size columns
@@ -701,12 +702,26 @@ class InventoryController extends Controller
         $item = $data['item'];
         $outValue = floatval($data['out'] ?? 0);
         $pickupDeliveryType = $data['pickup_delivery_type'] ?? '';
+        $bags = floatval($data['out_original_bags'] ?? 0); // Get original bag count
         $vatType = $data['vat_type'] ?? '';
         $hollowblockSize = $data['hollowblock_size'] ?? '';
         
         // Return 0 if no OUT value
-        if ($outValue <= 0) {
-            return 0;
+        if ($outValue <= 0 && $bags <= 0) return 0;
+
+        // Define Bag Prices
+        $bagPrices = [
+            'SAND S1 M'           => 140,
+            'VIBRO SAND'          => 157,
+            'G1 CURRIMAO'         => 130,
+            'G1 DAMORTIS'         => 140,
+            '3/4 GRAVEL CURRIMAO' => 130,
+            '3/4 GRAVEL DAMORTIS' => 150,
+        ];
+
+        // If it's per bag, calculate based on bag count, not cubic volume
+        if ($pickupDeliveryType === 'per_bag' && isset($bagPrices[$item])) {
+            return $bags * $bagPrices[$item];
         }
         
         $priceMultiplier = 0;
