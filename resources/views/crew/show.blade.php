@@ -346,10 +346,13 @@
                                                     @endif
                                                     <span class="text-gray-900 dark:text-white">{{ $document->expiry_date->format('M d, Y') }}</span>
                                                 </div>
+
                                                 @if($document->is_expired)
                                                     <span class="text-red-600 dark:text-red-400 text-xs font-semibold">(Expired)</span>
                                                 @elseif($document->is_expiring_soon)
-                                                    <span class="text-yellow-600 dark:text-yellow-400 text-xs font-semibold">(Expiring Soon)</span>
+                                                    <span class="text-yellow-600 dark:text-yellow-400 text-xs font-bold uppercase tracking-tight">
+                                                        (Expiring in {{ $document->days_until_expiry }} {{ Str::plural('day', $document->days_until_expiry) }})
+                                                    </span>
                                                 @endif
                                             @else
                                                 <span class="text-gray-400 dark:text-gray-500 italic">No expiry</span>
