@@ -103,7 +103,7 @@
                                 <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Phone</label>
                                 <p class="text-base font-medium text-gray-900 dark:text-white">{{ $crew->phone ?: 'Not provided' }}</p>
                             </div>
-                            <div class="p-4 bg-white dark:bg-gray-700 rounded-lg border border-gray-100 dark:border-gray-600">
+                            <div class="md:col-span-2 p-4 bg-white dark:bg-gray-700 rounded-lg border border-gray-100 dark:border-gray-600">
                                 <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Email</label>
                                 <p class="text-base font-medium text-gray-900 dark:text-white break-all">{{ $crew->email ?: 'Not provided' }}</p>
                             </div>
@@ -229,37 +229,37 @@
                         </div>
                         <div class="space-y-3">
                             <div class="p-3 bg-white dark:bg-gray-700 rounded-lg border border-gray-100 dark:border-gray-600">
-                                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">SRN</label>
-                                <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $crew->srn ?: 'Not provided' }}</p>
-                            </div>
-                            <div class="p-3 bg-white dark:bg-gray-700 rounded-lg border border-gray-100 dark:border-gray-600">
-                                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Seaman Book Number</label>
-                                <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $crew->seaman_book_number ?: 'Not provided' }}</p>
-                            </div>
-                            <div class="p-3 bg-white dark:bg-gray-700 rounded-lg border border-gray-100 dark:border-gray-600">
-                                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Basic Safety Training</label>
+                                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">D-COC</label>
                                 <p class="text-sm font-medium text-gray-900 dark:text-white">
-                                    {{ $crew->basic_safety_training ? $crew->basic_safety_training->format('M d, Y') : 'Not set' }}
-                                </p>
-                            </div>
-                            <div class="p-3 bg-white dark:bg-gray-700 rounded-lg border border-gray-100 dark:border-gray-600">
-                                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Medical Certificate</label>
-                                <p class="text-sm font-medium text-gray-900 dark:text-white">
-                                    {{ $crew->medical_certificate ? $crew->medical_certificate->format('M d, Y') : 'Not set' }}
-                                </p>
-                            </div>
-                            <div class="p-3 bg-white dark:bg-gray-700 rounded-lg border border-gray-100 dark:border-gray-600">
-                                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">DCOC Expiry</label>
-                                <p class="text-sm font-medium text-gray-900 dark:text-white">
-                                    {{ $crew->dcoc_expiry ? $crew->dcoc_expiry->format('M d, Y') : 'Not set' }}
+                                    {{ $crew->dcoc_number ?: ' ' }} | {{ $crew->dcoc_issue_date ? $crew->dcoc_issue_date->format('M d, Y') : 'Not set' }} | {{ $crew->dcoc_expiry ? $crew->dcoc_expiry->format('M d, Y') : 'Not set' }}
                                 </p>
                             </div>
                             <div class="p-3 bg-white dark:bg-gray-700 rounded-lg border border-gray-100 dark:border-gray-600">
                                 <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">MARINA License</label>
                                 <p class="text-sm font-medium text-gray-900 dark:text-white">
-                                    {{ $crew->marina_license_expiry ? $crew->marina_license_expiry->format('M d, Y') : 'Not set' }}
+                                    {{ $crew->marina_license_number ?: ' ' }} | {{ $crew->marina_license_issue_date ? $crew->marina_license_issue_date->format('M d, Y') : 'Not provided' }} | {{ $crew->marina_license_expiry ? $crew->marina_license_expiry->format('M d, Y') : 'Not provided' }}
                                 </p>
                             </div>
+                            <div class="p-3 bg-white dark:bg-gray-700 rounded-lg border border-gray-100 dark:border-gray-600">
+                                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Seaman Book</label>
+                                <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $crew->seaman_book_number ?: ' ' }} | {{ $crew->seaman_book_issue_date ? $crew->seaman_book_issue_date->format('M d, Y') : ' ' }} | {{ $crew->seaman_book_expiry_date ? $crew->seaman_book_expiry_date->format('M d, Y') : ' ' }}</p>
+                            </div>
+                            <div class="p-3 bg-white dark:bg-gray-700 rounded-lg border border-gray-100 dark:border-gray-600">
+                                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Medical Certificate</label>
+                                <p class="text-sm font-medium text-gray-900 dark:text-white">
+                                    {{ $crew->medical_certificate_issue_date ? $crew->medical_certificate_issue_date->format('M d, Y') : ' ' }} | {{ $crew->medical_certificate ? $crew->medical_certificate->format('M d, Y') : ' ' }}
+                                </p>
+                            </div>
+                            <div class="p-3 bg-white dark:bg-gray-700 rounded-lg border border-gray-100 dark:border-gray-600">
+                                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">SRN</label>
+                                <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $crew->srn ?: 'Not provided' }}</p>
+                            </div>
+                            <!--div class="p-3 bg-white dark:bg-gray-700 rounded-lg border border-gray-100 dark:border-gray-600">
+                                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Basic Safety Training</label>
+                                <p class="text-sm font-medium text-gray-900 dark:text-white">
+                                    {{ $crew->basic_safety_training ? $crew->basic_safety_training->format('M d, Y') : 'Not provided' }}
+                                </p>
+                            </div-->
                         </div>
                     </div>
                 </div>
