@@ -19,34 +19,63 @@ class CrewController extends Controller
 {
     public function index(Request $request)
     {
+        // 1. Capture Filters and Pagination from Request
         $ships = Ship::all();
         $selectedShip = $request->get('ship');
         $selectedDepartment = $request->get('department');
         $search = $request->get('search');
 
+        // 2. Sorting & Pagination Defaults
+        // Only allow specific pagination values for security
+        $allowedPerPage = [10, 15, 20, 25, 50, 100];
+        $perPage = in_array($request->get('per_page'), $allowedPerPage) ? $request->get('per_page') : 20;
+
+        // Define which column to sort by (default to created_at for Oldest/Newest)
+        $sortBy = $request->get('sort_by', 'created_at'); 
+        
+        // Define direction (asc = Oldest/A-Z, desc = Newest/Z-A)
+        $sortOrder = $request->get('sort_order', 'asc'); 
+
+        // 3. Build the Query
         $crews = Crew::with(['ship', 'documents', 'leaves'])
+            // Filter by Ship
             ->when($selectedShip, function ($query) use ($selectedShip) {
                 $query->where('ship_id', $selectedShip);
             })
+            // Filter by Department
             ->when($selectedDepartment, function ($query) use ($selectedDepartment) {
                 $query->where('department', $selectedDepartment);
             })
+            // Search Logic
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('first_name', 'LIKE', "%{$search}%")
-                      ->orWhere('last_name', 'LIKE', "%{$search}%")
-                      ->orWhere('employee_id', 'LIKE', "%{$search}%")
-                      ->orWhere('position', 'LIKE', "%{$search}%")
-                      ->orWhere('department', 'LIKE', "%{$search}%")
-                      ->orWhere('employment_status', 'LIKE', "%{$search}%")
-                      ->orWhereHas('ship', function ($shipQuery) use ($search) {
-                          $shipQuery->where('ship_number', 'LIKE', "%{$search}%");
-                      });
+                    ->orWhere('last_name', 'LIKE', "%{$search}%")
+                    ->orWhere('employee_id', 'LIKE', "%{$search}%")
+                    ->orWhere('position', 'LIKE', "%{$search}%")
+                    ->orWhere('department', 'LIKE', "%{$search}%")
+                    ->orWhere('employment_status', 'LIKE', "%{$search}%")
+                    ->orWhereHas('ship', function ($shipQuery) use ($search) {
+                        $shipQuery->where('ship_number', 'LIKE', "%{$search}%");
+                    });
                 });
             })
-            ->paginate(20);
+            // 4. Apply Sorting Logic
+            ->orderBy($sortBy, $sortOrder)
+            // 5. Apply Dynamic Pagination
+            ->paginate($perPage);
 
-        return view('crew.index', compact('crews', 'ships', 'selectedShip', 'selectedDepartment', 'search'));
+        // 6. Return View with all variables preserved
+        return view('crew.index', compact(
+            'crews', 
+            'ships', 
+            'selectedShip', 
+            'selectedDepartment', 
+            'search', 
+            'perPage', 
+            'sortBy', 
+            'sortOrder'
+        ));
     }
 
     public function create()
