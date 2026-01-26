@@ -30,11 +30,12 @@ class CrewDocument extends Model
         'verified_at' => 'datetime'
     ];
 
-    const DOCUMENT_TYPES = [
+        const DOCUMENT_TYPES = [
         'seaman_book' => 'Seaman Book',
         'medical_certificate' => 'Medical Certificate',
         'basic_safety_training' => 'Basic Safety Training',
-        'coc' => 'Certificate of Competency',
+        'embark' => 'Embarkation Order',
+        'disembark' => 'Disembarkation Order',
         'dcoc' => 'Domestic Certificate of Competency (DCOC)',
         'marina_license' => 'MARINA License',
         'contract' => 'Employment Contract',
@@ -47,6 +48,7 @@ class CrewDocument extends Model
         'pag_ibig' => 'Pag-ibig',
         'philhealth' => 'Philhealth',
         'tin' => 'TIN',
+        'certificate' => 'Certificate',
         'other' => 'Other'
     ];
 
@@ -74,7 +76,10 @@ class CrewDocument extends Model
 
     public function scopeExpiringSoon($query, $days = 30)
     {
-        return $query->where('expiry_date', '>=', now())
+        $currentYear = now()->year;
+
+        return $query->whereYear('expiry_date', $currentYear) // Filter for current year
+                    ->where('expiry_date', '>=', now())
                     ->where('expiry_date', '<=', now()->addDays($days));
     }
 
@@ -90,9 +95,28 @@ class CrewDocument extends Model
 
     public function getIsExpiringSoonAttribute()
     {
-        return $this->expiry_date && 
-               $this->expiry_date->isFuture() && 
-               $this->expiry_date->diffInDays(now()) <= 30;
+        if (!$this->expiry_date) {
+            return false;
+        }
+
+        $now = now()->startOfDay();
+        $currentYear = $now->year;
+
+        return $this->expiry_date->isFuture() && 
+            $this->expiry_date->year === $currentYear && 
+            $this->expiry_date->diffInDays($now) <= 30;
+    }
+
+    /**
+     * Helper to get the number of days remaining
+     */
+    public function getDaysUntilExpiryAttribute()
+    {
+        if (!$this->expiry_date) {
+            return null;
+        }
+        
+        return (int) now()->startOfDay()->diffInDays($this->expiry_date, false);
     }
 
     public function getDocumentTypeNameAttribute()
