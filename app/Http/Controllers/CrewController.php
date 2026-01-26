@@ -127,15 +127,21 @@ class CrewController extends Controller
             'philhealth_number' => 'nullable|string|max:255',
             'tin_number' => 'nullable|string|max:255',
             'seaman_book_number' => 'nullable|string|max:255',
+            'seaman_book_issue_date' => 'nullable|date',
+            'seaman_book_expiry_date' => 'nullable|date',
             'basic_safety_training' => 'nullable|date',
             'medical_certificate' => 'nullable|date',
+            'medical_certificate_issue_date' => 'nullable|date',
+            'medical_certificate' => 'nullable|date',
             'dcoc_number' => 'nullable|string|max:255',
+            'dcoc_issue_date' => 'nullable|date',
             'dcoc_expiry' => 'nullable|date',
             'marina_license_number' => 'nullable|string|max:255',
+            'marina_license_issue_date' => 'nullable|date',
             'marina_license_expiry' => 'nullable|date',
             'contract_expiry' => 'nullable|date',
             'notes' => 'nullable|string',
-            'srn' => 'nullable|string|max:255',
+            'srn' => 'nullable|string|max:255'
         ]);
 
         $crew = Crew::create($validated);
@@ -235,15 +241,21 @@ class CrewController extends Controller
             'philhealth_number' => 'nullable|string|max:255',
             'tin_number' => 'nullable|string|max:255',
             'seaman_book_number' => 'nullable|string|max:255',
+            'seaman_book_issue_date' => 'nullable|date',
+            'seaman_book_expiry_date' => 'nullable|date',
             'basic_safety_training' => 'nullable|date',
             'medical_certificate' => 'nullable|date',
+            'medical_certificate_issue_date' => 'nullable|date',
+            'medical_certificate' => 'nullable|date',
             'dcoc_number' => 'nullable|string|max:255',
+            'dcoc_issue_date' => 'nullable|date',
             'dcoc_expiry' => 'nullable|date',
             'marina_license_number' => 'nullable|string|max:255',
+            'marina_license_issue_date' => 'nullable|date',
             'marina_license_expiry' => 'nullable|date',
             'contract_expiry' => 'nullable|date',
             'notes' => 'nullable|string',
-            'srn' => 'nullable|string|max:255',
+            'srn' => 'nullable|string|max:255'
         ]);
 
         $crew->update($validated);
