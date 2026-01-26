@@ -367,22 +367,22 @@
                                     </div>
                                     <div>
                                         <label for="dcoc_issue_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Issue Date</label>
-                                        <input type="text" name="dcoc_issue_date_display" id="dcoc_issue_date" value="{{ old('dcoc_issue_date') ? \Carbon\Carbon::parse(old('dcoc_issue_date'))->format('m/d/Y') : '' }}" 
+                                        <input type="text" name="dcoc_issue_date_display" id="dcoc_issue_date" value="{{ old('dcoc_issue_date', $crew->dcoc_issue_date ? $crew->dcoc_issue_date->format('m/d/Y') : '') }}" 
                                                placeholder="MM/DD/YYYY"
                                                pattern="\d{2}/\d{2}/\d{4}"
                                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-indigo-500 dark:focus:ring-indigo-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white date-input">
-                                        <input type="hidden" name="dcoc_issue_date" id="dcoc_issue_date_hidden" value="{{ old('dcoc_issue_date') }}">
+                                        <input type="hidden" name="dcoc_issue_date" id="dcoc_issue_date_hidden" value="{{ old('dcoc_issue_date', $crew->dcoc_issue_date ? $crew->dcoc_issue_date->format('Y-m-d') : '') }}">
                                         @error('dcoc_issue_date')
                                             <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                                         @enderror
                                     </div>
                                     <div>
                                         <label for="dcoc_expiry" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Expiry Date</label>
-                                        <input type="text" name="dcoc_expiry_display" id="dcoc_expiry" value="{{ old('dcoc_expiry') ? \Carbon\Carbon::parse(old('dcoc_expiry'))->format('m/d/Y') : '' }}" 
+                                        <input type="text" name="dcoc_expiry_display" id="dcoc_expiry" value="{{ old('dcoc_expiry', $crew->dcoc_expiry ? $crew->dcoc_expiry->format('m/d/Y') : '') }}" 
                                                placeholder="MM/DD/YYYY"
                                                pattern="\d{2}/\d{2}/\d{4}"
                                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-indigo-500 dark:focus:ring-indigo-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white date-input">
-                                        <input type="hidden" name="dcoc_expiry" id="dcoc_expiry_hidden" value="{{ old('dcoc_expiry') }}">
+                                        <input type="hidden" name="dcoc_expiry" id="dcoc_expiry_hidden" value="{{ old('dcoc_expiry', $crew->dcoc_expiry ? $crew->dcoc_expiry->format('Y-m-d') : '') }}">
                                         @error('dcoc_expiry')
                                             <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                                         @enderror
@@ -405,22 +405,22 @@
                                     </div>
                                     <div>
                                         <label for="marina_license_issue_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Issue Date</label>
-                                        <input type="text" name="marina_license_issue_date_display" id="marina_license_issue_date" value="{{ old('marina_license_issue_date') ? \Carbon\Carbon::parse(old('marina_license_issue_date'))->format('m/d/Y') : '' }}" 
+                                        <input type="text" name="marina_license_issue_date_display" id="marina_license_issue_date" value="{{ old('marina_license_issue_date', $crew->marina_license_issue_date ? $crew->marina_license_issue_date->format('m/d/Y') : '') }}" 
                                                placeholder="MM/DD/YYYY"
                                                pattern="\d{2}/\d{2}/\d{4}"
                                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-indigo-500 dark:focus:ring-indigo-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white date-input">
-                                        <input type="hidden" name="marina_license_issue_date" id="marina_license_issue_date_hidden" value="{{ old('marina_license_issue_date') }}">
+                                        <input type="hidden" name="marina_license_issue_date" id="marina_license_issue_date_hidden" value="{{ old('marina_license_issue_date', $crew->marina_license_issue_date ? $crew->marina_license_issue_date->format('Y-m-d') : '') }}">
                                         @error('marina_license_issue_date')
                                             <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                                         @enderror
                                     </div>
                                     <div>
                                         <label for="marina_license_expiry" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Expiry Date</label>
-                                        <input type="text" name="marina_license_expiry_display" id="marina_license_expiry" value="{{ old('marina_license_expiry') ? \Carbon\Carbon::parse(old('marina_license_expiry'))->format('m/d/Y') : '' }}" 
+                                        <input type="text" name="marina_license_expiry_display" id="marina_license_expiry" value="{{ old('marina_license_expiry', $crew->marina_license_expiry ? $crew->marina_license_expiry->format('m/d/Y') : '') }}" 
                                                placeholder="MM/DD/YYYY"
                                                pattern="\d{2}/\d{2}/\d{4}"
                                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-indigo-500 dark:focus:ring-indigo-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white date-input">
-                                        <input type="hidden" name="marina_license_expiry" id="marina_license_expiry_hidden" value="{{ old('marina_license_expiry') }}">
+                                        <input type="hidden" name="marina_license_expiry" id="marina_license_expiry_hidden" value="{{ old('marina_license_expiry', $crew->marina_license_expiry ? $crew->marina_license_expiry->format('Y-m-d') : '') }}">
                                         @error('marina_license_expiry')
                                             <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                                         @enderror
@@ -548,11 +548,11 @@
                 if (displayValue && displayValue.length === 10) {
                     const parts = displayValue.split('/');
                     if (parts.length === 3 && parts[0].length === 2 && parts[1].length === 2 && parts[2].length === 4) {
-                        const hiddenFieldId = input.id + '_hidden';
+                        const hiddenFieldId = input.id + '_hidden'; // It looks for "dcoc_issue_date_hidden"
                         const hiddenField = document.getElementById(hiddenFieldId);
                         if (hiddenField) {
                             // Convert MM/DD/YYYY to YYYY-MM-DD
-                            hiddenField.value = parts[2] + '-' + parts[0] + '-' + parts[1];
+                            hiddenField.value = parts[2] + '-' + parts[0] + '-' + parts[1]; // Sets YYYY-MM-DD
                         }
                     }
                 }

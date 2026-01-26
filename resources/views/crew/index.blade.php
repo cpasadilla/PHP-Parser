@@ -250,6 +250,25 @@
                                 Reset
                             </a>
                         </div>
+
+                        <div>
+                            <label for="per_page" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Display</label>
+                            <select name="per_page" id="per_page" onchange="this.form.submit()"
+                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm">
+                                @foreach([10, 15, 20, 25, 50, 100] as $size)
+                                    <option value="{{ $size }}" {{ $perPage == $size ? 'selected' : '' }}>{{ $size }} per page</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="sort_order" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Order</label>
+                            <select name="sort_order" id="sort_order" onchange="this.form.submit()"
+                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm">
+                                <option value="asc" {{ $sortOrder == 'asc' ? 'selected' : '' }}>Ascending / Oldest</option>
+                                <option value="desc" {{ $sortOrder == 'desc' ? 'selected' : '' }}>Descending / Newest</option>
+                            </select>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -361,6 +380,7 @@
                 </div>
             </div>
         </div>
+        <br>
     </div>
 
     <!-- Success/Error Messages -->
