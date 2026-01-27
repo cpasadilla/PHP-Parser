@@ -44,7 +44,7 @@ class CrewController extends Controller
             })
             // Filter by Department
             ->when($selectedDepartment, function ($query) use ($selectedDepartment) {
-                $query->where('department', $selectedDepartment);
+                $query->where('division', $selectedDepartment);
             })
             // Search Logic
             ->when($search, function ($query) use ($search) {

@@ -319,7 +319,7 @@
                                             {{ $crew->position }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                                            {{ ucfirst(str_replace('_', ' ', $crew->department)) }}
+                                            {{ ucfirst(str_replace('_', ' ', $crew->division)) }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                                             {{ $crew->ship ? 'MV EVERWIN STAR ' . $crew->ship->ship_number : 'Office/Shore' }}
