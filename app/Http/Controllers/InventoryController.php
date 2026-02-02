@@ -59,12 +59,11 @@ class InventoryController extends Controller
             $data['customer_id'] = str_replace('sub-', '', $data['customer_id']);
         }
         
-        // Handle PER BAG conversion: 1 BAG = 0.028 cubic
+        // Handle PER BAG conversion: 1 BAG = 0.027 cubic
         $pickupDeliveryType = $data['pickup_delivery_type'] ?? '';
         if ($pickupDeliveryType === 'per_bag' && isset($data['out']) && $data['out'] > 0) {
-            $data['out_original_bags'] = $data['out']; 
-            // Explicitly use the 0.028 conversion factor
-            $data['out'] = $data['out'] * 0.028; 
+            $data['out_original_bags'] = $data['out'];
+            $data['out'] = $data['out'] / 36;
         }
         
         // Handle HOLLOWBLOCKS - process separate size columns
@@ -450,9 +449,13 @@ class InventoryController extends Controller
             $data['customer_id'] = str_replace('sub-', '', $data['customer_id']);
         }
         
-        // For UPDATE operations, we don't apply PER BAG conversion
-        // because the stored values are already in cubic meters
-        // The conversion only happens during CREATE operations
+        // --- ADDED: PER BAG conversion for UPDATE ---
+        // Handle conversion if type is per_bag: 1 cubic = 36 bags (bags / 36)
+        $pickupDeliveryType = $data['pickup_delivery_type'] ?? '';
+        if ($pickupDeliveryType === 'per_bag' && isset($data['out']) && $data['out'] > 0) {
+            $data['out_original_bags'] = $data['out']; 
+            $data['out'] = $data['out'] / 36; 
+        }
         
         // Handle HOLLOWBLOCKS - process separate size columns
         if ($data['item'] === 'HOLLOWBLOCKS') {
@@ -462,7 +465,8 @@ class InventoryController extends Controller
             if (!isset($data['balance']) || $data['balance'] === null) {
                 $previousBalance = $this->getPreviousEntryBalance($entry);
                 $inValue = floatval($data['in'] ?? 0);
-                $outValue = floatval($data['out'] ?? 0);
+                $outValue = floatval($data['out'] ?? 0); // This is already converted if per_bag
+                
                 // If previous balance is negative and IN is provided, treat IN as a reset point
                 if ($previousBalance < 0 && $inValue > 0) {
                     $data['balance'] = $inValue - $outValue;
@@ -502,10 +506,12 @@ class InventoryController extends Controller
             'final_hollowblock_6_inch_balance' => $entry->hollowblock_6_inch_balance,
             'data_processed' => $data
         ]);
+        
         // Recalculate onsite balances for this item
         $this->recalculateOnsiteBalances($entry->item);
         // Recalculate main balances for this item
         $this->recalculateBalances($entry->item);
+        
         return redirect()->route('inventory')->with('success', 'Inventory entry updated!');
     }
 

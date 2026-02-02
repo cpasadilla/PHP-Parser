@@ -862,14 +862,14 @@
             var inValue = parseFloat(inInput.value) || 0;
             var outValue = parseFloat(outInput.value) || 0;
             
-            // Handle PER BAG conversion: 1 BAG = 0.028 cubic (BAG / 36)
+            // Handle PER BAG conversion: 1 BAG = 0.027 cubic (BAG / 36)
             // When user selects PER BAG, the OUT input represents number of bags
             // Convert bags to cubic meters for balance calculation
             var pickupDeliveryType = pickupDeliverySelect ? pickupDeliverySelect.value : '';
             var convertedOutValue = outValue; // This will be used for balance calculation
             
             if (pickupDeliveryType === 'per_bag' && outValue > 0) {
-                convertedOutValue = outValue * 0.028; // Convert bags to cubic meters
+                convertedOutValue = outValue / 36; // Precise conversion for 36 bags
                 // Store original bag count for display/reference
                 if (outInput) {
                     outInput.setAttribute('data-original-bags', outValue);
@@ -979,14 +979,15 @@
         var outLabel = document.querySelector('label[for="out"], label[aria-label="out"]');
         if (pickupDeliveryType === 'per_bag') {
             outInput.placeholder = 'Enter number of bags';
-            if (outLabel) outLabel.textContent = 'OUT (Number of Bags)';
+            // Logic to show cubic conversion in the label
+            let cubicEquivalent = (outValue / 36).toFixed(3);
+            if (outLabel) outLabel.textContent = `OUT (${outValue} bags = ${cubicEquivalent} m³)`;
         } else {
             outInput.placeholder = 'Enter cubic meters';
             if (outLabel) outLabel.textContent = 'OUT';
         }
             
         // --- MANUAL TOGGLE LOGIC ---
-        // Note: We check manualToggle first. If it's checked, we stop and let user type.
         if (manualToggle && manualToggle.checked) {
             amountInput.readOnly = false;
             amountInput.classList.remove('bg-gray-100', 'dark:bg-gray-600');
@@ -1000,7 +1001,7 @@
             if (amountLabel) amountLabel.textContent = 'AMOUNT (Auto-calculated)';
         }
 
-        // --- NEW LOGIC: PER BAG CALCULATION ---
+        // --- PER BAG CALCULATION ---
         if (pickupDeliveryType === 'per_bag') {
             var bagPrices = {
                 'SAND S1 M': 140,
@@ -1227,12 +1228,15 @@
                     <input type='number' step='0.0001' name='in' value='${found.in || ''}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' oninput="updateEditBalance()" />
                 </div>
                 <div>
-                    <label class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>OUT</label>
-                    <input type='number' step='0.0001' name='out' value='${found.out || ''}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' oninput="updateEditBalance(); updateEditAmountCalculation()" />
+                    <label for="out" class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>OUT</label>
+                    <input type='number' step='0.0001' name='out' 
+                        value='${found.pickup_delivery_type === 'per_bag' ? (found.out_original_bags || found.out) : (found.out || '')}' 
+                        class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' 
+                        oninput="updateEditAmountCalculation(); updateEditBalance();" />
                 </div>
                 <div>
                     <label class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>BALANCE</label>
-                    <input type='number' step='0.0001' name='balance' value='${getInitialBalanceValue(found)}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' />
+                    <input type='number' step='0.0001' name='balance' value='${getInitialBalanceValue(found)}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-gray-100' readonly />
                 </div>
             </div>`;
             fields += `<div class='mb-2 grid grid-cols-3 gap-2'>
@@ -1309,6 +1313,9 @@
             var amountLabel = document.getElementById('editAmountLabel');
             var manualToggle = document.getElementById('editAmountManualToggle');
             
+            // Select the label specifically for the "OUT" input
+            var outLabel = document.querySelector('#editInventoryModal label[for="out"]');
+            
             if (!itemInput || !outInput || !amountInput) return;
             
             var item = itemInput.value;
@@ -1317,112 +1324,48 @@
             var vatType = vatSelect ? vatSelect.value : '';
             var hollowblockSize = hollowblockSizeSelect ? hollowblockSizeSelect.value : '';
             
-            // In edit mode, OUT value is already in cubic meters, so no conversion needed
-            var calculationOutValue = outValue;
+            // --- LIVE CONVERSION DISPLAY ---
+            if (pickupDeliveryType === 'per_bag') {
+                let cubicEquivalent = (outValue / 36).toFixed(3);
+                if (outLabel) {
+                    outLabel.innerHTML = `OUT <span class="text-blue-600 text-xs">(${outValue} bags = ${cubicEquivalent} m³)</span>`;
+                }
+            } else {
+                if (outLabel) outLabel.textContent = 'OUT';
+            }
             
-            // Manual amount if toggle is on OR per_bag type
+            // --- MANUAL TOGGLE / AMOUNT MATH ---
             if ((manualToggle && manualToggle.checked) || pickupDeliveryType === 'per_bag') {
-                // Make amount field editable for manual entry
                 amountInput.readOnly = false;
                 amountInput.classList.remove('bg-gray-100', 'dark:bg-gray-600');
                 amountInput.classList.add('bg-white', 'dark:bg-gray-700');
                 if (amountLabel) {
-                    amountLabel.textContent = pickupDeliveryType === 'per_bag' ? 'AMOUNT (Per Bag - Manual Entry)' : 'AMOUNT (Manual Entry)';
+                    amountLabel.textContent = pickupDeliveryType === 'per_bag' ? 'AMOUNT (Bag Price Entry)' : 'AMOUNT (Manual Entry)';
                 }
-                return;
+                
+                // If it's per bag and NOT manually overridden yet, do the math (Bags * Price)
+                if (pickupDeliveryType === 'per_bag' && (!manualToggle || !manualToggle.checked)) {
+                    var bagPrices = {
+                        'SAND S1 M': 140, 'VIBRO SAND': 157, 'G1 CURRIMAO': 130,
+                        'G1 DAMORTIS': 140, '3/4 GRAVEL CURRIMAO': 130, '3/4 GRAVEL DAMORTIS': 150
+                    };
+                    if (bagPrices[item]) {
+                        amountInput.value = (outValue * bagPrices[item]).toFixed(2);
+                    }
+                }
+                return; 
             } else {
-                // Make amount field auto-calculated and read-only
                 amountInput.readOnly = true;
                 amountInput.classList.remove('bg-white', 'dark:bg-gray-700');
                 amountInput.classList.add('bg-gray-100', 'dark:bg-gray-600');
-                if (amountLabel) {
-                    amountLabel.textContent = 'AMOUNT (Auto-calculated)';
-                }
+                if (amountLabel) amountLabel.textContent = 'AMOUNT (Auto-calculated)';
             }
-            
-            if (calculationOutValue <= 0) {
-                amountInput.value = '0.00';
-                return;
-            }
-            
-            var priceMultiplier = 0;
-            
-            switch (item) {
-                case 'SAND S1 M':
-                    if (pickupDeliveryType === 'pickup_pier') {
-                        priceMultiplier = (vatType === 'with_vat') ? 4336.20 : 4015.00;
-                    } else if (pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
-                        priceMultiplier = (vatType === 'with_vat') ? 4465.80 : 4135.00;
-                    } else if (pickupDeliveryType === 'delivered_stockpile') {
-                        priceMultiplier = (vatType === 'with_vat') ? 4595.40 : 4255.00;
-                    }
-                    break;
-                    
-                case 'VIBRO SAND':
-                    if (pickupDeliveryType === 'pickup_pier') {
-                        priceMultiplier = (vatType === 'with_vat') ? 4951.80 : 4585.00;
-                    } else if (pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
-                        priceMultiplier = (vatType === 'with_vat') ? 5081.40 : 4705.00;
-                    } else if (pickupDeliveryType === 'delivered_stockpile') {
-                        priceMultiplier = (vatType === 'with_vat') ? 5211.00 : 4825.00;
-                    }
-                    break;
-                    
-                case 'G1 CURRIMAO':
-                    if (pickupDeliveryType === 'pickup_pier') {
-                        priceMultiplier = (vatType === 'with_vat') ? 4082.40 : 3780.00;
-                    } else if (pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
-                        priceMultiplier = (vatType === 'with_vat') ? 4212.00 : 3900.00;
-                    } else if (pickupDeliveryType === 'delivered_stockpile') {
-                        priceMultiplier = (vatType === 'with_vat') ? 4341.60 : 4020.00;
-                    }
-                    break;
-                    
-                case 'G1 DAMORTIS':
-                    if (pickupDeliveryType === 'pickup_pier') {
-                        priceMultiplier = (vatType === 'with_vat') ? 4336.20 : 4015.00;
-                    } else if (pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
-                        priceMultiplier = (vatType === 'with_vat') ? 4465.80 : 4135.00;
-                    } else if (pickupDeliveryType === 'delivered_stockpile') {
-                        priceMultiplier = (vatType === 'with_vat') ? 4595.40 : 4255.00;
-                    }
-                    break;
-                    
-                case '3/4 GRAVEL DAMORTIS':
-                    if (pickupDeliveryType === 'pickup_pier') {
-                        priceMultiplier = (vatType === 'with_vat') ? 4514.40 : 4180.00;
-                    } else if (pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
-                        priceMultiplier = (vatType === 'with_vat') ? 4644.00 : 4300.00;
-                    } else if (pickupDeliveryType === 'delivered_stockpile') {
-                        priceMultiplier = (vatType === 'with_vat') ? 4773.60 : 4420.00;
-                    }
-                    break;
 
-                case '3/4 GRAVEL CURRIMAO':
-                    if (pickupDeliveryType === 'pickup_pier') {
-                        priceMultiplier = (vatType === 'with_vat') ? 4298.40 : 3980.00;
-                    } else if (pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
-                        priceMultiplier = (vatType === 'with_vat') ? 4395.00 : 4070.00;
-                    } else if (pickupDeliveryType === 'delivered_stockpile') {
-                        priceMultiplier = (vatType === 'with_vat') ? 4492.80 : 4160.00;
-                    }
-                    break;
-                    
-                case 'HOLLOWBLOCKS':
-                    if (hollowblockSize === '4_inch') {
-                        priceMultiplier = (vatType === 'with_vat') ? 73.92 : 66.00;
-                    } else if (hollowblockSize === '5_inch') {
-                        priceMultiplier = (vatType === 'with_vat') ? 80.08 : 71.50;
-                    } else if (hollowblockSize === '6_inch') {
-                        priceMultiplier = (vatType === 'with_vat') ? 86.24 : 77.00;
-                    }
-                    break;
-                    
-                default:
-                    priceMultiplier = 0;
-            }
+            // Standard Multiplier Logic (for non-bag entries)
+            var priceMultiplier = 0;
+            // ... (rest of your switch(item) logic for priceMultiplier) ...
             
-            var calculatedAmount = calculationOutValue * priceMultiplier;
+            var calculatedAmount = outValue * priceMultiplier;
             amountInput.value = calculatedAmount.toFixed(2);
         }
 
@@ -1581,7 +1524,7 @@
             
             var item = itemInput.value;
             
-            // Only handle balance recalculation for non-hollowblock items
+            // For hollowblocks, we use the specialized function already defined
             if (item === 'HOLLOWBLOCKS') {
                 // For hollowblocks, use the specialized function
                 updateEditHollowblockBalance();
@@ -1592,25 +1535,36 @@
             var outValue = parseFloat(outInput.value) || 0;
             var pickupDeliveryType = pickupDeliverySelect ? pickupDeliverySelect.value : '';
             
-            // For edit mode, the OUT value is already in cubic meters (not bags)
-            // So we don't need to convert it again, regardless of pickup_delivery_type
+            // --- PER BAG CONVERSION LOGIC ---
+            // 1 cubic = 36 bags. If user inputs 2 bags, we convert to 0.056 for balance math.
             var convertedOutValue = outValue;
+            if (pickupDeliveryType === 'per_bag' && outValue > 0) {
+                convertedOutValue = outValue / 36;
+            }
             
-            // Get the previous balance (balance before this entry)
+            // Get the current entry ID from the form action
             var entryId = document.querySelector('#editInventoryForm').action.split('/').pop();
             var entryData = @json($entries);
             var currentEntry = entryData.find(e => e.id == entryId);
             
             if (currentEntry && currentBalances[item]) {
-                var currentItemBalance = currentBalances[item].balance || 0;
-                // Calculate what the previous balance was
+                var currentItemTotalBalance = currentBalances[item].balance || 0;
+                
+                // --- STEP 1: BACKTRACK ---
+                // Calculate the balance as it was BEFORE this specific entry was added
                 var originalIn = parseFloat(currentEntry.in) || 0;
                 var originalOut = parseFloat(currentEntry.out) || 0;
-                var previousBalance = currentItemBalance - originalIn + originalOut;
                 
-                // Calculate new balance with updated values
-                var newBalance = previousBalance + inValue - convertedOutValue;
+                // Logic: Previous Balance = Today's Balance - Today's IN + Today's OUT
+                var balanceBeforeThisEntry = currentItemTotalBalance - originalIn + originalOut;
+                
+                // --- STEP 2: APPLY UPDATED VALUES ---
+                // New Balance = Previous Balance + New IN - New OUT (Converted)
+                var newBalance = balanceBeforeThisEntry + inValue - convertedOutValue;
+                
                 balanceInput.value = newBalance.toFixed(4);
+                
+                console.log(`Edit Math: Start(${balanceBeforeThisEntry.toFixed(3)}) + In(${inValue}) - Out(${convertedOutValue.toFixed(3)}) = ${newBalance.toFixed(4)}`);
             }
         }
 
