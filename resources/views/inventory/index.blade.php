@@ -283,9 +283,20 @@
                                         </td>
                                         <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">
                                             @if($entry->is_starting_balance)
-                                                <!-- Empty for starting balance -->
-                                            @else
-                                                {{ strtoupper($entry->customer->company_name ?: ($entry->customer->first_name . ' ' . $entry->customer->last_name)) }}
+                                                @else
+                                                @php
+                                                    $displayName = 'N/A';
+                                                    if ($entry->customer_type === 'main' && $entry->customer) {
+                                                        $displayName = $entry->customer->company_name ?: ($entry->customer->first_name . ' ' . $entry->customer->last_name);
+                                                    } elseif ($entry->customer_type === 'sub') {
+                                                        // Fetch from SubAccount model if not eager loaded
+                                                        $sub = \App\Models\SubAccount::find($entry->customer_id);
+                                                        if ($sub) {
+                                                            $displayName = $sub->company_name ?: ($sub->first_name . ' ' . $sub->last_name);
+                                                        }
+                                                    }
+                                                @endphp
+                                                {{ strtoupper($displayName) }}
                                             @endif
                                         </td>
                                         <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">{{ $entry->ship_number }}</td>
@@ -793,7 +804,7 @@
             const amountInput = document.getElementById('editAmountInput');
             const label = document.getElementById('editAmountLabel');
             if (manualToggle && amountInput) {
-                if (manualToggle.checked) {
+            if (manualToggle.checked) {
                     amountInput.readOnly = false;
                     amountInput.classList.remove('bg-gray-100', 'dark:bg-gray-600');
                     amountInput.classList.add('bg-white', 'dark:bg-gray-700');
@@ -815,17 +826,17 @@
                 'balance' => $latest ? $latest->balance : 0,
                 'onsite_balance' => $latest ? $latest->onsite_balance : 0
             ];
-            
+                
             // Add hollowblock-specific balances if this is HOLLOWBLOCKS
             if ($latest && $latest->item === 'HOLLOWBLOCKS') {
                 $balanceData['hollowblock_4_inch_balance'] = $latest->hollowblock_4_inch_balance ?? 0;
                 $balanceData['hollowblock_5_inch_balance'] = $latest->hollowblock_5_inch_balance ?? 0;
                 $balanceData['hollowblock_6_inch_balance'] = $latest->hollowblock_6_inch_balance ?? 0;
             }
-            
+                
             return $balanceData;
         }));
-        
+            
         // Global variables to store current balances for each hollowblock size
         @php
             $hollowblock4InchLatest = $entries->where('item', 'HOLLOWBLOCKS')->filter(function($e) { return $e->hollowblock_size === '4_inch'; })->sortByDesc('date')->sortByDesc('created_at')->first();
@@ -855,19 +866,19 @@
             var outInput = document.querySelector('#inventoryModal input[name="out"]');
             var balanceInput = document.querySelector('#inventoryModal input[name="balance"]');
             var pickupDeliverySelect = document.querySelector('#inventoryModal select[name="pickup_delivery_type"]');
-            
+                
             if (!itemSelect || !balanceInput) return;
-            
+                
             var item = itemSelect.value;
             var inValue = parseFloat(inInput.value) || 0;
             var outValue = parseFloat(outInput.value) || 0;
-            
+                
             // Handle PER BAG conversion: 1 BAG = 0.027 cubic (BAG / 36)
             // When user selects PER BAG, the OUT input represents number of bags
             // Convert bags to cubic meters for balance calculation
             var pickupDeliveryType = pickupDeliverySelect ? pickupDeliverySelect.value : '';
             var convertedOutValue = outValue; // This will be used for balance calculation
-            
+                
             if (pickupDeliveryType === 'per_bag' && outValue > 0) {
                 convertedOutValue = outValue / 36; // Precise conversion for 36 bags
                 // Store original bag count for display/reference
@@ -876,18 +887,18 @@
                 }
                 console.log(`PER BAG conversion: ${outValue} bags = ${convertedOutValue.toFixed(6)} cubic meters`);
             }
-            
+                
             // Handle hollowblock size selection
             var selectedOption = itemSelect.options[itemSelect.selectedIndex];
             var hollowblockSize = selectedOption.getAttribute('data-size');
-            
+                
             if (item === 'HOLLOWBLOCKS' && hollowblockSize) {
                 // Set the hollowblock size field
                 var hollowblockSizeSelect = document.querySelector('#inventoryModal select[name="hollowblock_size"]');
                 if (hollowblockSizeSelect) {
                     hollowblockSizeSelect.value = hollowblockSize;
                 }
-                
+                    
                 // Update the hidden fields for specific hollowblock size
                 document.getElementById('hollowblock_4_inch_in').value = '';
                 document.getElementById('hollowblock_4_inch_out').value = '';
@@ -895,7 +906,7 @@
                 document.getElementById('hollowblock_5_inch_out').value = '';
                 document.getElementById('hollowblock_6_inch_in').value = '';
                 document.getElementById('hollowblock_6_inch_out').value = '';
-                
+                    
                 if (hollowblockSize === '4_inch') {
                     document.getElementById('hollowblock_4_inch_in').value = inValue;
                     document.getElementById('hollowblock_4_inch_out').value = convertedOutValue; // Use converted value
@@ -907,7 +918,7 @@
                     document.getElementById('hollowblock_6_inch_out').value = convertedOutValue; // Use converted value
                 }
             }
-            
+                
             // Determine the current balance to use
             var currentBalance = 0;
             if (item === 'HOLLOWBLOCKS' && hollowblockSize) {
@@ -919,12 +930,12 @@
                 // For other items, use the general balance
                 currentBalance = currentBalances[item] ? currentBalances[item].balance : 0;
             }
-            
+                
             // Calculate main balance using converted OUT value: current balance + IN - OUT (in cubic)
             var newBalance = currentBalance + inValue - convertedOutValue;
             balanceInput.value = newBalance.toFixed(4);
             console.log(`Balance calculation: ${currentBalance} + ${inValue} - ${convertedOutValue} = ${newBalance.toFixed(4)}`);
-            
+                
             // Update hollowblock size field visibility and calculate amount
             updateHollowblockSizeField();
             updateAmountCalculation();
@@ -933,7 +944,7 @@
         function updateHollowblockSizeField() {
             var itemSelect = document.querySelector('#inventoryModal select[name="item"]');
             var hollowblockSizeField = document.getElementById('hollowblockSizeField');
-            
+                
             if (itemSelect && hollowblockSizeField) {
                 if (itemSelect.value === 'HOLLOWBLOCKS') {
                     hollowblockSizeField.style.display = 'block';
@@ -943,202 +954,208 @@
             }
         }
 
-    function updateAmountCalculation() {
-        var itemSelect = document.querySelector('#inventoryModal select[name="item"]');
-        var outInput = document.querySelector('#inventoryModal input[name="out"]');
-        var pickupDeliverySelect = document.querySelector('#inventoryModal select[name="pickup_delivery_type"]');
-        var vatSelect = document.querySelector('#inventoryModal select[name="vat_type"]');
-        var hollowblockSizeSelect = document.querySelector('#inventoryModal select[name="hollowblock_size"]');
-        var amountInput = document.querySelector('#inventoryModal input[name="amount"]');
-        var amountLabel = document.getElementById('amountLabel');
-        var manualToggle = document.getElementById('amountManualToggle');
-            
-        if (!itemSelect || !outInput || !amountInput) return;
-            
-        var item = itemSelect.value;
-        var outValue = parseFloat(outInput.value) || 0;
-        var pickupDeliveryType = pickupDeliverySelect ? pickupDeliverySelect.value : '';
-        var vatType = vatSelect ? vatSelect.value : '';
-        var hollowblockSize = hollowblockSizeSelect ? hollowblockSizeSelect.value : '';
-
-        // --- TRUCK LOADS AUTO-SET ---
-        if (pickupDeliveryType === 'truck_load_307') {
-            outInput.value = "3.07";
-            outInput.readOnly = true;
-            outInput.classList.add('bg-gray-100'); 
-        } else if (pickupDeliveryType === 'truck_load_352') {
-            outInput.value = "3.52";
-            outInput.readOnly = true;
-            outInput.classList.add('bg-gray-100');
-        } else {
-            outInput.readOnly = false;
-            outInput.classList.remove('bg-gray-100');
-        }
-
-        // --- UI UPDATES FOR BAGS VS CUBIC ---
-        var outLabel = document.querySelector('label[for="out"], label[aria-label="out"]');
-        if (pickupDeliveryType === 'per_bag') {
-            outInput.placeholder = 'Enter number of bags';
-            // Logic to show cubic conversion in the label
-            let cubicEquivalent = (outValue / 36).toFixed(3);
-            if (outLabel) outLabel.textContent = `OUT (${outValue} bags = ${cubicEquivalent} m³)`;
-        } else {
-            outInput.placeholder = 'Enter cubic meters';
-            if (outLabel) outLabel.textContent = 'OUT';
-        }
-            
-        // --- MANUAL TOGGLE LOGIC ---
-        if (manualToggle && manualToggle.checked) {
-            amountInput.readOnly = false;
-            amountInput.classList.remove('bg-gray-100', 'dark:bg-gray-600');
-            amountInput.classList.add('bg-white', 'dark:bg-gray-700');
-            if (amountLabel) amountLabel.textContent = 'AMOUNT (Manual Entry)';
-            return;
-        } else {
-            amountInput.readOnly = true;
-            amountInput.classList.remove('bg-white', 'dark:bg-gray-700');
-            amountInput.classList.add('bg-gray-100', 'dark:bg-gray-600');
-            if (amountLabel) amountLabel.textContent = 'AMOUNT (Auto-calculated)';
-        }
-
-        // --- PER BAG CALCULATION ---
-        if (pickupDeliveryType === 'per_bag') {
-            var bagPrices = {
-                'SAND S1 M': 140,
-                'VIBRO SAND': 157,
-                'G1 CURRIMAO': 130,
-                'G1 DAMORTIS': 140,
-                '3/4 GRAVEL CURRIMAO': 130,
-                '3/4 GRAVEL DAMORTIS': 150
-            };
-
-            if (bagPrices[item]) {
-                amountInput.value = (outValue * bagPrices[item]).toFixed(2);
-                return; // Exit function early as we've finished calculating for bags
-            }
-        }
-            
-        // --- STANDARD CUBIC CALCULATION ---
-        if (outValue <= 0) {
-            amountInput.value = '0.00';
-            return;
-        }
-            
-        var priceMultiplier = 0;
-            
-        switch (item) {
-            case 'SAND S1 M':
-                if (pickupDeliveryType === 'truck_load_307') return amountInput.value = "13062.85";
-                if (pickupDeliveryType === 'truck_load_352') return amountInput.value = "14977.60";
-
-                if (pickupDeliveryType === 'pickup_pier') {
-                    priceMultiplier = (vatType === 'with_vat') ? 4336.20 : 4015.00;
-                } else if (pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
-                    priceMultiplier = (vatType === 'with_vat') ? 4465.80 : 4135.00;
-                } else if (pickupDeliveryType === 'delivered_stockpile') {
-                    priceMultiplier = (vatType === 'with_vat') ? 4595.40 : 4255.00;
-                }
-                break;
-                    
-            case 'VIBRO SAND':
-                if (pickupDeliveryType === 'truck_load_307') return amountInput.value = "14812.75";
-                if (pickupDeliveryType === 'truck_load_352') return amountInput.value = "146984.00";
-
-                if (pickupDeliveryType === 'pickup_pier') {
-                    priceMultiplier = (vatType === 'with_vat') ? 4951.80 : 4585.00;
-                } else if (pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
-                    priceMultiplier = (vatType === 'with_vat') ? 5081.40 : 4705.00;
-                } else if (pickupDeliveryType === 'delivered_stockpile') {
-                    priceMultiplier = (vatType === 'with_vat') ? 5211.00 : 4825.00;
-                }
-                break;
-                    
-            case 'G1 CURRIMAO':
-                if (pickupDeliveryType === 'truck_load_307') return amountInput.value = "12341.40";
-                if (pickupDeliveryType === 'truck_load_352') return amountInput.value = "14150.40";
+        function updateAmountCalculation() {
+            var itemSelect = document.querySelector('#inventoryModal select[name="item"]');
+            var outInput = document.querySelector('#inventoryModal input[name="out"]');
+            var pickupDeliverySelect = document.querySelector('#inventoryModal select[name="pickup_delivery_type"]');
+            var vatSelect = document.querySelector('#inventoryModal select[name="vat_type"]');
+            var hollowblockSizeSelect = document.querySelector('#inventoryModal select[name="hollowblock_size"]');
+            var amountInput = document.querySelector('#inventoryModal input[name="amount"]');
+            var amountLabel = document.getElementById('amountLabel');
+            var manualToggle = document.getElementById('amountManualToggle');
                 
-                if (pickupDeliveryType === 'pickup_pier') {
-                    priceMultiplier = (vatType === 'with_vat') ? 4082.40 : 3780.00;
-                } else if (pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
-                    priceMultiplier = (vatType === 'with_vat') ? 4212.00 : 3900.00;
-                } else if (pickupDeliveryType === 'delivered_stockpile') {
-                    priceMultiplier = (vatType === 'with_vat') ? 4341.60 : 4020.00;
-                }
-                break;
-                    
-            case 'G1 DAMORTIS':
-                if (pickupDeliveryType === 'truck_load_307') return amountInput.value = "13062.85";
-                if (pickupDeliveryType === 'truck_load_352') return amountInput.value = "14977.60";
+            if (!itemSelect || !outInput || !amountInput) return;
+                
+            var item = itemSelect.value;
+            var outValue = parseFloat(outInput.value) || 0;
+            var pickupDeliveryType = pickupDeliverySelect ? pickupDeliverySelect.value : '';
+            var vatType = vatSelect ? vatSelect.value : '';
+            var hollowblockSize = hollowblockSizeSelect ? hollowblockSizeSelect.value : '';
 
-                if (pickupDeliveryType === 'pickup_pier') {
-                    priceMultiplier = (vatType === 'with_vat') ? 4336.20 : 4015.00;
-                } else if (pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
-                    priceMultiplier = (vatType === 'with_vat') ? 4465.80 : 4135.00;
-                } else if (pickupDeliveryType === 'delivered_stockpile') {
-                    priceMultiplier = (vatType === 'with_vat') ? 4595.40 : 4255.00;
-                }
-                break;
-                    
-            case '3/4 GRAVEL DAMORTIS':
-                if (pickupDeliveryType === 'truck_load_307') return amountInput.value = "13569.40";
-                if (pickupDeliveryType === 'truck_load_352') return amountInput.value = "15558.40";
+            // --- TRUCK LOADS AUTO-SET ---
+            if (pickupDeliveryType === 'truck_load_307') {
+                outInput.value = "3.07";
+                outInput.readOnly = true;
+                outInput.classList.add('bg-gray-100'); 
+            } else if (pickupDeliveryType === 'truck_load_352') {
+                outInput.value = "3.52";
+                outInput.readOnly = true;
+                outInput.classList.add('bg-gray-100');
+            } else {
+                outInput.readOnly = false;
+                outInput.classList.remove('bg-gray-100');
+            }
 
-                if (pickupDeliveryType === 'pickup_pier') {
-                    priceMultiplier = (vatType === 'with_vat') ? 4514.40 : 4180.00;
-                } else if (pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
-                    priceMultiplier = (vatType === 'with_vat') ? 4644.00 : 4300.00;
-                } else if (pickupDeliveryType === 'delivered_stockpile') {
-                    priceMultiplier = (vatType === 'with_vat') ? 4773.60 : 4420.00;
-                }
-                break;
+            // --- UI UPDATES FOR BAGS VS CUBIC ---
+            var outLabel = document.querySelector('label[for="out"], label[aria-label="out"]');
+            if (pickupDeliveryType === 'per_bag') {
+                outInput.placeholder = 'Enter number of bags';
+                // Logic to show cubic conversion in the label
+                let cubicEquivalent = (outValue / 36).toFixed(3);
+                if (outLabel) outLabel.textContent = `OUT (${outValue} bags = ${cubicEquivalent} m³)`;
+            } else {
+                outInput.placeholder = 'Enter cubic meters';
+                if (outLabel) outLabel.textContent = 'OUT';
+            }
+                
+            // --- MANUAL TOGGLE LOGIC ---
+            if (manualToggle && manualToggle.checked) {
+                amountInput.readOnly = false;
+                amountInput.classList.remove('bg-gray-100', 'dark:bg-gray-600');
+                amountInput.classList.add('bg-white', 'dark:bg-gray-700');
+                if (amountLabel) amountLabel.textContent = 'AMOUNT (Manual Entry)';
+                return;
+            } else {
+                amountInput.readOnly = true;
+                amountInput.classList.remove('bg-white', 'dark:bg-gray-700');
+                amountInput.classList.add('bg-gray-100', 'dark:bg-gray-600');
+                if (amountLabel) amountLabel.textContent = 'AMOUNT (Auto-calculated)';
+            }
 
-            case '3/4 GRAVEL CURRIMAO':
-                if (pickupDeliveryType === 'truck_load_307') return amountInput.value = "12771.20";
-                if (pickupDeliveryType === 'truck_load_352') return amountInput.value = "14643.20";
+            // --- PER BAG CALCULATION ---
+            if (pickupDeliveryType === 'per_bag') {
+                var bagPrices = {
+                    'SAND S1 M': 140,
+                    'VIBRO SAND': 157,
+                    'G1 CURRIMAO': 130,
+                    'G1 DAMORTIS': 140,
+                    '3/4 GRAVEL CURRIMAO': 130,
+                    '3/4 GRAVEL DAMORTIS': 150
+                };
 
-                if (pickupDeliveryType === 'pickup_pier') {
-                    priceMultiplier = (vatType === 'with_vat') ? 4298.40 : 3980.00;
-                } else if (pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
-                    priceMultiplier = (vatType === 'with_vat') ? 4395.00 : 4070.00;
-                } else if (pickupDeliveryType === 'delivered_stockpile') {
-                    priceMultiplier = (vatType === 'with_vat') ? 4492.80 : 4160.00;
+                if (bagPrices[item]) {
+                    amountInput.value = (outValue * bagPrices[item]).toFixed(2);
+                    return; // Exit function early as we've finished calculating for bags
                 }
-                break;
+            }
+                
+            // --- STANDARD CUBIC CALCULATION ---
+            if (outValue <= 0) {
+                amountInput.value = '0.00';
+                return;
+            }
+                
+            var priceMultiplier = 0;
+                
+            switch (item) {
+                case 'SAND S1 M':
+                    if (pickupDeliveryType === 'truck_load_307') return amountInput.value = "13062.85";
+                    if (pickupDeliveryType === 'truck_load_352') return amountInput.value = "14977.60";
+
+                    if (pickupDeliveryType === 'pickup_pier') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4336.20 : 4015.00;
+                    } else if (pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4465.80 : 4135.00;
+                    } else if (pickupDeliveryType === 'delivered_stockpile') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4595.40 : 4255.00;
+                    }
+                    break;
+                        
+                case 'VIBRO SAND':
+                    if (pickupDeliveryType === 'truck_load_307') return amountInput.value = "14812.75";
+                    if (pickupDeliveryType === 'truck_load_352') return amountInput.value = "146984.00";
+
+                    if (pickupDeliveryType === 'pickup_pier') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4951.80 : 4585.00;
+                    } else if (pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
+                        priceMultiplier = (vatType === 'with_vat') ? 5081.40 : 4705.00;
+                    } else if (pickupDeliveryType === 'delivered_stockpile') {
+                        priceMultiplier = (vatType === 'with_vat') ? 5211.00 : 4825.00;
+                    }
+                    break;
+                        
+                case 'G1 CURRIMAO':
+                    if (pickupDeliveryType === 'truck_load_307') return amountInput.value = "12341.40";
+                    if (pickupDeliveryType === 'truck_load_352') return amountInput.value = "14150.40";
                     
-            case 'HOLLOWBLOCKS':
-                if (hollowblockSize === '4_inch') {
-                    priceMultiplier = (vatType === 'with_vat') ? 73.92 : 66.00;
-                } else if (hollowblockSize === '5_inch') {
-                    priceMultiplier = (vatType === 'with_vat') ? 80.08 : 71.50;
-                } else if (hollowblockSize === '6_inch') {
-                    priceMultiplier = (vatType === 'with_vat') ? 86.24 : 77.00;
-                }
-                break;
-                    
-            default:
-                priceMultiplier = 0;
+                    if (pickupDeliveryType === 'pickup_pier') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4082.40 : 3780.00;
+                    } else if (pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4212.00 : 3900.00;
+                    } else if (pickupDeliveryType === 'delivered_stockpile') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4341.60 : 4020.00;
+                    }
+                    break;
+                        
+                case 'G1 DAMORTIS':
+                    if (pickupDeliveryType === 'truck_load_307') return amountInput.value = "13062.85";
+                    if (pickupDeliveryType === 'truck_load_352') return amountInput.value = "14977.60";
+
+                    if (pickupDeliveryType === 'pickup_pier') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4336.20 : 4015.00;
+                    } else if (pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4465.80 : 4135.00;
+                    } else if (pickupDeliveryType === 'delivered_stockpile') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4595.40 : 4255.00;
+                    }
+                    break;
+                        
+                case '3/4 GRAVEL DAMORTIS':
+                    if (pickupDeliveryType === 'truck_load_307') return amountInput.value = "13569.40";
+                    if (pickupDeliveryType === 'truck_load_352') return amountInput.value = "15558.40";
+
+                    if (pickupDeliveryType === 'pickup_pier') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4514.40 : 4180.00;
+                    } else if (pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4644.00 : 4300.00;
+                    } else if (pickupDeliveryType === 'delivered_stockpile') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4773.60 : 4420.00;
+                    }
+                    break;
+
+                case '3/4 GRAVEL CURRIMAO':
+                    if (pickupDeliveryType === 'truck_load_307') return amountInput.value = "12771.20";
+                    if (pickupDeliveryType === 'truck_load_352') return amountInput.value = "14643.20";
+
+                    if (pickupDeliveryType === 'pickup_pier') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4298.40 : 3980.00;
+                    } else if (pickupDeliveryType === 'pickup_stockpile_delivered_pier') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4395.00 : 4070.00;
+                    } else if (pickupDeliveryType === 'delivered_stockpile') {
+                        priceMultiplier = (vatType === 'with_vat') ? 4492.80 : 4160.00;
+                    }
+                    break;
+                        
+                case 'HOLLOWBLOCKS':
+                    if (hollowblockSize === '4_inch') {
+                        priceMultiplier = (vatType === 'with_vat') ? 73.92 : 66.00;
+                    } else if (hollowblockSize === '5_inch') {
+                        priceMultiplier = (vatType === 'with_vat') ? 80.08 : 71.50;
+                    } else if (hollowblockSize === '6_inch') {
+                        priceMultiplier = (vatType === 'with_vat') ? 86.24 : 77.00;
+                    }
+                    break;
+                        
+                default:
+                    priceMultiplier = 0;
+            }
+                
+            var calculatedAmount = outValue * priceMultiplier;
+            amountInput.value = calculatedAmount.toFixed(2);
         }
-            
-        var calculatedAmount = outValue * priceMultiplier;
-        amountInput.value = calculatedAmount.toFixed(2);
-    }
 
-    // Function to get initial balance value for edit modal
-    function getInitialBalanceValue(found) {
-        if (found.item === 'HOLLOWBLOCKS' && found.hollowblock_size) {
-            // Get the size-specific balance field from the entry itself
-            var balanceField = 'hollowblock_' + found.hollowblock_size + '_balance';
-            return found[balanceField] || 0;
+        // Function to get initial balance value for edit modal
+        function getInitialBalanceValue(found) {
+            if (found.item === 'HOLLOWBLOCKS' && found.hollowblock_size) {
+                // Get the size-specific balance field from the entry itself
+                var balanceField = 'hollowblock_' + found.hollowblock_size + '_balance';
+                return found[balanceField] || 0;
+            }
+            return found.balance || '';
         }
-        return found.balance || '';
-    }
 
-    function openEditModal(id) {
+        function openEditModal(id) {
             var entry = @json($entries);
             var customers = @json($customers);
             var isAdmin = @json(auth()->user()->roles && in_array(strtoupper(trim(auth()->user()->roles->roles)), ['ADMIN', 'ADMINISTRATOR']));
             var found = entry.find(e => e.id === id);
             if (!found) return;
+
+            // Use the stored customer_type to reconstruct the prefix
+            var prefixedId = (found.customer_type === 'sub' ? 'sub-' : 'main-') + found.customer_id;
+
+            // ... later in the fields variable where you build the select ...
+            fields += `<select name='customer_id' class='...'>`;
             
             // Calculate previous onsite balance for this item
             var allEntries = @json($entries);
@@ -1146,10 +1163,11 @@
             var currentIndex = itemEntries.findIndex(e => e.id === id);
             var previousOnsiteBalance = currentIndex > 0 ? itemEntries[currentIndex - 1].onsite_balance : 0;
             window.previousOnsiteBalance = previousOnsiteBalance;
-            
+                
             var form = document.getElementById('editInventoryForm');
             form.action = '/inventory/' + id;
-            var fields = `<div class='mb-2'>
+            var fields = 
+            `<div class='mb-2'>
                 <label class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>Item</label>
                 <input type='text' name='item' value='${found.item}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' required />
             </div>
@@ -1161,27 +1179,27 @@
                 <div>
                     <label class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>Customer</label>
                     <select name='customer_id' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' required>`;
-            customers.forEach(function(c) {
-                var selected = c.id === found.customer_id ? 'selected' : '';
-                fields += `<option value='${c.id}' ${selected}>${c.company_name ? c.company_name : (c.first_name + ' ' + c.last_name)}</option>`;
-            });
-            fields += `</select></div></div>`;
-            
-            // Amount Calculation Fields
-            fields += `<div class='mb-2'>
-                <label class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>Pickup/Delivery Type</label>
-                <select name='pickup_delivery_type' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' onchange='updateEditAmountCalculation()'>
-                    <option value=''>Select Type</option>
-                    <option value='pickup_pier' ${found.pickup_delivery_type === 'pickup_pier' ? 'selected' : ''}>Pick up from Pier</option>
-                    <option value='pickup_stockpile_delivered_pier' ${found.pickup_delivery_type === 'pickup_stockpile_delivered_pier' ? 'selected' : ''}>Pick up from Stock Pile & Delivered from Pier</option>
-                    <option value='delivered_stockpile' ${found.pickup_delivery_type === 'delivered_stockpile' ? 'selected' : ''}>Delivered from Stock Pile</option>
-                    <option value='per_bag' ${found.pickup_delivery_type === 'per_bag' ? 'selected' : ''}>Per Bag</option>
-                    <option value='truck_load_03_07' ${found.pickup_delivery_type === 'truck_load_03_07' ? 'selected' : ''}>Truck Load 03.07</option>
-                    <option value='truck_load_03_52' ${found.pickup_delivery_type === 'truck_load_03_52' ? 'selected' : ''}>Truck Load 03.52</option>
-                </select>
-            </div>`;
-            
-            fields += `<div class='mb-2 grid grid-cols-2 gap-2'>
+                    customers.forEach(function(c) {
+                        var selected = c.id === found.customer_id ? 'selected' : '';
+                        fields += `<option value='${c.id}' ${selected}>${c.company_name ? c.company_name : (c.first_name + ' ' + c.last_name)}</option>`;
+                    });
+                    fields += `</select></div></div>`;
+                    
+                    // Amount Calculation Fields
+                    fields += `<div class='mb-2'>
+                    <label class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>Pickup/Delivery Type</label>
+                    <select name='pickup_delivery_type' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' onchange='updateEditAmountCalculation()'>
+                        <option value=''>Select Type</option>
+                        <option value='pickup_pier' ${found.pickup_delivery_type === 'pickup_pier' ? 'selected' : ''}>Pick up from Pier</option>
+                        <option value='pickup_stockpile_delivered_pier' ${found.pickup_delivery_type === 'pickup_stockpile_delivered_pier' ? 'selected' : ''}>Pick up from Stock Pile & Delivered from Pier</option>
+                        <option value='delivered_stockpile' ${found.pickup_delivery_type === 'delivered_stockpile' ? 'selected' : ''}>Delivered from Stock Pile</option>
+                        <option value='per_bag' ${found.pickup_delivery_type === 'per_bag' ? 'selected' : ''}>Per Bag</option>
+                        <option value='truck_load_03_07' ${found.pickup_delivery_type === 'truck_load_03_07' ? 'selected' : ''}>Truck Load 03.07</option>
+                        <option value='truck_load_03_52' ${found.pickup_delivery_type === 'truck_load_03_52' ? 'selected' : ''}>Truck Load 03.52</option>
+                    </select>
+                </div>`;
+                
+                fields += `<div class='mb-2 grid grid-cols-2 gap-2'>
                 <div>
                     <label class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>VAT Type</label>
                     <select name='vat_type' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' onchange='updateEditAmountCalculation()'>
@@ -1200,19 +1218,19 @@
                     </select>
                 </div>
             </div>`;
-            
+                
             const editManualChecked = (found.pickup_delivery_type === 'per_bag');
-            fields += `<div class='mb-2'>
+            fields += 
+            `<div class='mb-2'>
                 <div class='flex items-center justify-between'>
                     <label id='editAmountLabel' class='block text-sm font-medium text-gray-700 dark:text-gray-300'>AMOUNT (Auto-calculated)</label>
                     <label class='inline-flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300'>
-                        <input type='checkbox' id='editAmountManualToggle' name='is_amount_manual' value='1' ${editManualChecked ? 'checked' : ''} onchange='handleEditAmountManualToggle()' class='rounded border-gray-300 text-blue-600 focus:ring-blue-500' />
-                        Manual amount
-                    </label>
+                        <input type='checkbox' id='editAmountManualToggle' name='is_amount_manual' value='1' ${editManualChecked ? 'checked' : ''} onchange='handleEditAmountManualToggle()' class='rounded border-gray-300 text-blue-600 focus:ring-blue-500' />Manual amount</label>
                 </div>
                 <input type='number' step='0.01' name='amount' id='editAmountInput' value='${found.amount || ''}' class='w-full mt-1 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 ${editManualChecked ? 'bg-white dark:bg-gray-700' : 'bg-gray-100 dark:bg-gray-600'} text-gray-900 dark:text-gray-100' min='0' max='999999.99' ${editManualChecked ? '' : 'readonly'} />
             </div>`;
-            fields += `<div class='mb-2 grid grid-cols-2 gap-2'>
+            fields += 
+            `<div class='mb-2 grid grid-cols-2 gap-2'>
                 <div>
                     <label class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>OR/AR</label>
                     <input type='text' name='or_ar' value='${found.or_ar || ''}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' oninput="updateEditAmountCalculation()" />
@@ -1222,7 +1240,8 @@
                     <input type='text' name='dr_number' value='${found.dr_number || ''}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' oninput="updateEditAmountCalculation()" />
                 </div>
             </div>`;
-            fields += `<div class='mb-2 grid grid-cols-3 gap-2'>
+            fields += 
+            `<div class='mb-2 grid grid-cols-3 gap-2'>
                 <div>
                     <label class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>IN</label>
                     <input type='number' step='0.0001' name='in' value='${found.in || ''}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' oninput="updateEditBalance()" />
@@ -1239,7 +1258,8 @@
                     <input type='number' step='0.0001' name='balance' value='${getInitialBalanceValue(found)}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-gray-100' readonly />
                 </div>
             </div>`;
-            fields += `<div class='mb-2 grid grid-cols-3 gap-2'>
+            fields += 
+            `<div class='mb-2 grid grid-cols-3 gap-2'>
                 <div>
                     <label class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>ONSITE IN</label>
                     <input type='number' step='0.0001' name='onsite_in' value='${found.onsite_in || ''}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' />
@@ -1253,20 +1273,22 @@
                     <input type='number' step='0.0001' name='onsite_balance' value='${found.onsite_balance || ''}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' />
                 </div>
             </div>`;
+            
             // Add Onsite Date field - accessible to everyone
             var currentDate = found.onsite_date || new Date().toISOString().split('T')[0];
-            fields += `<div class='mb-2'>
+            fields += 
+            `<div class='mb-2'>
                 <label class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>Onsite Date</label>
                 <input type='date' name='onsite_date' value='${currentDate}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' />
             </div>`;
-            
+                
             // Add Updated Onsite Date field - accessible to everyone
             // var updatedOnsiteDate = found.updated_onsite_date || '';
             // fields += `<div class='mb-2'>
             //    <label class='block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'>Updated Onsite Date</label>
             //    <input type='date' name='updated_onsite_date' value='${updatedOnsiteDate}' class='w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400' />
             // </div>`;
-            
+                
             // Add hidden fields for hollowblock sizes
             fields += `<input type='hidden' name='hollowblock_4_inch_in' id='edit_hollowblock_4_inch_in' value='${found.hollowblock_4_inch_in || ''}' />`;
             fields += `<input type='hidden' name='hollowblock_4_inch_out' id='edit_hollowblock_4_inch_out' value='${found.hollowblock_4_inch_out || ''}' />`;
@@ -1277,7 +1299,7 @@
             fields += `<input type='hidden' name='hollowblock_6_inch_in' id='edit_hollowblock_6_inch_in' value='${found.hollowblock_6_inch_in || ''}' />`;
             fields += `<input type='hidden' name='hollowblock_6_inch_out' id='edit_hollowblock_6_inch_out' value='${found.hollowblock_6_inch_out || ''}' />`;
             fields += `<input type='hidden' name='hollowblock_6_inch_balance' id='edit_hollowblock_6_inch_balance' value='${found.hollowblock_6_inch_balance || ''}' />`;
-            
+                
             document.getElementById('editInventoryFields').innerHTML = fields;
             document.getElementById('editInventoryModal').classList.remove('hidden');
             // Initialize edit amount state based on pickup_delivery_type or existing manual toggle
@@ -1290,12 +1312,12 @@
                 document.querySelector('#editInventoryModal input[name="in"]').addEventListener('input', updateEditHollowblockBalance);
                 document.querySelector('#editInventoryModal input[name="out"]').addEventListener('input', updateEditHollowblockBalance);
                 document.querySelector('#editInventoryModal select[name="hollowblock_size"]').addEventListener('change', updateEditHollowblockBalance);
-                
+                    
                 // Add event listener for manual balance changes
                 document.querySelector('#editInventoryModal input[name="balance"]').addEventListener('input', function() {
                     handleManualHollowblockBalanceChange();
                 });
-                
+                    
                 // Initialize hollowblock fields based on current entry data
                 updateEditHollowblockBalance();
             }
@@ -1312,18 +1334,18 @@
             var amountInput = document.querySelector('#editInventoryModal input[name="amount"]');
             var amountLabel = document.getElementById('editAmountLabel');
             var manualToggle = document.getElementById('editAmountManualToggle');
-            
+                
             // Select the label specifically for the "OUT" input
             var outLabel = document.querySelector('#editInventoryModal label[for="out"]');
-            
+                
             if (!itemInput || !outInput || !amountInput) return;
-            
+                
             var item = itemInput.value;
             var outValue = parseFloat(outInput.value) || 0;
             var pickupDeliveryType = pickupDeliverySelect ? pickupDeliverySelect.value : '';
             var vatType = vatSelect ? vatSelect.value : '';
             var hollowblockSize = hollowblockSizeSelect ? hollowblockSizeSelect.value : '';
-            
+                
             // --- LIVE CONVERSION DISPLAY ---
             if (pickupDeliveryType === 'per_bag') {
                 let cubicEquivalent = (outValue / 36).toFixed(3);
@@ -1333,7 +1355,7 @@
             } else {
                 if (outLabel) outLabel.textContent = 'OUT';
             }
-            
+                
             // --- MANUAL TOGGLE / AMOUNT MATH ---
             if ((manualToggle && manualToggle.checked) || pickupDeliveryType === 'per_bag') {
                 amountInput.readOnly = false;
@@ -1342,7 +1364,7 @@
                 if (amountLabel) {
                     amountLabel.textContent = pickupDeliveryType === 'per_bag' ? 'AMOUNT (Bag Price Entry)' : 'AMOUNT (Manual Entry)';
                 }
-                
+                    
                 // If it's per bag and NOT manually overridden yet, do the math (Bags * Price)
                 if (pickupDeliveryType === 'per_bag' && (!manualToggle || !manualToggle.checked)) {
                     var bagPrices = {
@@ -1364,7 +1386,7 @@
             // Standard Multiplier Logic (for non-bag entries)
             var priceMultiplier = 0;
             // ... (rest of your switch(item) logic for priceMultiplier) ...
-            
+                
             var calculatedAmount = outValue * priceMultiplier;
             amountInput.value = calculatedAmount.toFixed(2);
         }
@@ -1373,17 +1395,17 @@
             var onsiteInInput = document.querySelector('#editInventoryModal input[name="onsite_in"]');
             var actualOutInput = document.querySelector('#editInventoryModal input[name="actual_out"]');
             var onsiteBalanceInput = document.querySelector('#editInventoryModal input[name="onsite_balance"]');
-            
+                
             if (!onsiteInInput || !actualOutInput || !onsiteBalanceInput) return;
-            
+                
             var onsiteIn = parseFloat(onsiteInInput.value) || 0;
             var actualOut = parseFloat(actualOutInput.value) || 0;
             var previousBalance = window.previousOnsiteBalance || 0;
             var onsiteBalance = previousBalance + onsiteIn - actualOut;
-            
+                
             onsiteBalanceInput.value = onsiteBalance.toFixed(4);
         }
-        
+            
         // Function to update hollowblock fields during edit
         function updateEditHollowblockBalance() {
             var itemInput = document.querySelector('#editInventoryModal input[name="item"]');
@@ -1392,27 +1414,27 @@
             var balanceInput = document.querySelector('#editInventoryModal input[name="balance"]');
             var hollowblockSizeSelect = document.querySelector('#editInventoryModal select[name="hollowblock_size"]');
             var pickupDeliverySelect = document.querySelector('#editInventoryModal select[name="pickup_delivery_type"]');
-            
+                
             if (!itemInput || itemInput.value !== 'HOLLOWBLOCKS') return;
-            
+                
             var inValue = parseFloat(inInput.value) || 0;
             var outValue = parseFloat(outInput.value) || 0;
             var hollowblockSize = hollowblockSizeSelect ? hollowblockSizeSelect.value : '';
             var pickupDeliveryType = pickupDeliverySelect ? pickupDeliverySelect.value : '';
-            
+                
             // Handle PER BAG conversion
             var convertedOutValue = outValue;
             if (pickupDeliveryType === 'per_bag' && outValue > 0) {
                 convertedOutValue = outValue / 36; // Convert bags to cubic meters
             }
-            
+                
             if (!hollowblockSize) return;
-            
+                
             // Get the current entry data
             var entryId = document.querySelector('#editInventoryForm').action.split('/').pop();
             var entryData = @json($entries);
             var currentEntry = entryData.find(e => e.id == entryId);
-            
+                
             // Clear all size-specific fields first
             document.getElementById('edit_hollowblock_4_inch_in').value = '';
             document.getElementById('edit_hollowblock_4_inch_out').value = '';
@@ -1423,7 +1445,7 @@
             document.getElementById('edit_hollowblock_6_inch_in').value = '';
             document.getElementById('edit_hollowblock_6_inch_out').value = '';
             document.getElementById('edit_hollowblock_6_inch_balance').value = '';
-            
+                
             // Set values for the specific size being edited
             if (hollowblockSize === '4_inch') {
                 document.getElementById('edit_hollowblock_4_inch_in').value = inValue;
@@ -1457,7 +1479,7 @@
                 document.getElementById('edit_hollowblock_6_inch_balance').value = newBalance.toFixed(4);
                 if (balanceInput) balanceInput.value = newBalance.toFixed(4);
             }
-            
+                
             console.log(`Edit: Updated hollowblock ${hollowblockSize} fields - IN: ${inValue}, OUT: ${convertedOutValue}`);
         }
 
@@ -1465,16 +1487,16 @@
         function handleManualHollowblockBalanceChange() {
             var balanceInput = document.querySelector('#editInventoryModal input[name="balance"]');
             var hollowblockSizeSelect = document.querySelector('#editInventoryModal select[name="hollowblock_size"]');
-            
+                
             if (!balanceInput || !hollowblockSizeSelect) return;
-            
+                
             var newBalance = parseFloat(balanceInput.value) || 0;
             var hollowblockSize = hollowblockSizeSelect.value;
-            
+                
             if (!hollowblockSize) return;
-            
+                
             console.log(`Manual balance change for ${hollowblockSize}: ${newBalance}`);
-            
+                
             // Update the appropriate size-specific balance field
             if (hollowblockSize === '4_inch') {
                 document.getElementById('edit_hollowblock_4_inch_balance').value = newBalance.toFixed(4);
@@ -1492,21 +1514,21 @@
                 var form = document.createElement('form');
                 form.method = 'POST';
                 form.action = '/inventory/' + entryId;
-                
+                    
                 // Add CSRF token
                 var csrfToken = document.createElement('input');
                 csrfToken.type = 'hidden';
                 csrfToken.name = '_token';
                 csrfToken.value = '{{ csrf_token() }}';
                 form.appendChild(csrfToken);
-                
+                    
                 // Add method override for DELETE
                 var methodInput = document.createElement('input');
                 methodInput.type = 'hidden';
                 methodInput.name = '_method';
                 methodInput.value = 'DELETE';
                 form.appendChild(methodInput);
-                
+                    
                 document.body.appendChild(form);
                 form.submit();
             }
@@ -1519,51 +1541,51 @@
             var outInput = document.querySelector('#editInventoryModal input[name="out"]');
             var balanceInput = document.querySelector('#editInventoryModal input[name="balance"]');
             var pickupDeliverySelect = document.querySelector('#editInventoryModal select[name="pickup_delivery_type"]');
-            
+                
             if (!itemInput || !balanceInput) return;
-            
+                
             var item = itemInput.value;
-            
+                
             // For hollowblocks, we use the specialized function already defined
             if (item === 'HOLLOWBLOCKS') {
                 // For hollowblocks, use the specialized function
                 updateEditHollowblockBalance();
                 return;
             }
-            
+                
             var inValue = parseFloat(inInput.value) || 0;
             var outValue = parseFloat(outInput.value) || 0;
             var pickupDeliveryType = pickupDeliverySelect ? pickupDeliverySelect.value : '';
-            
+                
             // --- PER BAG CONVERSION LOGIC ---
             // 1 cubic = 36 bags. If user inputs 2 bags, we convert to 0.056 for balance math.
             var convertedOutValue = outValue;
             if (pickupDeliveryType === 'per_bag' && outValue > 0) {
                 convertedOutValue = outValue / 36;
             }
-            
+                
             // Get the current entry ID from the form action
             var entryId = document.querySelector('#editInventoryForm').action.split('/').pop();
             var entryData = @json($entries);
             var currentEntry = entryData.find(e => e.id == entryId);
-            
+                
             if (currentEntry && currentBalances[item]) {
                 var currentItemTotalBalance = currentBalances[item].balance || 0;
-                
+                    
                 // --- STEP 1: BACKTRACK ---
                 // Calculate the balance as it was BEFORE this specific entry was added
                 var originalIn = parseFloat(currentEntry.in) || 0;
                 var originalOut = parseFloat(currentEntry.out) || 0;
-                
+                    
                 // Logic: Previous Balance = Today's Balance - Today's IN + Today's OUT
                 var balanceBeforeThisEntry = currentItemTotalBalance - originalIn + originalOut;
-                
+                    
                 // --- STEP 2: APPLY UPDATED VALUES ---
                 // New Balance = Previous Balance + New IN - New OUT (Converted)
                 var newBalance = balanceBeforeThisEntry + inValue - convertedOutValue;
-                
+                    
                 balanceInput.value = newBalance.toFixed(4);
-                
+                    
                 console.log(`Edit Math: Start(${balanceBeforeThisEntry.toFixed(3)}) + In(${inValue}) - Out(${convertedOutValue.toFixed(3)}) = ${newBalance.toFixed(4)}`);
             }
         }
@@ -1572,29 +1594,29 @@
         function updateStartingBalanceFields() {
             var itemSelect = document.querySelector('#startingBalanceModal select[name="item"]');
             if (!itemSelect) return;
-            
+                
             var selectedOption = itemSelect.options[itemSelect.selectedIndex];
             var hollowblockSize = selectedOption.getAttribute('data-size');
-            
+                
             console.log('Selected item:', itemSelect.value, 'Size:', hollowblockSize);
-            
+                
             // Clear all hollowblock hidden fields
             document.getElementById('starting_hollowblock_size').value = '';
             document.getElementById('starting_hollowblock_4_inch_in').value = '';
             document.getElementById('starting_hollowblock_5_inch_in').value = '';
             document.getElementById('starting_hollowblock_6_inch_in').value = '';
-            
+                
             if (itemSelect.value === 'HOLLOWBLOCKS' && hollowblockSize) {
                 document.getElementById('starting_hollowblock_size').value = hollowblockSize;
                 console.log('Set hollowblock_size to:', hollowblockSize);
-                
+                    
                 // Add listener to balance input to populate the correct hollowblock size field
                 var balanceInput = document.querySelector('#startingBalanceModal input[name="balance"]');
                 if (balanceInput) {
                     // Remove any existing listeners to avoid duplicates
                     balanceInput.removeEventListener('input', updateHollowblockBalance);
                     balanceInput.addEventListener('input', updateHollowblockBalance);
-                    
+                        
                     // Trigger the event if there's already a value
                     if (balanceInput.value) {
                         updateHollowblockBalance.call(balanceInput);
@@ -1602,16 +1624,51 @@
                 }
             }
         }
-        
+
+        // Function to handle starting balance form for hollowblock sizes
+        function updateStartingBalanceFields() {
+            var itemSelect = document.querySelector('#startingBalanceModal select[name="item"]');
+            if (!itemSelect) return;
+                
+            var selectedOption = itemSelect.options[itemSelect.selectedIndex];
+            var hollowblockSize = selectedOption.getAttribute('data-size');
+                
+            console.log('Selected item:', itemSelect.value, 'Size:', hollowblockSize);
+                
+            // Clear all hollowblock hidden fields
+            document.getElementById('starting_hollowblock_size').value = '';
+            document.getElementById('starting_hollowblock_4_inch_in').value = '';
+            document.getElementById('starting_hollowblock_5_inch_in').value = '';
+            document.getElementById('starting_hollowblock_6_inch_in').value = '';
+                
+            if (itemSelect.value === 'HOLLOWBLOCKS' && hollowblockSize) {
+                document.getElementById('starting_hollowblock_size').value = hollowblockSize;
+                console.log('Set hollowblock_size to:', hollowblockSize);
+                    
+                // Add listener to balance input to populate the correct hollowblock size field
+                var balanceInput = document.querySelector('#startingBalanceModal input[name="balance"]');
+                if (balanceInput) {
+                    // Remove any existing listeners to avoid duplicates
+                    balanceInput.removeEventListener('input', updateHollowblockBalance);
+                    balanceInput.addEventListener('input', updateHollowblockBalance);
+                        
+                    // Trigger the event if there's already a value
+                    if (balanceInput.value) {
+                        updateHollowblockBalance.call(balanceInput);
+                    }
+                }
+            }
+        }
+            
         // Separate function for updating hollowblock balance to avoid closure issues
         function updateHollowblockBalance() {
             var itemSelect = document.querySelector('#startingBalanceModal select[name="item"]');
             var selectedOption = itemSelect.options[itemSelect.selectedIndex];
             var hollowblockSize = selectedOption.getAttribute('data-size');
             var balanceValue = parseFloat(this.value) || 0;
-            
+                
             console.log('Updating hollowblock balance:', hollowblockSize, 'value:', balanceValue);
-            
+                
             if (hollowblockSize === '4_inch') {
                 document.getElementById('starting_hollowblock_4_inch_in').value = balanceValue;
             } else if (hollowblockSize === '5_inch') {
@@ -1627,7 +1684,7 @@
             const lastName = document.getElementById('last_name').value;
             const companyName = document.getElementById('company_name').value;
             const typeSelect = document.getElementById('type');
-            
+                
             if (companyName.trim()) {
                 typeSelect.value = 'company';
             } else if (firstName.trim() || lastName.trim()) {
@@ -1652,7 +1709,7 @@
                     // Trigger Alpine.js to close modal
                     modal.__x.$data.openModal = false;
                 }
-                
+                    
                 // Optionally reload the page to refresh customer dropdowns
                 setTimeout(function() {
                     window.location.reload();

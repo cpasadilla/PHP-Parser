@@ -13,7 +13,7 @@ class InventoryController extends Controller
      */
     public function index()
     {
-    $entries = \App\Models\InventoryEntry::all();
+    $entries = \App\Models\InventoryEntry::with(['customer'])->get();
     $customers = \App\Models\Customer::with('subAccounts')
         ->orderByRaw('CASE WHEN company_name IS NOT NULL AND company_name != "" THEN company_name ELSE CONCAT(first_name, " ", last_name) END')
         ->get();
