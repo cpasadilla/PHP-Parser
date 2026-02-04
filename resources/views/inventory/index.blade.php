@@ -823,8 +823,9 @@
         // 6. Default execution on page load
         document.addEventListener('DOMContentLoaded', function() {
             @foreach($inventoryItems as $idx => $item)
-                // Automatically sort by DR# (Column index 9) from lowest to highest on load
-                sortTable({{ $idx }}, 9, 'number');
+                // Automatically sort by DATE (Column index 0) from oldest to latest on load
+                // We pass 'date' as the type
+                sortTable({{ $idx }}, 0, 'date');
             @endforeach
         });
 
