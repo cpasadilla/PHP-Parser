@@ -217,33 +217,41 @@
                                 </tr>
                             </thead>    
                             <thead>
-                                    <tr class="bg-gray-100 dark:bg-gray-700">
-                                        <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600" 
-                                            onclick="toggleDateSort({{ $idx }})">
-                                            <div class="flex items-center justify-center gap-1">
-                                                DATE
-                                                <svg id="sortIcon{{ $idx }}" class="w-2 h-2 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                                </svg>
-                                            </div>
-                                        </th>
-                                        <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">CUSTOMER</th>
-                                        <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">SHIP#</th>
-                                        <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">VOYAGE#</th>
-                                        <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">IN</th>
-                                        <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">OUT</th>
-                                        <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">BALANCE</th>
-                                        <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">AMOUNT</th>
-                                        <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">OR/AR</th>
-                                        <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">DR#</th>
-                                        <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">DATE</th>
-                                        <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">IN</th>
-                                        <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">ACTUAL OUT</th>
-                                        <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">BALANCE</th>
-                                        <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100"></th>
-                                        <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">UPDATE</th>
-                                    </tr>
-                                </thead>
+                                <tr class="bg-gray-100 dark:bg-gray-700">
+                                    <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600" 
+                                        onclick="sortTable({{ $idx }}, 0, 'date')">
+                                        <div class="flex items-center justify-center gap-1">
+                                            DATE
+                                            <svg id="sortIconDate{{ $idx }}" class="w-2 h-2 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                            </svg>
+                                        </div>
+                                    </th>
+                                    <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">CUSTOMER</th>
+                                    <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">SHIP#</th>
+                                    <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">VOYAGE#</th>
+                                    <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">IN</th>
+                                    <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">OUT</th>
+                                    <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">BALANCE</th>
+                                    <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">AMOUNT</th>
+                                    <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">OR/AR</th>
+                                    <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600" 
+                                        onclick="sortTable({{ $idx }}, 9, 'number')">
+                                        <div class="flex items-center justify-center gap-1">
+                                            DR#
+                                            <svg id="sortIconDR{{ $idx }}" class="w-2 h-2 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                            </svg>
+                                        </div>
+                                    </th>
+                                    <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">DATE</th>
+                                    <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">IN</th>
+                                    <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">ACTUAL OUT</th>
+                                    <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">BALANCE</th>
+                                    <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100"></th>
+                                    <th class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">UPDATE</th>
+                                </tr>
+                            </thead>
                                 <tbody>
                                     @php
                                         $currentMonth = null;
@@ -282,21 +290,26 @@
                                             @endif
                                         </td>
                                         <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">
-                                            @if($entry->is_starting_balance)
-                                                @else
+                                            @if(!$entry->is_starting_balance)
                                                 @php
-                                                    $displayName = 'N/A';
-                                                    if ($entry->customer_type === 'main' && $entry->customer) {
-                                                        $displayName = $entry->customer->company_name ?: ($entry->customer->first_name . ' ' . $entry->customer->last_name);
-                                                    } elseif ($entry->customer_type === 'sub') {
-                                                        // Fetch from SubAccount model if not eager loaded
-                                                        $sub = \App\Models\SubAccount::find($entry->customer_id);
-                                                        if ($sub) {
-                                                            $displayName = $sub->company_name ?: ($sub->first_name . ' ' . $sub->last_name);
+                                                    // Try to get name from the entry's eager-loaded relationship or direct property
+                                                    $displayCustomer = '';
+                                                    if ($entry->customer) {
+                                                        if ($entry->customer->company_name) {
+                                                            $displayCustomer = $entry->customer->company_name;
+                                                        } else {
+                                                            $firstName = $entry->customer->first_name ?? '';
+                                                            $lastName = $entry->customer->last_name ?? '';
+                                                            $displayCustomer = trim($firstName . ' ' . $lastName);
                                                         }
+                                                    } elseif ($entry->customer_name) {
+                                                        // Fallback if name was manually joined in the Controller
+                                                        $displayCustomer = $entry->customer_name;
                                                     }
                                                 @endphp
-                                                {{ strtoupper($displayName) }}
+                                                
+                                                {{-- Display the name in uppercase, or leave totally blank if null/empty --}}
+                                                {{ $displayCustomer !== '' ? strtoupper($displayCustomer) : '' }}
                                             @endif
                                         </td>
                                         <td class="border border-gray-300 dark:border-gray-600 px-2 py-1 text-gray-900 dark:text-gray-100">{{ $entry->ship_number }}</td>
@@ -739,18 +752,25 @@
             });
         });
 
-        function toggleDateSort(tabIdx) {
+        // Global object to track the direction of each column per tab
+        const sortDirections = {};
+
+        function sortTable(tabIdx, colIdx, type) {
             const tabContent = document.getElementById('tabContent' + tabIdx);
             const tbody = tabContent.querySelector('table tbody');
             const rows = Array.from(tbody.querySelectorAll('tr'));
-            const icon = document.getElementById('sortIcon' + tabIdx);
+            
+            // Toggle direction: default to true (ASC/Lowest to Highest) if not set
+            const key = `tab${tabIdx}-col${colIdx}`;
+            sortDirections[key] = sortDirections[key] === undefined ? true : !sortDirections[key];
+            const isAsc = sortDirections[key];
 
             // 1. Identify "Groups" (A month header + its following data rows)
             let groups = [];
             let currentGroup = null;
 
             rows.forEach(row => {
-                // If it's a Month Header or the "Final Summary" row at the bottom
+                // Identify Month Header (Tan color) or Summary Footer (bold)
                 if (row.style.backgroundColor === 'rgb(210, 180, 140)' || row.classList.contains('font-semibold')) {
                     if (currentGroup) groups.push(currentGroup);
                     currentGroup = { header: row, data: [] };
@@ -760,13 +780,30 @@
             });
             if (currentGroup) groups.push(currentGroup);
 
-            // 2. Reverse the groups (Newest Month vs Oldest Month)
-            groups.reverse();
-
-            // 3. Reverse the data rows within each month (Newest Day vs Oldest Day)
+            // 2. Sort the data rows within each month group
             groups.forEach(group => {
-                group.data.reverse();
+                group.data.sort((a, b) => {
+                    let valA = a.cells[colIdx].textContent.trim();
+                    let valB = b.cells[colIdx].textContent.trim();
+
+                    if (type === 'date') {
+                        // DATE Sort: Convert MM-DD-YYYY to Date object
+                        let dateA = new Date(valA);
+                        let dateB = new Date(valB);
+                        return isAsc ? dateA - dateB : dateB - dateA;
+                    } else if (type === 'number') {
+                        // DR# Sort: Convert to float, ignore non-numeric chars
+                        let numA = parseFloat(valA.replace(/[^0-9.]/g, '')) || 0;
+                        let numB = parseFloat(valB.replace(/[^0-9.]/g, '')) || 0;
+                        return isAsc ? numA - numB : numB - numA;
+                    }
+                    return 0;
+                });
             });
+
+            // 3. Optional: Sort the Groups themselves if sorting by Date
+            // If you want the months to also flip (Newest Month first), uncomment below:
+            /* if (type === 'date' && !isAsc) groups.sort((a,b) => new Date(b.header.textContent) - new Date(a.header.textContent)); */
 
             // 4. Clear and Re-append
             tbody.innerHTML = '';
@@ -775,9 +812,21 @@
                 group.data.forEach(dataRow => tbody.appendChild(dataRow));
             });
 
-            // 5. Rotate Icon to show direction
-            icon.style.transform = icon.style.transform === 'rotate(180deg)' ? 'rotate(0deg)' : 'rotate(180deg)';
+            // 5. Rotate Icon (Using specific IDs for Date and DR#)
+            const iconId = colIdx === 0 ? `sortIconDate${tabIdx}` : `sortIconDR${tabIdx}`;
+            const icon = document.getElementById(iconId);
+            if (icon) {
+                icon.style.transform = isAsc ? 'rotate(0deg)' : 'rotate(180deg)';
+            }
         }
+
+        // 6. Default execution on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            @foreach($inventoryItems as $idx => $item)
+                // Automatically sort by DR# (Column index 9) from lowest to highest on load
+                sortTable({{ $idx }}, 9, 'number');
+            @endforeach
+        });
 
         function handleAmountManualToggle() {
             const manualToggle = document.getElementById('amountManualToggle');

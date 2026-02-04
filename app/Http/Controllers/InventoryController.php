@@ -13,14 +13,28 @@ class InventoryController extends Controller
      */
     public function index()
     {
-    $entries = \App\Models\InventoryEntry::with(['customer'])->get();
-    $customers = \App\Models\Customer::with('subAccounts')
-        ->orderByRaw('CASE WHEN company_name IS NOT NULL AND company_name != "" THEN company_name ELSE CONCAT(first_name, " ", last_name) END')
-        ->get();
-    $subAccounts = \App\Models\SubAccount::with('mainAccount')
-        ->orderByRaw('CASE WHEN company_name IS NOT NULL AND company_name != "" THEN company_name ELSE CONCAT(first_name, " ", last_name) END')
-        ->get();
-    return view('inventory.index', compact('entries', 'customers', 'subAccounts'));
+        // 1. Eager load both relationships to avoid N+1 issues when calling $entry->customer_name
+        $entries = \App\Models\InventoryEntry::with(['customer', 'subAccount'])
+            ->latest() // Optional: Order by most recent entries
+            ->get();
+
+        // 2. Fetch Main Customers, ordered by Company Name or Full Name
+        $customers = \App\Models\Customer::with('subAccounts')
+            ->orderByRaw('CASE 
+                WHEN company_name IS NOT NULL AND company_name != "" THEN company_name 
+                ELSE CONCAT(first_name, " ", last_name) 
+            END ASC')
+            ->get();
+
+        // 3. Fetch Sub-Accounts, ordered by Company Name or Full Name
+        $subAccounts = \App\Models\SubAccount::with('mainAccount')
+            ->orderByRaw('CASE 
+                WHEN company_name IS NOT NULL AND company_name != "" THEN company_name 
+                ELSE CONCAT(first_name, " ", last_name) 
+            END ASC')
+            ->get();
+
+        return view('inventory.index', compact('entries', 'customers', 'subAccounts'));
     }
 
     /**
